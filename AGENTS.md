@@ -69,8 +69,8 @@ specs/                    # a spec desta própria skill (R3 aplicada a ela mesma
 
 ## A página do projeto (`docs/`)
 
-A página é **Tailwind compilado**, não Tailwind por CDN: sem 400 KB de JavaScript, sem
-piscar ao carregar, e funciona com JavaScript desligado. `docs/tailwind.css` é gerado e
+A página é **Tailwind compilado**, não Tailwind por CDN: sem centenas de KB de JavaScript,
+sem piscar ao carregar, e funciona com JavaScript desligado. `docs/tailwind.css` é gerado e
 **versionado de propósito** — o workflow do Pages apenas copia `docs/`, sem etapa de build.
 
 Depois de **qualquer** mudança em `docs/index.html`, recompile e confira:
@@ -83,15 +83,40 @@ npm run build:css    # regenera docs/tailwind.css a partir de tailwind.input.css
 Um `docs/index.html` alterado sem `docs/tailwind.css` recompilado no mesmo commit é um
 commit incompleto: as classes novas simplesmente não existem no CSS publicado.
 
-**Modo claro é o padrão; o escuro é opcional.** A variante `dark:` é por **classe**, não por
-`prefers-color-scheme` — é isso que a linha `@custom-variant dark` em `tailwind.input.css`
-faz. Um script mínimo no `<head>` aplica a classe antes da primeira pintura, lendo
-`localStorage.tema`. Se você trocar essa lógica, teste os quatro casos: claro em 1440 px,
-escuro em 1440 px, claro em 375 px, escuro em 375 px.
+### A linguagem visual segue o site do Tailwind
 
-Cuidado recorrente: item de grid tem `min-width: auto`, então um `<pre>` largo estica a
-coluna inteira e cria rolagem horizontal na página. Todo wrapper de grid que contenha um
-bloco de código leva `min-w-0`.
+Decisões deliberadas, para manter a coerência ao editar:
+
+- **Coluna emoldurada.** O conteúdo vive em `.moldura` (`max-w-6xl`) com réguas verticais
+  de 1px; as margens externas levam a hachura diagonal (`.hachura` no `<body>`).
+- **Marcadores em cruz** onde cada `.divisoria` cruza as réguas verticais.
+- **Alinhamento à esquerda** em todos os cabeçalhos de seção: rótulo pequeno colorido,
+  título `font-semibold tracking-tight` quase preto, parágrafo em cinza.
+- **Blocos de código sempre escuros**, nos dois temas, dentro de `.painel-codigo` com a
+  `.barra-arquivo` nomeando o arquivo. Não use fundo claro em código.
+- **Botão primário sólido quase preto** no claro, invertido para branco no escuro.
+- **Inter** como tipografia de interface — a **única requisição externa** da página, via
+  Google Fonts com `display=swap` e uma pilha de fallback completa. Se preferir zero
+  dependência externa, remova as três tags `<link>` do `<head>`: a página continua
+  correta na fonte do sistema.
+
+### Modo claro é o padrão; o escuro é opcional
+
+A variante `dark:` é por **classe**, não por `prefers-color-scheme` — é isso que a linha
+`@custom-variant dark` em `tailwind.input.css` faz. Um script mínimo no `<head>` aplica a
+classe antes da primeira pintura, lendo `localStorage.tema`. Se você trocar essa lógica,
+teste os quatro casos: claro em 1440 px, escuro em 1440 px, claro em 375 px, escuro em 375 px.
+
+### Duas armadilhas de layout já pagas neste repositório
+
+- **Item de grid tem `min-width: auto`**, então um `<pre>` largo estica a coluna inteira e
+  cria rolagem horizontal na página. Todo wrapper de grid que contenha bloco de código leva
+  `min-w-0` — e `.cartao`/`.bloco` já trazem `min-w-0` embutido.
+- **`overflow` no `<body>` é propagado para o viewport** em vez de recortar o próprio box:
+  pôr `overflow-x: clip` lá não resolve nada. Os marcadores em cruz ficam 5px fora da
+  moldura, e o recorte precisa ir num wrapper intermediário — é o que `.recorte-lateral`
+  faz. Use `clip`, nunca `hidden`: `hidden` viraria contêiner de rolagem e quebraria o
+  cabeçalho sticky e a rolagem interna dos blocos de código.
 
 ## Convenções de escrita
 

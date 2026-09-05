@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="scroll-smooth">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,6 +7,9 @@
 <meta name="description" content="Agent Skill que mantém um agente de IA dentro das boas práticas ao construir apps web pessoais: SQL sempre parametrizado, segredos fora do repositório, repositório privado por padrão, URLs como rotas semânticas, Wizard de instalação, atualização por pacote ZIP e um roteiro de testes para o Claude Cowork. PHP+MySQL na Hostinger e Next.js+Tailwind na Vercel." />
 <meta name="color-scheme" content="light dark" />
 <link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="tailwind.css" />
 <script>
   /* Modo claro é o padrão. O escuro só entra se o visitante tiver escolhido antes.
@@ -17,144 +20,145 @@
   })();
 </script>
 </head>
-<body class="bg-white text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-300">
+<body class="hachura bg-white font-sans text-gray-700 dark:bg-gray-950 dark:text-gray-300">
 
-<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-marca-600 focus:px-4 focus:py-2 focus:text-white">Pular para o conteúdo</a>
+<a href="#conteudo" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-gray-950 focus:px-4 focus:py-2 focus:text-white dark:focus:bg-white dark:focus:text-gray-950">Pular para o conteúdo</a>
 
-<nav class="sticky top-0 z-50 border-b border-slate-200 bg-white/85 backdrop-blur dark:border-slate-800 dark:bg-slate-950/85">
-  <div class="wrap flex h-16 items-center justify-between gap-4">
-    <a href="#" class="flex items-center gap-2.5 font-bold text-slate-900 dark:text-slate-50">
-      <img src="icon.svg" alt="" width="30" height="30" class="h-[30px] w-[30px]" />
-      <span>Development Pattern</span>
+<header class="sticky top-0 z-50 border-b border-gray-950/5 bg-white/85 backdrop-blur-md dark:border-white/10 dark:bg-gray-950/85">
+  <div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6 sm:px-8 lg:px-12">
+    <a href="#" class="flex items-center gap-2.5 text-[0.9375rem] font-semibold tracking-tight text-gray-950 dark:text-white">
+      <img src="icon.svg" alt="" width="28" height="28" class="h-7 w-7" />
+      <span>Development Pattern <span class="text-gray-400 dark:text-gray-600">/</span> Web Apps</span>
     </a>
-    <div class="flex items-center gap-5">
-      <div class="hidden items-center gap-5 text-sm font-medium text-slate-600 xl:flex dark:text-slate-400">
-        <a href="#uso" class="hover:text-slate-900 dark:hover:text-slate-100">Como funciona</a>
-        <a href="#regras" class="hover:text-slate-900 dark:hover:text-slate-100">Regras</a>
-        <a href="#sql" class="hover:text-slate-900 dark:hover:text-slate-100">SQL</a>
-        <a href="#rotas" class="hover:text-slate-900 dark:hover:text-slate-100">Rotas</a>
-        <a href="#wizard" class="hover:text-slate-900 dark:hover:text-slate-100">Wizard</a>
-        <a href="#qa" class="hover:text-slate-900 dark:hover:text-slate-100">Testes</a>
-        <a href="#instalar" class="hover:text-slate-900 dark:hover:text-slate-100">Instalar</a>
+    <div class="flex items-center gap-6">
+      <nav aria-label="Seções" class="hidden items-center gap-6 text-sm/6 font-medium text-gray-600 xl:flex dark:text-gray-400">
+        <a href="#uso" class="hover:text-gray-950 dark:hover:text-white">Como funciona</a>
+        <a href="#regras" class="hover:text-gray-950 dark:hover:text-white">Regras</a>
+        <a href="#sql" class="hover:text-gray-950 dark:hover:text-white">SQL</a>
+        <a href="#rotas" class="hover:text-gray-950 dark:hover:text-white">Rotas</a>
+        <a href="#wizard" class="hover:text-gray-950 dark:hover:text-white">Wizard</a>
+        <a href="#qa" class="hover:text-gray-950 dark:hover:text-white">Testes</a>
+      </nav>
+      <div class="flex items-center gap-1 border-l border-gray-950/10 pl-4 dark:border-white/10">
+        <button id="alternar-tema" type="button" aria-pressed="false"
+                aria-label="Alternar entre modo claro e escuro"
+                class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-950/5 hover:text-gray-950 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white">
+          <svg class="h-5 w-5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg>
+          <svg class="hidden h-5 w-5 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+        <a href="https://github.com/adrianorafael/development-pattern-for-web-apps"
+           aria-label="Repositório no GitHub"
+           class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-950/5 hover:text-gray-950 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white">
+          <svg class="h-5 w-5" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        </a>
       </div>
-      <button id="alternar-tema" type="button" aria-pressed="false"
-              aria-label="Alternar entre modo claro e escuro"
-              class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-marca-500 hover:text-marca-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-marca-400">
-        <svg class="h-[18px] w-[18px] dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-        <svg class="hidden h-[18px] w-[18px] dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-      </button>
-      <a href="https://github.com/adrianorafael/development-pattern-for-web-apps"
-         class="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-900 transition hover:border-marca-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">GitHub ↗</a>
     </div>
-  </div>
-</nav>
-
-<main id="conteudo">
-
-<header class="relative overflow-hidden py-16 sm:py-20">
-  <div aria-hidden="true" class="pointer-events-none absolute -top-40 left-1/2 h-[420px] w-[880px] -translate-x-1/2 rounded-full bg-marca-500/15 blur-3xl dark:bg-marca-500/10"></div>
-  <div class="wrap relative text-center">
-    <span class="mb-5 inline-block rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-emerald-400">Agent Skill · guarda-corpo para vibecoding</span>
-    <h1 class="text-4xl font-extrabold leading-[1.1] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl dark:text-slate-50">
-      Development Pattern
-      <span class="bg-gradient-to-r from-marca-600 via-emerald-600 to-violet-600 bg-clip-text text-transparent dark:from-marca-400 dark:via-emerald-400 dark:to-violet-400">for Web Apps</span>
-    </h1>
-    <p class="mx-auto mt-5 max-w-3xl text-lg text-slate-600 dark:text-slate-400">
-      Mantém um agente de IA dentro das boas práticas ao construir seus apps web pessoais:
-      SQL sempre parametrizado, segredos fora do repositório, repositório privado por padrão,
-      URLs como rotas semânticas, Wizard de instalação, atualização por pacote ZIP — e um
-      roteiro de testes que o Claude Cowork consegue executar sozinho.
-    </p>
-    <div class="mt-6 flex flex-wrap justify-center gap-2.5">
-      <span class="rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"><b class="font-semibold text-slate-900 dark:text-slate-100">HTML5 + PHP 8 + MySQL</b> → Hostinger</span>
-      <span class="rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"><b class="font-semibold text-slate-900 dark:text-slate-100">Next.js + Tailwind</b> → Vercel</span>
-    </div>
-    <div class="mt-8 flex flex-wrap justify-center gap-3.5">
-      <a href="#instalar" class="rounded-lg bg-marca-600 px-6 py-3 font-semibold text-white transition hover:bg-marca-700">Instalar</a>
-      <a href="https://github.com/adrianorafael/development-pattern-for-web-apps" class="rounded-lg border border-slate-200 bg-white px-6 py-3 font-semibold text-slate-900 transition hover:border-marca-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">Ver no GitHub</a>
-    </div>
-    <dl class="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
-      <div class="card"><dt class="bg-gradient-to-r from-marca-600 to-emerald-600 bg-clip-text text-2xl font-extrabold text-transparent dark:from-marca-400 dark:to-emerald-400">15 regras</dt><dd class="mt-1 text-sm text-slate-600 dark:text-slate-400">inegociáveis</dd></div>
-      <div class="card"><dt class="bg-gradient-to-r from-marca-600 to-emerald-600 bg-clip-text text-2xl font-extrabold text-transparent dark:from-marca-400 dark:to-emerald-400">8 fases</dt><dd class="mt-1 text-sm text-slate-600 dark:text-slate-400">3 portões duros</dd></div>
-      <div class="card"><dt class="bg-gradient-to-r from-marca-600 to-emerald-600 bg-clip-text text-2xl font-extrabold text-transparent dark:from-marca-400 dark:to-emerald-400">15 referências</dt><dd class="mt-1 text-sm text-slate-600 dark:text-slate-400">sob demanda</dd></div>
-      <div class="card"><dt class="bg-gradient-to-r from-marca-600 to-emerald-600 bg-clip-text text-2xl font-extrabold text-transparent dark:from-marca-400 dark:to-emerald-400">18 templates</dt><dd class="mt-1 text-sm text-slate-600 dark:text-slate-400">+ 2 scanners</dd></div>
-    </dl>
-  </div>
-  <div class="wrap mt-8">
-    <p class="rounded-xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm text-slate-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-slate-300">
-      ⚠️ <strong class="font-semibold text-amber-700 dark:text-amber-400">Aviso:</strong> criada e mantida por
-      <a href="https://github.com/adrianorafael" class="lnk">@adrianorafael</a>,
-      <strong class="font-semibold">sem garantia</strong> e sem responsabilidade por falhas, incidentes,
-      perda de dados ou custos. É uma <strong class="font-semibold">versão de estudo, sem suporte oficial</strong>.
-      Usá-la — e publicar ou implantar os aplicativos que ela ajuda a construir — é por sua conta e risco.
-    </p>
   </div>
 </header>
 
-<section id="problema" class="border-t border-slate-200 py-16 dark:border-slate-800">
-  <div class="wrap">
-    <div class="mb-10 text-center">
-      <span class="kicker">O problema</span>
-      <h2 class="sec-h2">Vibecodar um app pessoal funciona — até não funcionar</h2>
-      <p class="sec-p">Quatro falhas aparecem em quase todo app pessoal construído com IA. Nenhuma se anuncia;
-        todas custam caro, e a primeira custa os dados de outras pessoas.</p>
-    </div>
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div class="card card-hover"><span class="mb-3 block text-2xl" aria-hidden="true">💉</span><h3>SQL concatenado</h3>
-        <p>Um <code>$_GET</code> dentro do <code>WHERE</code>. Funciona nos testes, e devolve a base inteira
-           para quem digitar <code>' OR '1'='1</code> no campo de busca.</p>
-        <div class="card-meta">Resolvido por <b class="font-semibold">R5</b> — prepared statements + allowlist + scanner</div></div>
-      <div class="card card-hover"><span class="mb-3 block text-2xl" aria-hidden="true">🔑</span><h3>Credencial versionada</h3>
-        <p>A senha do MySQL da Hostinger em um <code>config.php</code> commitado. Continua legível no
-           histórico mesmo depois de apagada.</p>
-        <div class="card-meta">Resolvido por <b class="font-semibold">R1</b> e <b class="font-semibold">R2</b> — config ignorada, repo privado</div></div>
-      <div class="card card-hover"><span class="mb-3 block text-2xl" aria-hidden="true">🧩</span><h3>Ninguém sabe instalar</h3>
-        <p>Falta uma extensão, falta permissão, ninguém sabe qual SQL rodar. A página abre em branco e não há
-           nada na tela dizendo por quê.</p>
-        <div class="card-meta">Resolvido por <b class="font-semibold">R9</b> — Wizard que diagnostica e corrige</div></div>
-      <div class="card card-hover"><span class="mb-3 block text-2xl" aria-hidden="true">🧪</span><h3>"Testei, está funcionando"</h3>
-        <p>Teste manual sem roteiro, sem resultado esperado escrito, sem caso de segurança. O bug corrigido
-           volta três versões depois.</p>
-        <div class="card-meta">Resolvido por <b class="font-semibold">R11</b> — roteiro executável e regressão que cresce</div></div>
-    </div>
+<div class="recorte-lateral">
+<div class="moldura bg-white dark:bg-gray-950">
+<main id="conteudo">
+
+<section class="interno pb-16 pt-16 sm:pb-20 sm:pt-24">
+  <p class="rotulo">
+    <span class="inline-block h-1.5 w-1.5 rounded-full bg-marca-500"></span>
+    Agent Skill · guarda-corpo para vibecoding
+  </p>
+  <h1 class="max-w-4xl text-4xl font-semibold tracking-tight text-balance text-gray-950 sm:text-5xl lg:text-6xl dark:text-white">
+    Construa seus apps web com IA sem
+    <span class="bg-gradient-to-r from-marca-500 to-marca-700 bg-clip-text text-transparent dark:from-marca-300 dark:to-marca-500">acumular dívida em silêncio</span>.
+  </h1>
+  <p class="mt-6 max-w-2xl text-lg/8 text-pretty text-gray-600 dark:text-gray-400">
+    Quinze regras que mantêm um agente de IA dentro das boas práticas: SQL sempre parametrizado,
+    segredos fora do repositório, URLs como rotas semânticas, Wizard de instalação, atualização
+    por pacote ZIP — e um roteiro de testes que o Claude Cowork executa sozinho.
+  </p>
+  <div class="mt-8 flex flex-wrap items-center gap-3">
+    <a href="#instalar" class="botao-primario">Instalar</a>
+    <a href="https://github.com/adrianorafael/development-pattern-for-web-apps" class="botao-secundario">Ver no GitHub</a>
+  </div>
+  <div class="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm/6 text-gray-500 dark:text-gray-500">
+    <span><b class="font-semibold text-gray-950 dark:text-white">HTML5 + PHP 8 + MySQL</b> → Hostinger</span>
+    <span><b class="font-semibold text-gray-950 dark:text-white">Next.js + Tailwind</b> → Vercel</span>
+  </div>
+
+  <dl class="mt-14 grid grid-cols-2 gap-x-8 gap-y-8 border-t border-gray-950/5 pt-8 sm:grid-cols-4 dark:border-white/10">
+    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">15</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">regras inegociáveis</dd></div>
+    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">8</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">fases, 3 portões duros</dd></div>
+    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">15</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">referências sob demanda</dd></div>
+    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">18</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">templates + 2 scanners</dd></div>
+  </dl>
+
+  <p class="aviso mt-10">
+    ⚠️ <strong class="font-semibold text-amber-700 dark:text-amber-400">Aviso:</strong> criada e mantida por
+    <a href="https://github.com/adrianorafael" class="link">@adrianorafael</a>,
+    <strong class="font-semibold">sem garantia</strong> e sem responsabilidade por falhas, incidentes,
+    perda de dados ou custos. É uma <strong class="font-semibold">versão de estudo, sem suporte oficial</strong>.
+    Usá-la — e publicar ou implantar os aplicativos que ela ajuda a construir — é por sua conta e risco.
+  </p>
+</section>
+
+<section id="problema" class="divisoria interno py-16 sm:py-20">
+  <p class="rotulo">O problema</p>
+  <h2 class="titulo-secao">Vibecodar um app pessoal funciona — até não funcionar</h2>
+  <p class="texto-secao">Quatro falhas aparecem em quase todo app pessoal construído com IA. Nenhuma se
+    anuncia; todas custam caro, e a primeira custa os dados de outras pessoas.</p>
+  <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="cartao cartao-realce"><span class="mb-3 block text-xl" aria-hidden="true">💉</span><h3>SQL concatenado</h3>
+      <p>Um <code>$_GET</code> dentro do <code>WHERE</code>. Funciona nos testes, e devolve a base inteira
+         para quem digitar <code>' OR '1'='1</code> no campo de busca.</p>
+      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R5</b> — prepared statements, allowlist e scanner</div></div>
+    <div class="cartao cartao-realce"><span class="mb-3 block text-xl" aria-hidden="true">🔑</span><h3>Credencial versionada</h3>
+      <p>A senha do MySQL da Hostinger em um <code>config.php</code> commitado. Continua legível no
+         histórico mesmo depois de apagada.</p>
+      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R1</b> e <b class="font-semibold text-gray-700 dark:text-gray-300">R2</b> — config ignorada, repo privado</div></div>
+    <div class="cartao cartao-realce"><span class="mb-3 block text-xl" aria-hidden="true">🧩</span><h3>Ninguém sabe instalar</h3>
+      <p>Falta uma extensão, falta permissão, ninguém sabe qual SQL rodar. A página abre em branco e não
+         há nada na tela dizendo por quê.</p>
+      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R9</b> — Wizard que diagnostica e corrige</div></div>
+    <div class="cartao cartao-realce"><span class="mb-3 block text-xl" aria-hidden="true">🧪</span><h3>"Testei, está funcionando"</h3>
+      <p>Teste manual sem roteiro, sem resultado esperado escrito, sem caso de segurança. O bug corrigido
+         volta três versões depois.</p>
+      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R11</b> — roteiro executável e regressão que cresce</div></div>
   </div>
 </section>
 
-<section id="uso" class="border-t border-slate-200 py-16 dark:border-slate-800">
-  <div class="wrap">
-    <div class="mb-10 text-center">
-      <span class="kicker">Como funciona na prática</span>
-      <h2 class="sec-h2">Rígido nas pontas, livre no meio</h2>
-      <p class="sec-p">Carregue com o primeiro prompt sobre o app e depois só construa. O objetivo não é deixar a
-        construção lenta — é tornar o começo deliberado e o fim verificado, para que a parte rápida do meio
-        continue rápida sem acumular dívida em silêncio.</p>
-    </div>
-    <div class="grid gap-4 lg:grid-cols-3">
-      <div class="card card-hover"><span class="mb-3 block text-2xl" aria-hidden="true">🎯</span><h3>Início</h3>
-        <p>Seis perguntas em um lote, a documentação oficial lida <b class="font-semibold">ao vivo</b>, e então uma
-           spec com requisitos numerados e casos de teste — e uma parada para a sua aprovação. Nenhuma linha de
-           implementação existe ainda.</p>
-        <div class="card-meta">Conduzido pela skill</div></div>
-      <div class="card card-hover"><span class="mb-3 block text-2xl" aria-hidden="true">⚡</span><h3>O meio — o seu vibecoding</h3>
-        <p>Construa. Itere, mude de direção, jogue trabalho fora. A skill não fica recitando regra aqui; ela segura
-           três invariantes: SQL parametrizado, nenhum segredo versionado, nenhuma API inventada.</p>
-        <div class="card-meta">Conduzido por <b class="font-semibold">você</b></div></div>
-      <div class="card card-hover"><span class="mb-3 block text-2xl" aria-hidden="true">🔍</span><h3>Fim</h3>
-        <p>O código que existe é verificado: lint, testes, varreduras, revisão adversarial, roteiro de QA gerado e
-           executado, versão e documentação atualizadas — e uma parada antes do push e outra antes do deploy.</p>
-        <div class="card-meta">Conduzido pela skill</div></div>
-    </div>
+<section id="uso" class="divisoria interno py-16 sm:py-20">
+  <p class="rotulo">Como funciona na prática</p>
+  <h2 class="titulo-secao">Rígido nas pontas, livre no meio</h2>
+  <p class="texto-secao">Carregue com o primeiro prompt sobre o app e depois só construa. O objetivo não é
+    deixar a construção lenta — é tornar o começo deliberado e o fim verificado, para que a parte rápida
+    do meio continue rápida sem acumular dívida em silêncio.</p>
 
-    <p class="mt-8 font-semibold text-slate-900 dark:text-slate-100">Como é uma sessão de verdade</p>
-<pre class="codeblock mt-3"><span class="c">1 — Você pede</span>
-"Faz um sistema de controle de chamados em PHP e MySQL pra eu subir na Hostinger."
+  <div class="mt-10 grid gap-5 lg:grid-cols-3">
+    <div class="cartao cartao-realce"><h3>Início</h3>
+      <p>Seis perguntas em um lote, a documentação oficial lida <b class="font-semibold text-gray-800 dark:text-gray-200">ao vivo</b>,
+         e então uma spec com requisitos numerados e casos de teste — e uma parada para a sua aprovação.
+         Nenhuma linha de implementação existe ainda.</p>
+      <div class="cartao-nota">Conduzido pela skill</div></div>
+    <div class="cartao cartao-realce"><h3>O meio — o seu vibecoding</h3>
+      <p>Construa. Itere, mude de direção, jogue trabalho fora. A skill não fica recitando regra aqui; ela
+         segura três invariantes: SQL parametrizado, nenhum segredo versionado, nenhuma API inventada.</p>
+      <div class="cartao-nota">Conduzido por <b class="font-semibold text-gray-700 dark:text-gray-300">você</b></div></div>
+    <div class="cartao cartao-realce"><h3>Fim</h3>
+      <p>O código que existe é verificado: lint, testes, varreduras, revisão adversarial, roteiro de QA
+         gerado e executado, versão e documentação atualizadas — e uma parada antes do push e outra antes
+         do deploy.</p>
+      <div class="cartao-nota">Conduzido pela skill</div></div>
+  </div>
+
+  <div class="painel-codigo mt-8">
+    <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>uma sessão de verdade</div>
+<pre class="bloco"><span class="c">1 — Você pede</span>
+<span class="s">"Faz um sistema de controle de chamados em PHP e MySQL pra eu subir na Hostinger."</span>
 
 <span class="c">2 — Seis perguntas, um lote</span>
 Trilha? Repositório (novo nasce privado)? Versão do PHP e acesso da hospedagem?
 Tem login, dado pessoal, pagamento, upload? Nome e versão inicial? Quem executa o QA?
 
 <span class="c">3 — A documentação é lida, não lembrada</span>
-php.net · docs da Hostinger · MySQL · OWASP  →  registro de evidências com data
+php.net · docs da Hostinger · MySQL · OWASP  <span class="p">→</span>  registro de evidências com data
 
 <span class="c">4 — Uma spec, depois uma parada</span>
 specs/0001-controle-de-chamados.md — RF-001…RF-012, modelo de dados com índices,
@@ -177,144 +181,148 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
   </div>
 </section>
 
-<section id="regras" class="border-t border-slate-200 py-16 dark:border-slate-800">
-  <div class="wrap">
-    <div class="mb-10 text-center">
-      <span class="kicker">O núcleo</span>
-      <h2 class="sec-h2">Quinze regras inegociáveis</h2>
-      <p class="sec-p">Elas passam por cima de qualquer outro instinto, inclusive "mas essa mudança é minúscula".
-        Se uma não puder ser cumprida, o agente para e diz — nunca entrega uma versão degradada em silêncio.</p>
-    </div>
-    <div class="tbl-wrap">
-      <table class="tbl">
-        <thead><tr><th scope="col">#</th><th scope="col">Regra</th></tr></thead>
-        <tbody>
-          <tr><td class="rid">R1</td><td><b class="font-semibold">Nenhum segredo entra no repositório.</b> Credenciais de banco, chaves de API, <code>.env</code>, dumps, dados pessoais: nunca. Placeholder no arquivo versionado; valor real só em variável de ambiente ou arquivo ignorado.</td></tr>
-          <tr><td class="rid">R2</td><td><b class="font-semibold">Repositório privado por padrão.</b> Todo projeto nasce <code>--private</code>. Publicar é decisão explícita, e só depois de varrer o <b class="font-semibold">histórico inteiro</b>.</td></tr>
-          <tr><td class="rid">R3</td><td><b class="font-semibold">Especificação antes do código</b>, com requisitos numerados, critérios de aceite, casos de teste e portão de aprovação.</td></tr>
-          <tr><td class="rid">R4</td><td><b class="font-semibold">Nunca invente uma API.</b> Função, extensão, prop, hook, classe do Tailwind: só depois de verificada em <code>vendor/</code>, <code>node_modules/</code> ou na doc lida na sessão.</td></tr>
-          <tr><td class="rid">R5</td><td><b class="font-semibold">Todo SQL é parametrizado.</b> Zero concatenação. <code>ATTR_EMULATE_PREPARES =&gt; false</code>. Identificadores só por allowlist, com a exceção declarada na própria linha.</td></tr>
-          <tr><td class="rid">R6</td><td><b class="font-semibold">Validar na entrada, escapar na saída</b>, no contexto correto de cada uma. Validação no cliente é usabilidade, nunca segurança.</td></tr>
-          <tr><td class="rid">R7</td><td><b class="font-semibold">A linha de base de segurança é inegociável; acima dela, proporcional ao porte.</b> Doze itens de piso valem até no projeto de fim de semana.</td></tr>
-          <tr><td class="rid">R8</td><td><b class="font-semibold">Interface por componentes.</b> Next.js: App Router, Server Components, Tailwind com tokens. PHP: front controller + partials, zero HTML concatenado.</td></tr>
-          <tr><td class="rid">R9</td><td><b class="font-semibold">Todo app PHP+MySQL entrega um Wizard de instalação</b> que verifica dependências e cria — ou limpa e recria — o banco.</td></tr>
-          <tr><td class="rid">R10</td><td><b class="font-semibold">Todo app PHP entrega um painel administrativo</b> que instala pacotes ZIP com arquivos e migrações SQL, com backup e rollback.</td></tr>
-          <tr><td class="rid">R11</td><td><b class="font-semibold">Toda aplicação entrega um roteiro de testes</b> em Markdown, executável pelo Claude Cowork: unitário → integração → interface → segurança → regressão.</td></tr>
-          <tr><td class="rid">R12</td><td><b class="font-semibold">Revise código de IA como código hostil</b>, contra um checklist, antes de todo push.</td></tr>
-          <tr><td class="rid">R13</td><td><b class="font-semibold">Versão, documentação e schema andam juntos</b>, no mesmo commit.</td></tr>
-          <tr><td class="rid">R14</td><td><b class="font-semibold">Deploy é explícito, nomeado e reversível</b>, com backup antes e rollback documentado.</td></tr>
-          <tr><td class="rid">R15</td><td><b class="font-semibold">A URL é interface, não caminho de arquivo.</b> <code>/cadastrar-novo-usuario</code>, nunca <code>/usuarios/cadastro.php</code>. Rota em português, kebab-case, sem extensão; navegação jamais por query string.</td></tr>
-        </tbody>
-      </table>
-    </div>
+<section id="regras" class="divisoria interno py-16 sm:py-20">
+  <p class="rotulo">O núcleo</p>
+  <h2 class="titulo-secao">Quinze regras inegociáveis</h2>
+  <p class="texto-secao">Elas passam por cima de qualquer outro instinto, inclusive "mas essa mudança é
+    minúscula". Se uma não puder ser cumprida, o agente para e diz — nunca entrega uma versão degradada
+    em silêncio.</p>
+  <div class="tabela-caixa mt-10">
+    <table class="tabela">
+      <thead><tr><th scope="col">#</th><th scope="col">Regra</th></tr></thead>
+      <tbody>
+        <tr><td class="id-regra">R1</td><td><b class="font-semibold text-gray-950 dark:text-white">Nenhum segredo entra no repositório.</b> Credenciais de banco, chaves de API, <code>.env</code>, dumps, dados pessoais: nunca. Placeholder no arquivo versionado; valor real só em variável de ambiente ou arquivo ignorado.</td></tr>
+        <tr><td class="id-regra">R2</td><td><b class="font-semibold text-gray-950 dark:text-white">Repositório privado por padrão.</b> Todo projeto nasce <code>--private</code>. Publicar é decisão explícita, e só depois de varrer o <b class="font-semibold">histórico inteiro</b>.</td></tr>
+        <tr><td class="id-regra">R3</td><td><b class="font-semibold text-gray-950 dark:text-white">Especificação antes do código</b>, com requisitos numerados, critérios de aceite, casos de teste e portão de aprovação.</td></tr>
+        <tr><td class="id-regra">R4</td><td><b class="font-semibold text-gray-950 dark:text-white">Nunca invente uma API.</b> Função, extensão, prop, hook, classe do Tailwind: só depois de verificada em <code>vendor/</code>, <code>node_modules/</code> ou na doc lida na sessão.</td></tr>
+        <tr><td class="id-regra">R5</td><td><b class="font-semibold text-gray-950 dark:text-white">Todo SQL é parametrizado.</b> Zero concatenação. <code>ATTR_EMULATE_PREPARES =&gt; false</code>. Identificadores só por allowlist, com a exceção declarada na própria linha.</td></tr>
+        <tr><td class="id-regra">R6</td><td><b class="font-semibold text-gray-950 dark:text-white">Validar na entrada, escapar na saída</b>, no contexto correto de cada uma. Validação no cliente é usabilidade, nunca segurança.</td></tr>
+        <tr><td class="id-regra">R7</td><td><b class="font-semibold text-gray-950 dark:text-white">A linha de base de segurança é inegociável; acima dela, proporcional ao porte.</b> Doze itens de piso valem até no projeto de fim de semana.</td></tr>
+        <tr><td class="id-regra">R8</td><td><b class="font-semibold text-gray-950 dark:text-white">Interface por componentes.</b> Next.js: App Router, Server Components, Tailwind com tokens. PHP: front controller + partials, zero HTML concatenado.</td></tr>
+        <tr><td class="id-regra">R9</td><td><b class="font-semibold text-gray-950 dark:text-white">Todo app PHP+MySQL entrega um Wizard de instalação</b> que verifica dependências e cria — ou limpa e recria — o banco.</td></tr>
+        <tr><td class="id-regra">R10</td><td><b class="font-semibold text-gray-950 dark:text-white">Todo app PHP entrega um painel administrativo</b> que instala pacotes ZIP com arquivos e migrações SQL, com backup e rollback.</td></tr>
+        <tr><td class="id-regra">R11</td><td><b class="font-semibold text-gray-950 dark:text-white">Toda aplicação entrega um roteiro de testes</b> em Markdown, executável pelo Claude Cowork: unitário → integração → interface → segurança → regressão.</td></tr>
+        <tr><td class="id-regra">R12</td><td><b class="font-semibold text-gray-950 dark:text-white">Revise código de IA como código hostil</b>, contra um checklist, antes de todo push.</td></tr>
+        <tr><td class="id-regra">R13</td><td><b class="font-semibold text-gray-950 dark:text-white">Versão, documentação e schema andam juntos</b>, no mesmo commit.</td></tr>
+        <tr><td class="id-regra">R14</td><td><b class="font-semibold text-gray-950 dark:text-white">Deploy é explícito, nomeado e reversível</b>, com backup antes e rollback documentado.</td></tr>
+        <tr><td class="id-regra">R15</td><td><b class="font-semibold text-gray-950 dark:text-white">A URL é interface, não caminho de arquivo.</b> <code>/cadastrar-novo-usuario</code>, nunca <code>/usuarios/cadastro.php</code>. Rota em português, kebab-case, sem extensão; navegação jamais por query string.</td></tr>
+      </tbody>
+    </table>
   </div>
 </section>
 
-<section id="sql" class="border-t border-slate-200 py-16 dark:border-slate-800">
-  <div class="wrap">
-    <div class="mb-10 text-center">
-      <span class="kicker">R5</span>
-      <h2 class="sec-h2">A regra que mais importa</h2>
-      <p class="sec-p">SQL injection é a única falha desta lista que transforma um projeto pessoal em um incidente
-        com dados de terceiros. Tem uma causa única e uma cura única.</p>
-    </div>
-<pre class="codeblock"><span class="r">// ❌ NUNCA. Nem "só nesse caso". Nem "o campo é numérico". Nem "é área logada".</span>
-$sql = "SELECT * FROM pedidos WHERE cliente_id = " . $_GET['id'];
+<section id="sql" class="divisoria interno py-16 sm:py-20">
+  <p class="rotulo">R5</p>
+  <h2 class="titulo-secao">A regra que mais importa</h2>
+  <p class="texto-secao">SQL injection é a única falha desta lista que transforma um projeto pessoal em um
+    incidente com dados de terceiros. Tem uma causa única e uma cura única.</p>
+
+  <div class="painel-codigo mt-10">
+    <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>app/Controllers/PedidoController.php</div>
+<pre class="bloco"><span class="r">// ❌ NUNCA. Nem "só nesse caso". Nem "o campo é numérico". Nem "é área logada".</span>
+<span class="v">$sql</span> = <span class="s">"SELECT * FROM pedidos WHERE cliente_id = "</span> . <span class="v">$_GET</span>[<span class="s">'id'</span>];
 
 <span class="k">// ✅ SEMPRE. O dado viaja por um parâmetro, nunca pelo texto do comando.</span>
-$stmt = $pdo-&gt;prepare('SELECT * FROM pedidos WHERE cliente_id = :id AND usuario_id = :u');
-$stmt-&gt;execute([':id' =&gt; $id, ':u' =&gt; $_SESSION['usuario_id']]);</pre>
+<span class="v">$stmt</span> = <span class="v">$pdo</span>-&gt;<span class="p">prepare</span>(<span class="s">'SELECT * FROM pedidos WHERE cliente_id = :id AND usuario_id = :u'</span>);
+<span class="v">$stmt</span>-&gt;<span class="p">execute</span>([<span class="s">':id'</span> =&gt; <span class="v">$id</span>, <span class="s">':u'</span> =&gt; <span class="v">$_SESSION</span>[<span class="s">'usuario_id'</span>]]);</pre>
+  </div>
 
-    <p class="mt-6 text-slate-600 dark:text-slate-400"><b class="font-semibold text-slate-900 dark:text-slate-100">O caso difícil</b> —
-      o que não pode ser parametrizado: nome de coluna, nome de tabela, <code>ASC</code>/<code>DESC</code>.
-      A resposta nunca é "concatena com cuidado". É <b class="font-semibold text-slate-900 dark:text-slate-100">allowlist</b>,
-      com a exceção declarada na linha:</p>
-<pre class="codeblock mt-3">$colunas = ['nome' =&gt; 'p.nome', 'data' =&gt; 'p.criado_em'];
-$coluna  = $colunas[$_GET['ordenar'] ?? ''] ?? 'p.criado_em';
-$sql = "SELECT * FROM pedidos p ORDER BY $coluna";   <span class="k">// scan-sql:allow — $colunas</span></pre>
+  <p class="mt-8 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
+    <b class="font-semibold text-gray-950 dark:text-white">O caso difícil</b> — o que não pode ser
+    parametrizado: nome de coluna, nome de tabela, <code>ASC</code>/<code>DESC</code>. A resposta nunca é
+    "concatena com cuidado". É <b class="font-semibold text-gray-950 dark:text-white">allowlist</b>, com a
+    exceção declarada na linha:</p>
 
-    <p class="callout">
-      O scanner acusa <b class="font-semibold">toda</b> interpolação em SQL. Para silenciá-la é preciso escrever o
-      marcador citando a allowlist — na própria linha ou na linha imediatamente acima, onde cabe a justificativa
-      por extenso. Isso transforma a exceção em algo visível na revisão, em vez de uma concatenação silenciosa.
-    </p>
+  <div class="painel-codigo mt-4">
+<pre class="bloco"><span class="v">$colunas</span> = [<span class="s">'nome'</span> =&gt; <span class="s">'p.nome'</span>, <span class="s">'data'</span> =&gt; <span class="s">'p.criado_em'</span>];
+<span class="v">$coluna</span>  = <span class="v">$colunas</span>[<span class="v">$_GET</span>[<span class="s">'ordenar'</span>] ?? <span class="s">''</span>] ?? <span class="s">'p.criado_em'</span>;
+<span class="v">$sql</span> = <span class="s">"SELECT * FROM pedidos p ORDER BY $coluna"</span>;   <span class="k">// scan-sql:allow — $colunas</span></pre>
+  </div>
 
-    <div class="mt-6 grid gap-4 lg:grid-cols-2">
-      <div class="card"><h3>O que o scanner também pega</h3>
-        <ul class="tick">
-          <li><code>mysql_query</code> e <code>mysqli_real_escape_string</code> usado como defesa</li>
-          <li><code>$queryRawUnsafe</code>, <code>sql.unsafe</code>, <code>sql.raw</code>, <code>knex.raw</code></li>
-          <li>Template literal com SQL e <code>${}</code> fora de tag parametrizada</li>
-          <li><code>ATTR_EMULATE_PREPARES =&gt; true</code> — e a ausência do <code>false</code> em projetos com <code>new PDO(</code></li>
-        </ul></div>
-      <div class="card"><h3>E o que ele não pega</h3>
-        <ul class="tick">
-          <li>Consulta montada em várias linhas, ou por uma função auxiliar</li>
-          <li>Um marcador <code>scan-sql:allow</code> escrito sobre uma allowlist que não existe</li>
-        </ul>
-        <div class="card-meta">Varredura limpa é <b class="font-semibold">necessária, não suficiente</b>. A skill diz isso na saída
-          de cada execução — e manda ler o próprio diff.</div></div>
-    </div>
+  <p class="destaque">
+    O scanner acusa <b class="font-semibold">toda</b> interpolação em SQL. Para silenciá-la é preciso escrever
+    o marcador citando a allowlist — na própria linha ou na linha imediatamente acima, onde cabe a
+    justificativa por extenso. Isso transforma a exceção em algo visível na revisão, em vez de uma
+    concatenação silenciosa.
+  </p>
+
+  <div class="mt-6 grid gap-5 lg:grid-cols-2">
+    <div class="cartao"><h3>O que o scanner também pega</h3>
+      <ul class="setas">
+        <li><code>mysql_query</code> e <code>mysqli_real_escape_string</code> usado como defesa</li>
+        <li><code>$queryRawUnsafe</code>, <code>sql.unsafe</code>, <code>sql.raw</code>, <code>knex.raw</code></li>
+        <li>Template literal com SQL e <code>${}</code> fora de tag parametrizada</li>
+        <li><code>ATTR_EMULATE_PREPARES =&gt; true</code> — e a ausência do <code>false</code> em projetos com <code>new PDO(</code></li>
+      </ul></div>
+    <div class="cartao"><h3>E o que ele não pega</h3>
+      <ul class="setas">
+        <li>Consulta montada em várias linhas, ou por uma função auxiliar</li>
+        <li>Um marcador <code>scan-sql:allow</code> escrito sobre uma allowlist que não existe</li>
+      </ul>
+      <div class="cartao-nota">Varredura limpa é <b class="font-semibold text-gray-700 dark:text-gray-300">necessária, não suficiente</b>.
+        A skill diz isso na saída de cada execução — e manda ler o próprio diff.</div></div>
   </div>
 </section>
 
-<section id="rotas" class="border-t border-slate-200 py-16 dark:border-slate-800">
-  <div class="wrap">
-    <div class="mb-10 text-center">
-      <span class="kicker">R15</span>
-      <h2 class="sec-h2">A URL é interface, não caminho de arquivo</h2>
-      <p class="sec-p">É a única parte da aplicação que sai dela: vai para o histórico, os favoritos, o WhatsApp de
-        quem compartilha, o índice do Google e o log do servidor. Por isso não pode ser um detalhe de implementação.</p>
-    </div>
-<pre class="codeblock"><span class="r">❌ https://seu-dominio.com.br/usuarios/cadastro.php</span>
+<section id="rotas" class="divisoria interno py-16 sm:py-20">
+  <p class="rotulo">R15</p>
+  <h2 class="titulo-secao">A URL é interface, não caminho de arquivo</h2>
+  <p class="texto-secao">É a única parte da aplicação que sai dela: vai para o histórico, os favoritos, o
+    WhatsApp de quem compartilha, o índice do Google e o log do servidor. Por isso não pode ser um detalhe
+    de implementação.</p>
+
+  <div class="painel-codigo mt-10">
+<pre class="bloco"><span class="r">❌ https://seu-dominio.com.br/usuarios/cadastro.php</span>
 <span class="k">✅ https://seu-dominio.com.br/cadastrar-novo-usuario</span>
 
 <span class="r">❌ https://seu-dominio.com.br/app/views/chamados/detalhe.php?id=8</span>
 <span class="k">✅ https://seu-dominio.com.br/chamados/8/impressora-nao-imprime</span></pre>
+  </div>
 
-    <p class="mt-6 text-slate-600 dark:text-slate-400">
-      <code>/usuarios/cadastro.php</code> entrega de graça três coisas: a linguagem do servidor, a árvore de pastas
-      e o nome do arquivo. Quem está sondando começa por aí. E no dia em que você mover o arquivo, todo link
-      publicado quebra.</p>
+  <p class="mt-6 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
+    <code>/usuarios/cadastro.php</code> entrega de graça três coisas: a linguagem do servidor, a árvore de
+    pastas e o nome do arquivo. Quem está sondando começa por aí. E no dia em que você mover o arquivo,
+    todo link publicado quebra.</p>
 
-    <div class="mt-6 grid gap-4 lg:grid-cols-2">
-      <div class="card"><h3>As sete convenções</h3>
-        <ul class="tick">
-          <li>Português, minúsculas, kebab-case — <code>/redefinir-senha</code></li>
-          <li>Sem acento e sem cedilha — o percent-encoding deixa a URL ilegível ao ser copiada</li>
-          <li>Sem extensão de arquivo</li>
-          <li>Sem estrutura de pastas do servidor</li>
-          <li>Ação = verbo no infinitivo — <code>/cadastrar-novo-usuario</code></li>
-          <li>Coleção = substantivo plural + identificador — <code>/chamados/8</code></li>
-          <li>Navegação <b class="font-semibold">nunca</b> depende de query string</li>
-        </ul></div>
-      <div class="card"><h3>A query string muda de papel</h3>
-        <p>Ela não some: passa a carregar <b class="font-semibold">estado da visualização</b>, não roteamento.</p>
-        <ul class="tick">
-          <li><code>/chamados?status=fechado&amp;pagina=2</code> — filtro e paginação</li>
-          <li><code>/produtos?busca=teclado</code> — busca</li>
-        </ul>
-        <div class="card-meta">A vantagem é concreta: <code>/chamados?status=fechado</code> é compartilhável e favoritável.
-          Já <code>/index.php?p=chamados</code> não significa nada fora da sua sessão.</div></div>
-    </div>
+  <div class="mt-8 grid gap-5 lg:grid-cols-2">
+    <div class="cartao"><h3>As sete convenções</h3>
+      <ul class="setas">
+        <li>Português, minúsculas, kebab-case — <code>/redefinir-senha</code></li>
+        <li>Sem acento e sem cedilha — o percent-encoding deixa a URL ilegível ao ser copiada</li>
+        <li>Sem extensão de arquivo</li>
+        <li>Sem estrutura de pastas do servidor</li>
+        <li>Ação = verbo no infinitivo — <code>/cadastrar-novo-usuario</code></li>
+        <li>Coleção = substantivo plural + identificador — <code>/chamados/8</code></li>
+        <li>Navegação <b class="font-semibold text-gray-800 dark:text-gray-200">nunca</b> depende de query string</li>
+      </ul></div>
+    <div class="cartao"><h3>A query string muda de papel</h3>
+      <p>Ela não some: passa a carregar <b class="font-semibold text-gray-800 dark:text-gray-200">estado da
+         visualização</b>, não roteamento.</p>
+      <ul class="setas">
+        <li><code>/chamados?status=fechado&amp;pagina=2</code> — filtro e paginação</li>
+        <li><code>/produtos?busca=teclado</code> — busca</li>
+      </ul>
+      <div class="cartao-nota">A vantagem é concreta: <code>/chamados?status=fechado</code> é compartilhável e
+        favoritável. Já <code>/index.php?p=chamados</code> não significa nada fora da sua sessão.</div></div>
+  </div>
 
-    <div class="mt-6 grid gap-4 lg:grid-cols-2">
-      <div class="min-w-0">
-        <p class="mb-3 font-semibold text-slate-900 dark:text-slate-100">PHP — mapa de rotas escrito à mão</p>
-<pre class="codeblock">$rotas = [
-  'GET  /'                       =&gt; [PaginaController::class,  'inicio'],
-  'GET  /entrar'                 =&gt; [SessaoController::class,  'formularioLogin'],
-  'POST /entrar'                 =&gt; [SessaoController::class,  'autenticar'],
-  'GET  /cadastrar-novo-usuario' =&gt; [UsuarioController::class, 'formulario'],
-  'GET  /chamados'               =&gt; [ChamadoController::class, 'listar'],
-  'GET  /abrir-chamado'          =&gt; [ChamadoController::class, 'formulario'],
-  'GET  /chamados/{id}/{slug}'   =&gt; [ChamadoController::class, 'detalhe'],
-  'POST /chamados/{id}/fechar'   =&gt; [ChamadoController::class, 'fechar'],
+  <div class="mt-5 grid gap-5 lg:grid-cols-2">
+    <div class="painel-codigo min-w-0">
+      <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>public_html/index.php</div>
+<pre class="bloco"><span class="v">$rotas</span> = [
+  <span class="s">'GET  /'</span>                       =&gt; [<span class="p">PaginaController</span>::class,  <span class="s">'inicio'</span>],
+  <span class="s">'GET  /entrar'</span>                 =&gt; [<span class="p">SessaoController</span>::class,  <span class="s">'formularioLogin'</span>],
+  <span class="s">'POST /entrar'</span>                 =&gt; [<span class="p">SessaoController</span>::class,  <span class="s">'autenticar'</span>],
+  <span class="s">'GET  /cadastrar-novo-usuario'</span> =&gt; [<span class="p">UsuarioController</span>::class, <span class="s">'formulario'</span>],
+  <span class="s">'GET  /chamados'</span>               =&gt; [<span class="p">ChamadoController</span>::class, <span class="s">'listar'</span>],
+  <span class="s">'GET  /abrir-chamado'</span>          =&gt; [<span class="p">ChamadoController</span>::class, <span class="s">'formulario'</span>],
+  <span class="s">'GET  /chamados/{id}/{slug}'</span>   =&gt; [<span class="p">ChamadoController</span>::class, <span class="s">'detalhe'</span>],
+  <span class="s">'POST /chamados/{id}/fechar'</span>   =&gt; [<span class="p">ChamadoController</span>::class, <span class="s">'fechar'</span>],
 ];</pre>
-      </div>
-      <div class="min-w-0">
-        <p class="mb-3 font-semibold text-slate-900 dark:text-slate-100">Next.js — a pasta <em>é</em> a URL</p>
-<pre class="codeblock">app/
+    </div>
+    <div class="painel-codigo min-w-0">
+      <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>app/ — a pasta <em class="not-italic text-gray-300">é</em> a URL</div>
+<pre class="bloco">app/
 ├── entrar/page.tsx                    <span class="c">→ /entrar</span>
 ├── cadastrar-novo-usuario/page.tsx    <span class="c">→ /cadastrar-novo-usuario</span>
 ├── not-found.tsx                      <span class="c">→ 404 de verdade</span>
@@ -322,221 +330,224 @@ $sql = "SELECT * FROM pedidos p ORDER BY $coluna";   <span class="k">// scan-sql
     ├── layout.tsx                     <span class="c">verifica a sessão do grupo</span>
     ├── chamados/page.tsx              <span class="c">→ /chamados</span>
     └── chamados/[id]/page.tsx         <span class="c">→ /chamados/8</span></pre>
-      </div>
     </div>
-
-    <p class="callout">
-      <b class="font-semibold">Renomear uma rota é uma mudança MAJOR.</b> Links publicados quebram, e você não controla
-      quem os publicou. A antiga responde <b class="font-semibold">301</b> por pelo menos uma versão maior, e a mudança
-      entra no CHANGELOG. A referência traz o roteador completo com canonicalização, o helper <code>rota()</code> que
-      evita escrever a mesma URL duas vezes, a geração de slug, os redirects em <code>next.config.ts</code>, uma tabela
-      de tradução de URLs antigas e os treze casos de teste que vão para o roteiro de QA.
-    </p>
   </div>
+
+  <p class="destaque">
+    <b class="font-semibold">Renomear uma rota é uma mudança MAJOR.</b> Links publicados quebram, e você não
+    controla quem os publicou. A antiga responde <b class="font-semibold">301</b> por pelo menos uma versão
+    maior, e a mudança entra no CHANGELOG. A referência traz o roteador completo com canonicalização, o
+    helper <code>rota()</code> que evita escrever a mesma URL duas vezes, a geração de slug, os redirects em
+    <code>next.config.ts</code>, uma tabela de tradução de URLs antigas e os treze casos de teste que vão
+    para o roteiro de QA.
+  </p>
 </section>
 
-<section id="wizard" class="border-t border-slate-200 py-16 dark:border-slate-800">
-  <div class="wrap">
-    <div class="mb-10 text-center">
-      <span class="kicker">R9</span>
-      <h2 class="sec-h2">Wizard de instalação em todo app PHP</h2>
-      <p class="sec-p">Instalar deve ser: subir os arquivos, abrir <code>/install/</code>, informar host, banco,
-        usuário e senha, e clicar em avançar. Nada é gravado antes do último passo — desistir no meio não deixa resíduo.</p>
-    </div>
-    <ol class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <li class="card"><div class="text-xs font-bold uppercase tracking-widest text-marca-600 dark:text-marca-400">Passo 1</div>
-        <h3 class="mt-1.5">Requisitos</h3>
-        <p>PHP, extensões, permissões, <code>mod_rewrite</code>, HTTPS — cada item com o valor encontrado, o exigido
-           e <b class="font-semibold">a instrução de correção no hPanel</b>.</p></li>
-      <li class="card"><div class="text-xs font-bold uppercase tracking-widest text-marca-600 dark:text-marca-400">Passo 2</div>
-        <h3 class="mt-1.5">Banco</h3>
-        <p>Testa a conexão na hora e <b class="font-semibold">traduz o erro do MySQL</b>: "1045" vira "usuário ou senha
-           incorretos, confira em hPanel → Bancos de dados".</p></li>
-      <li class="card"><div class="text-xs font-bold uppercase tracking-widest text-marca-600 dark:text-marca-400">Passo 3</div>
-        <h3 class="mt-1.5">Estrutura</h3>
-        <p>Detecta o estado da base: criar do zero, manter os dados, ou <b class="font-semibold">limpar e recriar</b> —
-           exigindo digitar <code>APAGAR</code>, com as tabelas e a contagem de linhas na tela.</p></li>
-      <li class="card"><div class="text-xs font-bold uppercase tracking-widest text-marca-600 dark:text-marca-400">Passo 4</div>
-        <h3 class="mt-1.5">Administrador</h3>
-        <p>Primeiro admin com <code>password_hash</code>. Nunca um <code>admin/admin</code> "para facilitar" — é o
-           primeiro alvo de qualquer varredura automática.</p></li>
-      <li class="card"><div class="text-xs font-bold uppercase tracking-widest text-marca-600 dark:text-marca-400">Passo 5</div>
-        <h3 class="mt-1.5">Conclusão</h3>
-        <p>Grava a configuração fora do webroot, registra a versão do schema, <b class="font-semibold">se tranca</b>,
-           e manda apagar a pasta <code>install/</code>.</p></li>
-      <li class="card border-dashed"><div class="text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Pronto para usar</div>
-        <h3 class="mt-1.5">Esqueleto executável</h3>
-        <p>Um arquivo único, adaptável: <code>assets/templates/install-wizard.php.template</code>.</p></li>
-    </ol>
-  </div>
+<section id="wizard" class="divisoria interno py-16 sm:py-20">
+  <p class="rotulo">R9</p>
+  <h2 class="titulo-secao">Wizard de instalação em todo app PHP</h2>
+  <p class="texto-secao">Instalar deve ser: subir os arquivos, abrir <code>/install/</code>, informar host,
+    banco, usuário e senha, e clicar em avançar. Nada é gravado antes do último passo — desistir no meio não
+    deixa resíduo.</p>
+  <ol class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">passo 1</div>
+      <h3 class="mt-2">Requisitos</h3>
+      <p>PHP, extensões, permissões, <code>mod_rewrite</code>, HTTPS — cada item com o valor encontrado, o
+         exigido e <b class="font-semibold text-gray-800 dark:text-gray-200">a instrução de correção no hPanel</b>.</p></li>
+    <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">passo 2</div>
+      <h3 class="mt-2">Banco</h3>
+      <p>Testa a conexão na hora e <b class="font-semibold text-gray-800 dark:text-gray-200">traduz o erro do
+         MySQL</b>: "1045" vira "usuário ou senha incorretos, confira em hPanel → Bancos de dados".</p></li>
+    <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">passo 3</div>
+      <h3 class="mt-2">Estrutura</h3>
+      <p>Detecta o estado da base: criar do zero, manter os dados, ou <b class="font-semibold text-gray-800 dark:text-gray-200">limpar
+         e recriar</b> — exigindo digitar <code>APAGAR</code>, com as tabelas e a contagem de linhas na tela.</p></li>
+    <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">passo 4</div>
+      <h3 class="mt-2">Administrador</h3>
+      <p>Primeiro admin com <code>password_hash</code>. Nunca um <code>admin/admin</code> "para facilitar" — é
+         o primeiro alvo de qualquer varredura automática.</p></li>
+    <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">passo 5</div>
+      <h3 class="mt-2">Conclusão</h3>
+      <p>Grava a configuração fora do webroot, registra a versão do schema, <b class="font-semibold text-gray-800 dark:text-gray-200">se
+         tranca</b>, e manda apagar a pasta <code>install/</code>.</p></li>
+    <li class="cartao"><div class="font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">pronto para usar</div>
+      <h3 class="mt-2">Esqueleto executável</h3>
+      <p>Um arquivo único, adaptável: <code>assets/templates/install-wizard.php.template</code>.</p></li>
+  </ol>
 </section>
 
-<section id="updates" class="border-t border-slate-200 py-16 dark:border-slate-800">
-  <div class="wrap">
-    <div class="mb-10 text-center">
-      <span class="kicker">R10</span>
-      <h2 class="sec-h2">Atualização por pacote ZIP, pelo painel</h2>
-      <p class="sec-p">Atualizar por FTP é onde os projetos pessoais morrem: um arquivo esquecido, um SQL que ninguém
-        rodou, e o app fica meio atualizado — o pior estado possível.</p>
-    </div>
-<pre class="codeblock">meu-app-1.3.0.zip
-├── <span class="k">manifest.json</span>      <span class="c"># app, versão, versão mínima, PHP mínimo, extensões, sha256 por arquivo</span>
+<section id="updates" class="divisoria interno py-16 sm:py-20">
+  <p class="rotulo">R10</p>
+  <h2 class="titulo-secao">Atualização por pacote ZIP, pelo painel</h2>
+  <p class="texto-secao">Atualizar por FTP é onde os projetos pessoais morrem: um arquivo esquecido, um SQL
+    que ninguém rodou, e o app fica meio atualizado — o pior estado possível.</p>
+  <div class="painel-codigo mt-10">
+    <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>meu-app-1.3.0.zip</div>
+<pre class="bloco">├── <span class="k">manifest.json</span>      <span class="c"># app, versão, versão mínima, PHP mínimo, extensões, sha256 por arquivo</span>
 ├── files/             <span class="c"># árvore espelhando a raiz do app</span>
 ├── migrations/        <span class="c"># SQL ordenado por nome e idempotente</span>
 └── remove.txt         <span class="c"># arquivos a apagar</span></pre>
-    <div class="mt-6 grid gap-4 lg:grid-cols-2">
-      <div class="card"><h3>Valida antes de escrever um byte</h3>
-        <ul class="tick">
-          <li>É deste app? A sequência de versões faz sentido?</li>
-          <li>O servidor atende ao PHP e às extensões exigidas?</li>
-          <li>O <code>sha256</code> de cada arquivo confere?</li>
-          <li>Há entrada no ZIP que o manifesto não declara?</li>
-          <li>Algum caminho tenta sair das pastas permitidas? <b class="font-semibold">(zip slip)</b></li>
-        </ul></div>
-      <div class="card"><h3>Aplica com caminho de volta</h3>
-        <ul class="tick">
-          <li>Prévia com os arquivos que mudam e as migrações — <b class="font-semibold">as destrutivas em destaque</b></li>
-          <li>Backup do banco e dos arquivos que serão sobrescritos</li>
-          <li>Modo manutenção com <b class="font-semibold">expiração automática</b>, para o site não ficar preso</li>
-          <li>Migrações em ordem, registradas em <code>schema_migrations</code></li>
-          <li><b class="font-semibold">Rollback automático</b> se qualquer etapa falhar</li>
-        </ul></div>
-    </div>
-    <p class="callout">O pacote nunca escreve em <code>config/</code> nem em <code>storage/</code>: essas pastas são do
-      usuário, não do aplicativo. É assim que uma atualização não sobrescreve a configuração de quem instalou.</p>
   </div>
+  <div class="mt-6 grid gap-5 lg:grid-cols-2">
+    <div class="cartao"><h3>Valida antes de escrever um byte</h3>
+      <ul class="setas">
+        <li>É deste app? A sequência de versões faz sentido?</li>
+        <li>O servidor atende ao PHP e às extensões exigidas?</li>
+        <li>O <code>sha256</code> de cada arquivo confere?</li>
+        <li>Há entrada no ZIP que o manifesto não declara?</li>
+        <li>Algum caminho tenta sair das pastas permitidas? <b class="font-semibold text-gray-800 dark:text-gray-200">(zip slip)</b></li>
+      </ul></div>
+    <div class="cartao"><h3>Aplica com caminho de volta</h3>
+      <ul class="setas">
+        <li>Prévia com os arquivos que mudam e as migrações — <b class="font-semibold text-gray-800 dark:text-gray-200">as destrutivas em destaque</b></li>
+        <li>Backup do banco e dos arquivos que serão sobrescritos</li>
+        <li>Modo manutenção com <b class="font-semibold text-gray-800 dark:text-gray-200">expiração automática</b>, para o site não ficar preso</li>
+        <li>Migrações em ordem, registradas em <code>schema_migrations</code></li>
+        <li><b class="font-semibold text-gray-800 dark:text-gray-200">Rollback automático</b> se qualquer etapa falhar</li>
+      </ul></div>
+  </div>
+  <p class="destaque">O pacote nunca escreve em <code>config/</code> nem em <code>storage/</code>: essas pastas
+    são do usuário, não do aplicativo. É assim que uma atualização não sobrescreve a configuração de quem
+    instalou.</p>
 </section>
 
-<section id="qa" class="border-t border-slate-200 py-16 dark:border-slate-800">
-  <div class="wrap">
-    <div class="mb-10 text-center">
-      <span class="kicker">R11</span>
-      <h2 class="sec-h2">Um roteiro de testes que o Cowork executa</h2>
-      <p class="sec-p">Não é um resumo do que foi feito. É um procedimento — escrito para outro agente executar
-        navegando pela aplicação, sem ter participado do desenvolvimento e sem poder fazer perguntas.</p>
-    </div>
-<pre class="codeblock"><span class="k">### CT-014 — Filtrar chamados por status</span>
+<section id="qa" class="divisoria interno py-16 sm:py-20">
+  <p class="rotulo">R11</p>
+  <h2 class="titulo-secao">Um roteiro de testes que o Cowork executa</h2>
+  <p class="texto-secao">Não é um resumo do que foi feito. É um procedimento — escrito para outro agente
+    executar navegando pela aplicação, sem ter participado do desenvolvimento e sem poder fazer perguntas.</p>
+
+  <div class="painel-codigo mt-10">
+    <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>qa/roteiro-de-testes.md</div>
+<pre class="bloco"><span class="k">### CT-014 — Filtrar chamados por status</span>
 | <span class="c">Requisito</span> | RF-004 |
 | <span class="c">Pré-condição</span> | Logado como usuario.a@example.com. Seed: 3 abertos, 2 fechados. |
 
-<span class="k">**Passos**</span>
+<span class="p">**Passos**</span>
 1. Acessar /chamados.
 2. Conferir que [data-testid="tabela-chamados"] exibe 5 linhas.
 3. Em [data-testid="filtro-status"], escolher Fechado.
 4. Clicar em [data-testid="botao-filtrar"].
 
-<span class="k">**Resultado esperado**</span>
+<span class="p">**Resultado esperado**</span>
 - A tabela exibe <span class="k">exatamente 2 linhas</span>, ambas com status Fechado.
 - [data-testid="contador-resultados"] exibe "2 chamados".
 - A URL passa a conter ?status=fechado. Nenhum erro no console.
 
-<span class="k">**Falha se**</span> — a contagem diverge, aparece chamado com outro status, ou o filtro se perde.</pre>
+<span class="p">**Falha se**</span> — a contagem diverge, aparece chamado com outro status, ou o filtro se perde.</pre>
+  </div>
 
-    <p class="mt-8 font-semibold text-slate-900 dark:text-slate-100">Seis suítes, nesta ordem</p>
-    <div class="tbl-wrap mt-3">
-      <table class="tbl">
-        <thead><tr><th scope="col">Suíte</th><th scope="col">O que cobre</th></tr></thead>
-        <tbody>
-          <tr><td><b class="font-semibold">Fumaça</b></td><td>5 a 10 casos. Se falhar, o resto não roda: o ambiente ou o build estão errados.</td></tr>
-          <tr><td><b class="font-semibold">Funcional</b></td><td>Um caso por critério de aceite, mais validação, fronteira, os quatro estados de tela, persistência, concorrência e formatos.</td></tr>
-          <tr><td><b class="font-semibold">Integração</b></td><td>Formulário → banco → tela, upload → download, e-mail, webhook idempotente, o Wizard e o painel de atualização.</td></tr>
-          <tr><td><b class="font-semibold">Segurança</b></td><td>Payloads de SQL injection em <b class="font-semibold">cada</b> campo que chega ao banco; XSS refletido e armazenado; IDOR; CSRF; sessão; upload; cabeçalhos; acesso a <code>/config/</code>, <code>/.env</code>, <code>/.git/config</code>, <code>/install/</code>.</td></tr>
-          <tr><td><b class="font-semibold">Interface</b></td><td>375/768/1440 px, só teclado, rótulos, contraste AA, zoom 200%, estado vazio, duplo clique — e as rotas: 301 de canonicalização, 404 real, F5 e Voltar.</td></tr>
-          <tr><td><b class="font-semibold">Regressão</b></td><td>Cresce a cada defeito corrigido. Roda inteira antes de todo release — é a memória do projeto.</td></tr>
-        </tbody>
-      </table>
-    </div>
+  <div class="tabela-caixa mt-8">
+    <table class="tabela">
+      <thead><tr><th scope="col">Suíte</th><th scope="col">O que cobre</th></tr></thead>
+      <tbody>
+        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Fumaça</b></td><td>5 a 10 casos. Se falhar, o resto não roda: o ambiente ou o build estão errados.</td></tr>
+        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Funcional</b></td><td>Um caso por critério de aceite, mais validação, fronteira, os quatro estados de tela, persistência, concorrência e formatos.</td></tr>
+        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Integração</b></td><td>Formulário → banco → tela, upload → download, e-mail, webhook idempotente, o Wizard e o painel de atualização.</td></tr>
+        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Segurança</b></td><td>Payloads de SQL injection em <b class="font-semibold">cada</b> campo que chega ao banco; XSS refletido e armazenado; IDOR; CSRF; sessão; upload; cabeçalhos; acesso a <code>/config/</code>, <code>/.env</code>, <code>/.git/config</code>, <code>/install/</code>.</td></tr>
+        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Interface</b></td><td>375/768/1440 px, só teclado, rótulos, contraste AA, zoom 200%, estado vazio, duplo clique — e as rotas: 301 de canonicalização, 404 real, F5 e Voltar.</td></tr>
+        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Regressão</b></td><td>Cresce a cada defeito corrigido. Roda inteira antes de todo release — é a memória do projeto.</td></tr>
+      </tbody>
+    </table>
+  </div>
 
-    <div class="mt-6 grid gap-4 lg:grid-cols-2">
-      <div class="card"><h3>Regras para quem executa</h3>
-        <ul class="tick">
-          <li>Não conserte a aplicação durante o teste — registre e siga</li>
-          <li>Relate o que observou, não o que deveria acontecer</li>
-          <li>Caso não executado é <b class="font-semibold">BLOQUEADO</b>, nunca FALHOU</li>
-          <li>Console e rede fazem parte do resultado</li>
-          <li>Restaure o estado inicial antes de cada suíte</li>
-        </ul></div>
-      <div class="card"><h3>E o roteiro fecha em números</h3>
-        <ul class="tick">
-          <li>Matriz de rastreabilidade requisito × caso</li>
-          <li>Requisitos sem cobertura <b class="font-semibold">declarados por nome</b>, nunca omitidos</li>
-          <li>Registro de execução: aprovados, reprovados, bloqueados</li>
-          <li>Qualquer defeito 🔴 em aberto <b class="font-semibold">bloqueia o release</b></li>
-        </ul></div>
-    </div>
+  <div class="mt-6 grid gap-5 lg:grid-cols-2">
+    <div class="cartao"><h3>Regras para quem executa</h3>
+      <ul class="setas">
+        <li>Não conserte a aplicação durante o teste — registre e siga</li>
+        <li>Relate o que observou, não o que deveria acontecer</li>
+        <li>Caso não executado é <b class="font-semibold text-gray-800 dark:text-gray-200">BLOQUEADO</b>, nunca FALHOU</li>
+        <li>Console e rede fazem parte do resultado</li>
+        <li>Restaure o estado inicial antes de cada suíte</li>
+      </ul></div>
+    <div class="cartao"><h3>E o roteiro fecha em números</h3>
+      <ul class="setas">
+        <li>Matriz de rastreabilidade requisito × caso</li>
+        <li>Requisitos sem cobertura <b class="font-semibold text-gray-800 dark:text-gray-200">declarados por nome</b>, nunca omitidos</li>
+        <li>Registro de execução: aprovados, reprovados, bloqueados</li>
+        <li>Qualquer defeito 🔴 em aberto <b class="font-semibold text-gray-800 dark:text-gray-200">bloqueia o release</b></li>
+      </ul></div>
   </div>
 </section>
 
-<section id="seguranca" class="border-t border-slate-200 py-16 dark:border-slate-800">
-  <div class="wrap">
-    <div class="mb-10 text-center">
-      <span class="kicker">R7</span>
-      <h2 class="sec-h2">Segurança proporcional — mas nunca abaixo do piso</h2>
-      <p class="sec-p">"É só um projeto pessoal" é o raciocínio que precede a maioria dos vazamentos de projeto
-        pessoal. O invasor não sabe que é pessoal: ele varre faixas de IP procurando formulários de login.</p>
-    </div>
-    <div class="tbl-wrap">
-      <table class="tbl">
-        <thead><tr><th scope="col">Nível</th><th scope="col">Quando</th><th scope="col">Acrescenta ao piso</th></tr></thead>
-        <tbody>
-          <tr><td><b class="font-semibold">Piso</b> <span class="ml-1 inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">sempre</span></td>
-              <td>Todo projeto, inclusive o de fim de semana</td>
-              <td>SQL parametrizado · nenhum segredo versionado · <code>password_hash</code> · CSRF · saída escapada · cookie <code>HttpOnly</code>/<code>Secure</code>/<code>SameSite</code> · HTTPS · cabeçalhos · autorização por registro · erros logados e nunca exibidos · upload restrito · dependências auditadas</td></tr>
-          <tr><td><b class="font-semibold">N1</b> Vitrine</td><td>Sem login, sem dado pessoal</td>
-              <td>Captcha/honeypot, rate limit simples, e-mail sem injeção de cabeçalho</td></tr>
-          <tr><td><b class="font-semibold">N2</b> App com login</td><td>Dados dos próprios usuários</td>
-              <td>Bloqueio progressivo, recuperação com token de uso único, auditoria, sessão regenerada, expiração por inatividade</td></tr>
-          <tr><td><b class="font-semibold">N3</b> Dados de terceiros</td><td>CPF, endereço, saúde, financeiro</td>
-              <td>Criptografia em repouso, retenção e exclusão, exportação do titular, backup criptografado e testado, registro de acesso</td></tr>
-          <tr><td><b class="font-semibold">N4</b> Pagamento</td><td>Checkout, assinatura, saldo</td>
-              <td>Cartão nunca no seu servidor, webhook assinado, idempotência, conciliação, MFA no painel</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="mt-5 text-slate-600 dark:text-slate-400"><b class="font-semibold text-slate-900 dark:text-slate-100">Regra de escada:
-      você pode subir de nível, nunca descer.</b> Um app que começou N2 e passou a guardar CPF virou N3 no mesmo commit
-      em que a coluna foi criada.</p>
+<section id="seguranca" class="divisoria interno py-16 sm:py-20">
+  <p class="rotulo">R7</p>
+  <h2 class="titulo-secao">Segurança proporcional — mas nunca abaixo do piso</h2>
+  <p class="texto-secao">"É só um projeto pessoal" é o raciocínio que precede a maioria dos vazamentos de
+    projeto pessoal. O invasor não sabe que é pessoal: ele varre faixas de IP procurando formulários de login.</p>
+  <div class="tabela-caixa mt-10">
+    <table class="tabela">
+      <thead><tr><th scope="col">Nível</th><th scope="col">Quando</th><th scope="col">Acrescenta ao piso</th></tr></thead>
+      <tbody>
+        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Piso</b>
+            <span class="ml-1 inline-block rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">sempre</span></td>
+            <td>Todo projeto, inclusive o de fim de semana</td>
+            <td>SQL parametrizado · nenhum segredo versionado · <code>password_hash</code> · CSRF · saída escapada · cookie <code>HttpOnly</code>/<code>Secure</code>/<code>SameSite</code> · HTTPS · cabeçalhos · autorização por registro · erros logados e nunca exibidos · upload restrito · dependências auditadas</td></tr>
+        <tr><td><b class="font-semibold text-gray-950 dark:text-white">N1</b> Vitrine</td><td>Sem login, sem dado pessoal</td>
+            <td>Captcha/honeypot, rate limit simples, e-mail sem injeção de cabeçalho</td></tr>
+        <tr><td><b class="font-semibold text-gray-950 dark:text-white">N2</b> App com login</td><td>Dados dos próprios usuários</td>
+            <td>Bloqueio progressivo, recuperação com token de uso único, auditoria, sessão regenerada, expiração por inatividade</td></tr>
+        <tr><td><b class="font-semibold text-gray-950 dark:text-white">N3</b> Dados de terceiros</td><td>CPF, endereço, saúde, financeiro</td>
+            <td>Criptografia em repouso, retenção e exclusão, exportação do titular, backup criptografado e testado, registro de acesso</td></tr>
+        <tr><td><b class="font-semibold text-gray-950 dark:text-white">N4</b> Pagamento</td><td>Checkout, assinatura, saldo</td>
+            <td>Cartão nunca no seu servidor, webhook assinado, idempotência, conciliação, MFA no painel</td></tr>
+      </tbody>
+    </table>
   </div>
+  <p class="mt-6 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
+    <b class="font-semibold text-gray-950 dark:text-white">Regra de escada: você pode subir de nível, nunca
+    descer.</b> Um app que começou N2 e passou a guardar CPF virou N3 no mesmo commit em que a coluna foi criada.</p>
 </section>
 
-<section id="instalar" class="border-t border-slate-200 py-16 dark:border-slate-800">
-  <div class="wrap">
-    <div class="mb-10 text-center"><span class="kicker">Começar</span><h2 class="sec-h2">Instalar e usar</h2></div>
-    <div class="grid gap-6 lg:grid-cols-2">
-      <div class="min-w-0">
-        <p class="font-semibold text-slate-900 dark:text-slate-100">Pacote de skills (recomendado)</p>
-<pre class="codeblock mt-2">npx skills add adrianorafael/development-pattern-for-web-apps</pre>
-        <p class="mt-5 font-semibold text-slate-900 dark:text-slate-100">Plugin do Claude Code</p>
-<pre class="codeblock mt-2">claude plugin marketplace add adrianorafael/development-pattern-for-web-apps
-claude plugin install development-pattern-for-web-apps@development-pattern-for-web-apps</pre>
-        <p class="mt-5 font-semibold text-slate-900 dark:text-slate-100">Manual</p>
-<pre class="codeblock mt-2">git clone https://github.com/adrianorafael/development-pattern-for-web-apps.git
-cp -r development-pattern-for-web-apps/skills/development-pattern-for-web-apps \
+<section id="instalar" class="divisoria interno py-16 sm:py-20">
+  <p class="rotulo">Começar</p>
+  <h2 class="titulo-secao">Instalar e usar</h2>
+  <p class="texto-secao">A skill dispara sozinha quando você menciona PHP, MySQL, Hostinger, Next.js, Vercel,
+    Tailwind, SQL injection, wizard de instalação, rotas amigáveis ou roteiro de testes.</p>
+
+  <div class="mt-10 grid gap-5 lg:grid-cols-2">
+    <div class="min-w-0 space-y-5">
+      <div class="painel-codigo">
+        <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>pacote de skills (recomendado)</div>
+<pre class="bloco"><span class="p">npx</span> skills add adrianorafael/development-pattern-for-web-apps</pre>
+      </div>
+      <div class="painel-codigo">
+        <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>plugin do Claude Code</div>
+<pre class="bloco"><span class="p">claude</span> plugin marketplace add adrianorafael/development-pattern-for-web-apps
+<span class="p">claude</span> plugin install development-pattern-for-web-apps@development-pattern-for-web-apps</pre>
+      </div>
+      <div class="painel-codigo">
+        <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>manual</div>
+<pre class="bloco"><span class="p">git</span> clone https://github.com/adrianorafael/development-pattern-for-web-apps.git
+<span class="p">cp</span> -r development-pattern-for-web-apps/skills/development-pattern-for-web-apps \
       .claude/skills/development-pattern-for-web-apps</pre>
       </div>
-      <div class="min-w-0 space-y-4">
-        <div class="card"><h3>Depois é só pedir</h3>
-<pre class="codeblock mt-3">"Faz um sistema de controle de chamados
- em PHP e MySQL pra eu subir na Hostinger."</pre>
-          <p class="mt-3">A skill dispara sozinha quando você menciona PHP, MySQL, Hostinger, Next.js, Vercel,
-             Tailwind, SQL injection, wizard de instalação, rotas amigáveis ou roteiro de testes.</p>
-          <div class="card-meta">Copie <code>AGENTS.template.md</code> para o repositório do app como
-            <code>AGENTS.md</code> — assim a próxima sessão herda o padrão e as armadilhas que você já encontrou.</div></div>
-        <div class="card"><h3>Rode os scanners quando quiser</h3>
-<pre class="codeblock mt-3">bash .../scan-secrets.sh
-bash .../scan-sql-injection.sh</pre></div>
-      </div>
+    </div>
+    <div class="min-w-0 space-y-5">
+      <div class="cartao"><h3>Depois é só pedir</h3>
+        <div class="painel-codigo mt-3">
+<pre class="bloco"><span class="s">"Faz um sistema de controle de chamados
+ em PHP e MySQL pra eu subir na Hostinger."</span></pre>
+        </div>
+        <div class="cartao-nota">Copie <code>AGENTS.template.md</code> para o repositório do app como
+          <code>AGENTS.md</code> — assim a próxima sessão herda o padrão e as armadilhas que você já encontrou.</div></div>
+      <div class="cartao"><h3>Rode os scanners quando quiser</h3>
+        <div class="painel-codigo mt-3">
+<pre class="bloco"><span class="p">bash</span> .../scan-secrets.sh
+<span class="p">bash</span> .../scan-sql-injection.sh</pre>
+        </div></div>
     </div>
   </div>
 </section>
 
-<section id="estrutura" class="border-t border-slate-200 py-16 dark:border-slate-800">
-  <div class="wrap">
-    <div class="mb-10 text-center"><span class="kicker">Conteúdo</span><h2 class="sec-h2">O que vem na caixa</h2>
-      <p class="sec-p">Um <code>SKILL.md</code>, quinze referências carregadas sob demanda, dezoito templates e dois
-        scanners — e nenhuma cópia da documentação de terceiros.</p></div>
-<pre class="codeblock">skills/development-pattern-for-web-apps/
-├── <span class="k">SKILL.md</span>                          <span class="c"># 15 regras, 8 fases, 3 portões, roteamento</span>
+<section id="estrutura" class="divisoria interno py-16 sm:py-20">
+  <p class="rotulo">Conteúdo</p>
+  <h2 class="titulo-secao">O que vem na caixa</h2>
+  <p class="texto-secao">Um <code>SKILL.md</code>, quinze referências carregadas sob demanda, dezoito
+    templates e dois scanners — e nenhuma cópia da documentação de terceiros.</p>
+  <div class="painel-codigo mt-10">
+    <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>skills/development-pattern-for-web-apps/</div>
+<pre class="bloco">├── <span class="k">SKILL.md</span>                          <span class="c"># 15 regras, 8 fases, 3 portões, roteamento</span>
 ├── references/
 │   ├── segredos-e-configuracao.md    <span class="c"># R1 — .env, config fora do webroot, Vercel, rotação</span>
 │   ├── git-e-publicacao.md           <span class="c"># R2 — privado por padrão, commits, publicação</span>
@@ -560,63 +571,69 @@ bash .../scan-sql-injection.sh</pre></div>
   </div>
 </section>
 
-<section id="faq" class="border-t border-slate-200 py-16 dark:border-slate-800">
-  <div class="wrap">
-    <div class="mb-10 text-center"><span class="kicker">Ajuda</span><h2 class="sec-h2">Respostas honestas</h2></div>
-    <div class="tbl-wrap">
-      <table class="tbl">
-        <thead><tr><th scope="col">Pergunta</th><th scope="col">Resposta</th></tr></thead>
-        <tbody>
-          <tr><td>Os scanners pegam tudo?</td>
-              <td>Não. Eles pegam padrões conhecidos. Um segredo que pareça texto comum passa; uma consulta montada
-                  em várias linhas pode escapar da varredura por linha. Varredura limpa é
-                  <b class="font-semibold">necessária, não suficiente</b> — leia o seu próprio diff.</td></tr>
-          <tr><td>Funciona com Laravel, WordPress, Django?</td>
-              <td>Não foi feita para eles. As regras de segurança (R1, R5, R6, R7) valem em qualquer stack, mas as
-                  trilhas, os templates e os scanners assumem PHP puro + MySQL ou Next.js.</td></tr>
-          <tr><td>Ela executa os testes?</td>
-              <td>Ela <b class="font-semibold">gera</b> o roteiro e pode executá-lo. A ideia é o Claude Cowork executar
-                  navegando pela aplicação, ou você mesmo seguir o documento.</td></tr>
-          <tr><td>Por que o agente faz mais perguntas do que antes?</td>
-              <td>Porque a R4 proíbe chutar. Quando o pacote não está instalado e a documentação está inacessível, a
-                  instrução é dizer "não consigo verificar" e oferecer os dois passos que destravariam.</td></tr>
-          <tr><td>Posso discordar de uma regra?</td>
-              <td>Pode. É Markdown, e é seu — edite o <code>SKILL.md</code>. As regras são absolutas porque preferência
-                  suave erode sob prazo, não porque sejam sagradas.</td></tr>
-          <tr><td>Por que repositório privado por padrão?</td>
-              <td>Porque um <code>.env</code> apagado há dez commits continua legível no histórico. Publicar é uma
-                  decisão consciente, tomada depois de varrer o histórico completo — não o estado atual dos arquivos.</td></tr>
-          <tr><td>URL amigável não é só estética?</td>
-              <td>Não. <code>/usuarios/cadastro.php</code> entrega a linguagem, a árvore de pastas e o nome do arquivo
-                  do servidor, e acopla todo link publicado à sua organização em disco. Mover o arquivo quebra o link
-                  de quem compartilhou.</td></tr>
-          <tr><td>Preciso do Wizard mesmo em um app minúsculo?</td>
-              <td>Se ele usa MySQL, sim. O Wizard é justamente o que transforma "a página está em branco e não sei por
-                  quê" em "falta a extensão <code>mbstring</code>, ative em hPanel → Configuração PHP".</td></tr>
-          <tr><td>Isso é ferramenta oficial de alguém?</td>
-              <td>Não. É um projeto independente, sem vínculo com Hostinger, Vercel, Anthropic ou qualquer outra
-                  empresa citada.</td></tr>
-        </tbody>
-      </table>
-    </div>
+<section id="faq" class="divisoria interno py-16 sm:py-20">
+  <p class="rotulo">Ajuda</p>
+  <h2 class="titulo-secao">Respostas honestas</h2>
+  <div class="tabela-caixa mt-10">
+    <table class="tabela">
+      <thead><tr><th scope="col">Pergunta</th><th scope="col">Resposta</th></tr></thead>
+      <tbody>
+        <tr><td>Os scanners pegam tudo?</td>
+            <td>Não. Eles pegam padrões conhecidos. Um segredo que pareça texto comum passa; uma consulta
+                montada em várias linhas pode escapar da varredura por linha. Varredura limpa é
+                <b class="font-semibold text-gray-950 dark:text-white">necessária, não suficiente</b> — leia o seu próprio diff.</td></tr>
+        <tr><td>Funciona com Laravel, WordPress, Django?</td>
+            <td>Não foi feita para eles. As regras de segurança (R1, R5, R6, R7) valem em qualquer stack, mas
+                as trilhas, os templates e os scanners assumem PHP puro + MySQL ou Next.js.</td></tr>
+        <tr><td>Ela executa os testes?</td>
+            <td>Ela <b class="font-semibold text-gray-950 dark:text-white">gera</b> o roteiro e pode executá-lo. A ideia é o Claude
+                Cowork executar navegando pela aplicação, ou você mesmo seguir o documento.</td></tr>
+        <tr><td>Por que o agente faz mais perguntas do que antes?</td>
+            <td>Porque a R4 proíbe chutar. Quando o pacote não está instalado e a documentação está
+                inacessível, a instrução é dizer "não consigo verificar" e oferecer os dois passos que
+                destravariam.</td></tr>
+        <tr><td>Posso discordar de uma regra?</td>
+            <td>Pode. É Markdown, e é seu — edite o <code>SKILL.md</code>. As regras são absolutas porque
+                preferência suave erode sob prazo, não porque sejam sagradas.</td></tr>
+        <tr><td>Por que repositório privado por padrão?</td>
+            <td>Porque um <code>.env</code> apagado há dez commits continua legível no histórico. Publicar é
+                uma decisão consciente, tomada depois de varrer o histórico completo — não o estado atual
+                dos arquivos.</td></tr>
+        <tr><td>URL amigável não é só estética?</td>
+            <td>Não. <code>/usuarios/cadastro.php</code> entrega a linguagem, a árvore de pastas e o nome do
+                arquivo do servidor, e acopla todo link publicado à sua organização em disco. Mover o
+                arquivo quebra o link de quem compartilhou.</td></tr>
+        <tr><td>Preciso do Wizard mesmo em um app minúsculo?</td>
+            <td>Se ele usa MySQL, sim. O Wizard é justamente o que transforma "a página está em branco e não
+                sei por quê" em "falta a extensão <code>mbstring</code>, ative em hPanel → Configuração PHP".</td></tr>
+        <tr><td>Isso é ferramenta oficial de alguém?</td>
+            <td>Não. É um projeto independente, sem vínculo com Hostinger, Vercel, Anthropic ou qualquer
+                outra empresa citada.</td></tr>
+      </tbody>
+    </table>
   </div>
 </section>
 
 </main>
 
-<footer class="border-t border-slate-200 py-10 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-500">
-  <div class="wrap">
-    <p>
-      Feito por <a href="https://github.com/adrianorafael" class="lnk">@adrianorafael</a> ·
-      <a href="https://github.com/adrianorafael/development-pattern-for-web-apps" class="lnk">Código no GitHub</a> ·
-      <a href="https://github.com/adrianorafael/development-pattern-for-Dynatrace" class="lnk">Development Pattern for Dynatrace</a> ·
-      <a href="https://agentskills.io" class="lnk">Agent Skills</a>
+<footer class="divisoria interno py-10">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <p class="text-sm/6 text-gray-500 dark:text-gray-500">
+      Feito por <a href="https://github.com/adrianorafael" class="link">@adrianorafael</a>
     </p>
-    <p class="mx-auto mt-3 max-w-xl text-xs">Projeto independente, sem vínculo com Hostinger, Vercel, Anthropic ou
-      qualquer outra empresa mencionada. Fornecido "como está", para estudo e uso pessoal. Marcas citadas pertencem
-      a seus respectivos donos.</p>
+    <nav aria-label="Links do rodapé" class="flex flex-wrap gap-x-5 gap-y-2 text-sm/6">
+      <a href="https://github.com/adrianorafael/development-pattern-for-web-apps" class="link">Código no GitHub</a>
+      <a href="https://github.com/adrianorafael/development-pattern-for-Dynatrace" class="link">Development Pattern for Dynatrace</a>
+      <a href="https://agentskills.io" class="link">Agent Skills</a>
+    </nav>
   </div>
+  <p class="mt-6 max-w-2xl text-xs/5 text-gray-500 dark:text-gray-600">Projeto independente, sem vínculo com
+    Hostinger, Vercel, Anthropic ou qualquer outra empresa mencionada. Fornecido "como está", para estudo e
+    uso pessoal. Marcas citadas pertencem a seus respectivos donos.</p>
 </footer>
+
+</div>
+</div>
 
 <script>
   (function () {

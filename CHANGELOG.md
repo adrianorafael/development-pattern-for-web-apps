@@ -61,5 +61,9 @@ Primeira versão.
   endurecido, o roteiro de testes, a spec e o `AGENTS.md` de projeto.
 - Página do projeto em `docs/`, publicada no GitHub Pages pelo CI: **Tailwind compilado**
   (não CDN), com **modo claro como padrão e modo escuro opcional** por classe, persistido em
-  `localStorage` e aplicado antes da primeira pintura. Verificada em 1440 px e 375 px nos
-  dois temas, sem rolagem horizontal e sem erro de console.
+  `localStorage` e aplicado antes da primeira pintura. A linguagem visual segue o site do
+  Tailwind: coluna emoldurada por réguas verticais com hachura diagonal nas margens,
+  marcadores em cruz nas divisórias, cabeçalhos alinhados à esquerda, blocos de código
+  sempre escuros com barra de nome de arquivo, botão primário sólido quase preto e Inter
+  como tipografia. Verificada em 1440 px e 375 px nos dois temas, sem rolagem horizontal e
+  sem erro de console.
