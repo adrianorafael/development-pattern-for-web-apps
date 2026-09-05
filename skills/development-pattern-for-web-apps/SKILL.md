@@ -48,7 +48,7 @@ Duas consequências disso, fáceis de errar:
 
 ---
 
-## R — As quinze regras inegociáveis
+## R — As dezesseis regras inegociáveis
 
 Elas passam por cima de qualquer outro instinto, inclusive "mas essa mudança é minúscula".
 
@@ -69,6 +69,7 @@ Elas passam por cima de qualquer outro instinto, inclusive "mas essa mudança é
 | **R13** | **Versão, documentação e schema andam juntos.** Toda publicação sobe a versão em SemVer, escreve entrada datada no `CHANGELOG.md`, atualiza o README **no mesmo commit** e registra a versão do schema dentro do próprio banco. | [release-e-deploy.md](references/release-e-deploy.md) |
 | **R14** | **Deploy é explícito, nomeado e reversível.** Nenhum envio para Hostinger ou Vercel sem alvo nomeado e um "sim". Migração em ordem conhecida, backup antes, caminho de volta documentado. | [release-e-deploy.md](references/release-e-deploy.md) |
 | **R15** | **A URL é interface, não caminho de arquivo.** Toda rota descreve a ação ou o recurso em português, em kebab-case, sem extensão e sem revelar a estrutura de pastas: `/cadastrar-novo-usuario`, nunca `/usuarios/cadastro.php`. Navegação jamais depende de query string. | [rotas-e-urls.md](references/rotas-e-urls.md) |
+| **R16** | **Build quebrado se conserta com o log na mão e a correção provada localmente.** Ler o log completo, classificar como falha de código ou de ambiente, reproduzir com `vercel build`, corrigir a causa raiz, provar, e **um** push por volta — com teto de três voltas. Nunca `ignoreBuildErrors`, nunca inventar valor para variável ausente. | [vercel-build-e-correcao.md](references/vercel-build-e-correcao.md) |
 
 Se uma regra não puder ser cumprida, **pare e diga**. Não entregue silenciosamente uma versão
 degradada.
@@ -77,7 +78,8 @@ degradada.
 
 ## Fase 0 — Bootstrap da sessão (uma vez, antes de qualquer coisa)
 
-Não comece a codar sem estas seis respostas. Pergunte **em um único lote**, nunca uma por vez.
+Não comece a codar sem estas respostas. Pergunte **em um único lote**, nunca uma por vez.
+São seis na trilha PHP e sete na trilha Next.js.
 
 1. **Trilha** — "PHP + MySQL na Hostinger, ou Next.js na Vercel?"
    → Define stack, layout de projeto, forma de deploy e quais regras específicas entram
@@ -96,6 +98,10 @@ Não comece a codar sem estas seis respostas. Pergunte **em um único lote**, nu
 6. **Testes** — "Quem executa o QA: você, o Claude Cowork, ou os dois?"
    → O roteiro é gerado de qualquer forma (R11); a resposta define o nível de detalhe
    de navegação e as credenciais de teste necessárias.
+7. **Acesso à Vercel** (só na trilha Next.js) — "Posso me conectar à sua conta para
+   diagnosticar build quebrado? Há servidor MCP da Vercel, ou uso o CLI com token?"
+   → **Detecte primeiro, pergunte depois.** Sem isso, a R16 só funciona com o log que
+   você colar manualmente. O token vive em `.env`, nunca versionado (R1).
 
 Ainda na mesma fase, **antes do primeiro commit**:
 
@@ -134,7 +140,8 @@ Ainda na mesma fase, **antes do primeiro commit**:
               → ⛔ PORTÃO DE APROVAÇÃO antes do push
 
 7 DEPLOY      Hostinger (FTP/SSH/Git) ou Vercel, alvo nomeado, backup, migração, rollback
-              → ⛔ PORTÃO DE APROVAÇÃO antes do deploy
+              build quebrado: log → reproduzir → corrigir → provar → 1 push (teto de 3)
+              → ⛔ PORTÃO DE APROVAÇÃO antes de promover para produção
 ```
 
 Três portões são paradas duras. Nunca os atravesse por iniciativa própria.
@@ -158,6 +165,7 @@ Carregue a referência **antes** de fazer o trabalho, não depois que ele falhar
 | Criar a estrutura de um projeto PHP, front controller, `.htaccess`, partials | [stack-php-mysql.md](references/stack-php-mysql.md) |
 | Criar a estrutura de um projeto Next.js, componente, Server Action, Tailwind | [stack-nextjs-vercel.md](references/stack-nextjs-vercel.md) |
 | Definir uma rota, nomear uma URL, renomear uma existente, tratar 404 e redirecionamento | [rotas-e-urls.md](references/rotas-e-urls.md) |
+| Investigar um build que falhou na Vercel, ler log de deploy, conectar-se à conta | [vercel-build-e-correcao.md](references/vercel-build-e-correcao.md) |
 | Construir ou alterar o instalador do app PHP | [wizard-de-instalacao.md](references/wizard-de-instalacao.md) |
 | Construir o painel administrativo, o formato do pacote ZIP ou uma migração | [pacotes-de-atualizacao.md](references/pacotes-de-atualizacao.md) |
 | Escrever ou atualizar o roteiro de testes, ou preparar o app para o Cowork | [roteiro-de-testes-cowork.md](references/roteiro-de-testes-cowork.md) |
@@ -269,6 +277,9 @@ instalado prova, mesmo que a outra pareça mais elegante.
 | Três deploys e todos reportando `1.0.0` | Versão não subiu por publicação | R13 |
 | Ninguém sabe qual migração já rodou naquele banco | Versão do schema não gravada na base | R13 |
 | Deploy derrubou o site e não há caminho de volta | Sem backup e sem rollback documentado | R14 |
+| Cinco commits de "tenta assim" até o build passar | Correção sem reprodução local | R16 |
+| Build verde com `ignoreBuildErrors`, e o erro de tipo estourando em produção | Amputação em vez de correção | R16 |
+| Funciona em produção e quebra no preview | Variável de ambiente que só existe num dos dois | R16 |
 | A URL entrega a linguagem, a pasta e o nome do arquivo do servidor | Caminho de arquivo servido como rota | R15 |
 | Todo link publicado quebrou ao reorganizar as pastas | URL acoplada à estrutura em disco | R15 |
 | `Property 'xyz' does not exist` depois de "deveria funcionar" | Prop inventada de memória | R4 |

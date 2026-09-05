@@ -10,7 +10,7 @@ Este projeto é construído sob o
 Carregue essa skill antes de escrever, revisar, testar, publicar ou implantar qualquer
 código aqui.
 
-As quinze regras inegociáveis valem para toda mudança neste repositório, inclusive as
+As dezesseis regras inegociáveis valem para toda mudança neste repositório, inclusive as
 "minúsculas":
 
 1. **R1** — Nenhum segredo no repositório. Credencial, chave de API, `.env`, dump: nunca.
@@ -28,6 +28,7 @@ As quinze regras inegociáveis valem para toda mudança neste repositório, incl
 13. **R13** — Versão, documentação e schema andam juntos.
 14. **R14** — Deploy explícito, nomeado e reversível.
 15. **R15** — A URL é interface: rota semântica em português, nunca caminho de arquivo.
+16. **R16** — Build quebrado: log na mão, correção provada localmente, teto de três voltas.
 
 ## Este projeto especificamente
 
@@ -41,6 +42,7 @@ As quinze regras inegociáveis valem para toda mudança neste repositório, incl
 | **Schema** | tabela `schema_migrations` diz até onde o banco está |
 | **Configuração** | `config/app.config.php`, fora do webroot, gerado pelo Wizard |
 | **Prefixo de tabelas** | `<vazio ou app_>` |
+| **Projeto Vercel** | `<nome>` — token em `.env`, nunca versionado |
 | **Atribuição de IA em commits** | `<sim, com Co-Authored-By \| não>` — seja consistente |
 
 ## Convenções deste repositório

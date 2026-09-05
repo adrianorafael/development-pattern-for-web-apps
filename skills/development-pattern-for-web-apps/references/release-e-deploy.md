@@ -188,6 +188,9 @@ Cuidados específicos:
   compatível com o código antigo, depois o código que a usa.
 - **Variável de ambiente nova precisa existir no painel antes do deploy** que a usa —
   incluindo o ambiente de Preview.
+- **Build falhou?** Não empurre outra tentativa às cegas: o ciclo é log → reprodução com
+  `vercel build` → correção da causa raiz → prova local → um push, com teto de três voltas.
+  → [vercel-build-e-correcao.md](vercel-build-e-correcao.md)
 - **Rollback é imediato:** *Deployments → deploy anterior → Promote to Production*. Mas o
   banco não volta junto: se a migração era destrutiva, o rollback do código não resolve.
   Por isso migração destrutiva é MAJOR e vem com plano próprio.

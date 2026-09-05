@@ -25,13 +25,13 @@ difíceis**, e não apenas desaconselhadas.
 
 ## Visão geral
 
-A skill é um `SKILL.md`, **15 documentos de referência**, **18 templates** prontos para
+A skill é um `SKILL.md`, **16 documentos de referência**, **19 templates** prontos para
 copiar e **2 scanners** executáveis. Carrega em qualquer agente compatível com o formato
 aberto [Agent Skills](https://agentskills.io) — Claude Code, Cursor, GitHub Copilot,
 OpenCode, Gemini CLI e outros — e entra em ação no momento em que o agente começa a
 trabalhar em um app web.
 
-Ela codifica **quinze regras inegociáveis** e um **pipeline de oito fases** com três
+Ela codifica **dezesseis regras inegociáveis** e um **pipeline de oito fases** com três
 portões duros: nada de spec sem pesquisa, nada de push sem varredura, nada de deploy sem
 alvo nomeado e caminho de volta.
 
@@ -44,19 +44,20 @@ lidas no momento em que fazem falta — uma cópia congelada envelhece parecendo
 1. [Pré-requisitos](#pré-requisitos)
 2. [Instalação](#instalação)
 3. [Como usar](#como-usar)
-4. [As quinze regras](#as-quinze-regras)
+4. [As dezesseis regras](#as-dezesseis-regras)
 5. [O pipeline](#o-pipeline)
 6. [SQL injection: a regra que mais importa](#sql-injection-a-regra-que-mais-importa)
 7. [Wizard de instalação](#wizard-de-instalação)
 8. [Painel de atualização por pacote ZIP](#painel-de-atualização-por-pacote-zip)
 9. [Roteiro de testes para o Claude Cowork](#roteiro-de-testes-para-o-claude-cowork)
 10. [URLs como rotas semânticas](#urls-como-rotas-semânticas)
-11. [Segurança proporcional ao porte](#segurança-proporcional-ao-porte)
-12. [O que ela previne](#o-que-ela-previne)
-13. [Comportamentos importantes](#comportamentos-importantes)
-14. [Estrutura do repositório](#estrutura-do-repositório)
-15. [Templates e ferramentas](#templates-e-ferramentas)
-16. [Versionamento](#versionamento)
+11. [Build quebrado na Vercel](#build-quebrado-na-vercel)
+12. [Segurança proporcional ao porte](#segurança-proporcional-ao-porte)
+13. [O que ela previne](#o-que-ela-previne)
+14. [Comportamentos importantes](#comportamentos-importantes)
+15. [Estrutura do repositório](#estrutura-do-repositório)
+16. [Templates e ferramentas](#templates-e-ferramentas)
+17. [Versionamento](#versionamento)
 
 ## Pré-requisitos
 
@@ -109,7 +110,7 @@ lembrar de pedir a revisão de segurança, e não precisa pedir o roteiro de tes
 
 ### Rígido nas pontas, livre no meio
 
-Esta é a parte que importa, e é o oposto do que "quinze regras" costuma sugerir:
+Esta é a parte que importa, e é o oposto do que "dezesseis regras" costuma sugerir:
 
 | | O que acontece | Quem conduz |
 | --- | --- | --- |
@@ -173,7 +174,7 @@ Copie [`AGENTS.template.md`](skills/development-pattern-for-web-apps/assets/temp
 para o repositório do app como `AGENTS.md`. Assim a próxima sessão herda o padrão — incluindo
 as armadilhas que você já encontrou — em vez de começar do zero.
 
-## As quinze regras
+## As dezesseis regras
 
 | # | Regra |
 | --- | --- |
@@ -192,6 +193,7 @@ as armadilhas que você já encontrou — em vez de começar do zero.
 | **R13** | **Versão, documentação e schema andam juntos**, no mesmo commit. |
 | **R14** | **Deploy é explícito, nomeado e reversível**, com backup antes e rollback documentado. |
 | **R15** | **A URL é interface, não caminho de arquivo.** `/cadastrar-novo-usuario`, nunca `/usuarios/cadastro.php`. Rota em português, kebab-case, sem extensão; navegação jamais por query string. |
+| **R16** | **Build quebrado se conserta com o log na mão e a correção provada localmente.** Reproduzir com `vercel build`, corrigir a causa raiz, um push por volta, teto de três voltas. Nunca `ignoreBuildErrors`. |
 
 ## O pipeline
 
@@ -379,6 +381,55 @@ A referência traz o roteador completo, o helper `rota()` que evita escrever a m
 vezes, a geração de slug, os redirecionamentos em `next.config.ts`, uma tabela de tradução de
 URLs antigas, e os treze casos de teste que entram no roteiro de QA.
 
+## Build quebrado na Vercel
+
+Você pede, o agente se conecta à sua conta, encontra o deploy que falhou, lê o log, corrige e
+empurra — e o CI/CD da Vercel publica a versão nova. O ciclo repete até o preview ficar verde.
+
+O que impede isso de virar *empurra e reza*:
+
+```
+1 OBTER      identificar o deploy que falhou e baixar o LOG COMPLETO
+2 LER        classificar: falha de CÓDIGO ou de AMBIENTE
+3 REPRODUZIR vercel pull && vercel build   → a MESMA mensagem tem que aparecer
+4 CORRIGIR   a menor mudança que resolve a causa raiz
+5 PROVAR     vercel build + tsc + lint + testes + os dois scanners
+6 EMPURRAR   UM push, no ramo de trabalho → deploy de preview
+7 CONFIRMAR  verde? Se não, volta ao passo 1 com o NOVO log
+8 PORTÃO     ⛔ merge em main (produção) só com aprovação
+```
+
+**O passo 3 não é opcional.** Falha que não foi reproduzida localmente é falha que não foi
+entendida — e a correção é chute. `vercel build` reproduz o build da Vercel com a
+configuração e as variáveis do ambiente escolhido, que é o que pega a falha que só aparece no
+deploy.
+
+**Teto de três voltas.** Depois disso o agente para e escala com uma hipótese e um pedido
+concreto, em vez de queimar minutos de CI.
+
+**A separação que mais importa é código × ambiente.** A causa não-código mais comum é uma
+variável que existe em Production e não em Preview — são ambientes separados. O agente
+**não conserta isso**: ele nomeia a variável e o ambiente e para. Inventar um valor padrão no
+código transformaria uma falha visível numa falha silenciosa em produção.
+
+E o que ele nunca faz para ficar verde:
+
+```ts
+// ❌ next.config.ts — proibidos pela regra
+export default {
+  typescript: { ignoreBuildErrors: true },   // o erro continua lá, agora invisível
+  eslint:     { ignoreDuringBuilds: true },
+};
+```
+
+Também proibidos: apagar o teste que falha, `@ts-ignore` num erro real, `any` para atravessar
+uma incompatibilidade, e commit vazio para reprocessar. Se a única saída for uma dessas, é
+decisão sua — o agente apresenta o trade-off e espera.
+
+O acesso é por servidor MCP da Vercel (preferido, detectado antes de perguntar), CLI com
+`VERCEL_TOKEN`, ou API REST. O token vive em `.env`, com escopo mínimo, nunca versionado (R1),
+e `.vercel/` entra no `.gitignore`.
+
 ## Segurança proporcional ao porte
 
 O piso vale para todo projeto, inclusive o de fim de semana com três usuários:
@@ -418,6 +469,9 @@ Você pode subir de nível. Nunca descer.
 | Três deploys, todos reportando `1.0.0` | Versão não subiu por publicação | R13 |
 | Ninguém sabe qual migração já rodou naquele banco | Versão do schema não gravada na base | R13 |
 | Deploy derrubou o site e não há caminho de volta | Sem backup e sem rollback documentado | R14 |
+| Cinco commits de "tenta assim" até o build passar | Correção sem reprodução local | R16 |
+| Build verde com `ignoreBuildErrors`, e o erro estourando em produção | Amputação em vez de correção | R16 |
+| Funciona em produção e quebra no preview | Variável de ambiente que só existe num dos dois | R16 |
 | A URL entrega a linguagem, a pasta e o nome do arquivo do servidor | Caminho de arquivo servido como rota | R15 |
 | Todo link publicado quebrou ao reorganizar as pastas | URL acoplada à estrutura em disco | R15 |
 
@@ -456,7 +510,7 @@ abri-las durante a sessão.
 
 ```
 skills/development-pattern-for-web-apps/
-├── SKILL.md                          # 15 regras, 8 fases, 3 portões, roteamento
+├── SKILL.md                          # 16 regras, 8 fases, 3 portões, roteamento
 ├── references/
 │   ├── segredos-e-configuracao.md    # R1 — .env, config fora do webroot, Vercel, rotação
 │   ├── git-e-publicacao.md           # R2 — privado por padrão, commits, ramos, publicação
@@ -472,7 +526,8 @@ skills/development-pattern-for-web-apps/
 │   ├── roteiro-de-testes-cowork.md   # R11 — as seis suítes, payloads, rastreabilidade
 │   ├── checklist-de-revisao.md       # R12 — o checklist e as sete perguntas adversariais
 │   ├── release-e-deploy.md           # R13, R14 — SemVer, CHANGELOG, deploy, rollback
-│   └── rotas-e-urls.md               # R15 — convenções, roteador, 301, 404, tradução
+│   ├── rotas-e-urls.md               # R15 — convenções, roteador, 301, 404, tradução
+│   └── vercel-build-e-correcao.md    # R16 — conectar, ler log, reproduzir, corrigir
 └── assets/
     ├── templates/                    # 18 arquivos prontos para copiar
     └── scripts/
@@ -490,6 +545,7 @@ specs/                                # a spec desta própria skill (R3 aplicada
 | Arquivo | Para que serve |
 | --- | --- |
 | [`spec.template.md`](skills/development-pattern-for-web-apps/assets/templates/spec.template.md) | Spec com requisitos numerados, critérios de aceite, casos de teste, segurança e evidências |
+| [`correcao-de-build.template.md`](skills/development-pattern-for-web-apps/assets/templates/correcao-de-build.template.md) | Registro de um ciclo de correção de build: log citado, classificação, reprodução, correção, prova e escalonamento |
 | [`roteiro-de-testes.template.md`](skills/development-pattern-for-web-apps/assets/templates/roteiro-de-testes.template.md) | O roteiro de QA para o Cowork: seis suítes, matriz, registro de execução, defeitos |
 | [`install-wizard.php.template`](skills/development-pattern-for-web-apps/assets/templates/install-wizard.php.template) | Wizard de instalação em arquivo único, executável |
 | [`updater.php.template`](skills/development-pattern-for-web-apps/assets/templates/updater.php.template) | Instalador de pacotes ZIP com validação, backup e rollback |

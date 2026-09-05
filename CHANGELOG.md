@@ -20,7 +20,7 @@ Primeira versão.
 
 ### Adicionado
 
-- **`SKILL.md`** com as quinze regras inegociáveis e o pipeline de oito fases com três
+- **`SKILL.md`** com as dezesseis regras inegociáveis e o pipeline de oito fases com três
   portões de aprovação (spec, push, deploy), mais o bootstrap de seis perguntas.
 - **Duas trilhas de stack:** HTML5 + PHP 8 + MySQL na Hostinger, e Next.js (App Router) +
   Tailwind na Vercel — cada uma com layout de projeto, convenções e armadilhas verificadas.
@@ -48,6 +48,14 @@ Primeira versão.
   roteador PHP completo com canonicalização e 301, o mapeamento pasta→URL do App Router, o
   helper `rota()`, a geração de slug, os redirects em `next.config.ts`, uma tabela de tradução
   de URLs antigas e treze casos de teste.
+- **R16 — build quebrado se conserta com o log na mão.** Referência dedicada para conectar
+  o agente à conta da Vercel (MCP, CLI ou API REST, com o token fora do repositório),
+  obter o log do deploy que falhou, classificar a falha como de **código** ou de
+  **ambiente**, reproduzir com `vercel build`, corrigir a causa raiz e empurrar **um**
+  commit por volta, com teto de três voltas e escalonamento com hipótese e pedido
+  concreto. Traz a taxonomia de falhas de build da Vercel, a lista do que é proibido fazer
+  para ficar verde (`ignoreBuildErrors`, `@ts-ignore`, teste apagado, commit vazio) e um
+  template de registro do ciclo.
 - **R11 — roteiro de testes para o Claude Cowork** em toda entrega: seis suítes (fumaça,
   funcional, integração, segurança, interface, regressão), matriz de rastreabilidade
   requisito × caso, registro de execução, catálogo de payloads de SQL injection, XSS, IDOR,
@@ -56,9 +64,10 @@ Primeira versão.
   projeto, e quatro níveis (N1 vitrine → N4 pagamento) que só acrescentam, nunca removem.
 - **R2 — repositório privado por padrão**, com a lista de verificação do histórico completo
   antes de tornar qualquer repositório público.
-- **18 templates** prontos para copiar, entre eles `Database.php`, `db.ts`, o Wizard, o
+- **19 templates** prontos para copiar, entre eles `Database.php`, `db.ts`, o Wizard, o
   instalador de pacotes, `schema.sql`, `migration.sql`, `manifest.json`, `.htaccess`
-  endurecido, o roteiro de testes, a spec e o `AGENTS.md` de projeto.
+  endurecido, o roteiro de testes, o registro de correção de build, a spec e o
+  `AGENTS.md` de projeto.
 - Página do projeto em `docs/`, publicada no GitHub Pages pelo CI: **Tailwind compilado**
   (não CDN), com **modo claro como padrão e modo escuro opcional** por classe, persistido em
   `localStorage` e aplicado antes da primeira pintura. A linguagem visual segue o site do

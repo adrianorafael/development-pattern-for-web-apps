@@ -6,7 +6,7 @@ aplicação: só Markdown, templates e dois scripts de shell.
 ## Antes de editar qualquer coisa aqui
 
 Leia [`skills/development-pattern-for-web-apps/SKILL.md`](skills/development-pattern-for-web-apps/SKILL.md).
-As quinze regras que ele define valem também para este repositório.
+As dezesseis regras que ele define valem também para este repositório.
 
 ## Regras da casa
 
@@ -53,10 +53,10 @@ As quinze regras que ele define valem também para este repositório.
 
 ```
 skills/development-pattern-for-web-apps/
-├── SKILL.md              # as 15 regras, o pipeline de 8 fases, o roteamento
-├── references/           # 15 documentos, carregados sob demanda
+├── SKILL.md              # as 16 regras, o pipeline de 8 fases, o roteamento
+├── references/           # 16 documentos, carregados sob demanda
 └── assets/
-    ├── templates/        # 18 arquivos prontos para copiar em um projeto
+    ├── templates/        # 19 arquivos prontos para copiar em um projeto
     └── scripts/          # scan-secrets.sh, scan-sql-injection.sh
 docs/                     # página do GitHub Pages: index.html + tailwind.css (compilado)
 tailwind.input.css        # fonte do CSS da página; compile com npm run build:css
@@ -66,6 +66,11 @@ specs/                    # a spec desta própria skill (R3 aplicada a ela mesma
 ```
 
 `gh-pages` é **gerado e sobrescrito** pelo CI. Nunca edite aquele ramo — edite `docs/`.
+
+⚠️ **Empurrar `gh-pages` não habilita o GitHub Pages sozinho.** Num repositório novo é
+preciso um passo manual, uma única vez: *Settings → Pages → Source: "Deploy from a branch"
+→ Branch: `gh-pages` → `/ (root)` → Save*. Sem isso a URL responde **404** mesmo com o ramo
+publicado corretamente pelo workflow.
 
 ## A página do projeto (`docs/`)
 
@@ -156,8 +161,8 @@ npm run build:css
 Conferência de consistência — estes números aparecem em vários lugares e desalinham fácil:
 
 ```bash
-grep -c '^| \*\*R' skills/development-pattern-for-web-apps/SKILL.md    # 15 regras
-ls skills/development-pattern-for-web-apps/references/*.md | wc -l      # 15 referências
-ls skills/development-pattern-for-web-apps/assets/templates/* | wc -l   # 18 templates
-grep -rn "quinze\|quatorze\|catorze" README.md AGENTS.md docs/index.html skills/**/SKILL.md
+grep -c '^| \*\*R' skills/development-pattern-for-web-apps/SKILL.md    # 16 regras
+ls skills/development-pattern-for-web-apps/references/*.md | wc -l      # 16 referências
+ls skills/development-pattern-for-web-apps/assets/templates/* | wc -l   # 19 templates
+grep -rn "dezesseis\|quinze\|quatorze" README.md AGENTS.md docs/index.html skills/**/SKILL.md
 ```

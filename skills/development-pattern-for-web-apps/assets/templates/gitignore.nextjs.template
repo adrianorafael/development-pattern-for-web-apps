@@ -26,8 +26,9 @@
 next-env.d.ts
 *.tsbuildinfo
 
-# Vercel
+# Vercel — guarda o vínculo com o projeto e, conforme a versão do CLI, credenciais
 .vercel
+.vercel/
 
 # Dados reais
 *.sql

@@ -136,6 +136,7 @@ git diff --cached --stat
 - [ ] `usuario_id` vem da sessão, nunca de `searchParams`
 - [ ] Server Actions validam entrada com esquema e conferem autorização
 - [ ] `npm run build` passa localmente
+- [ ] Nenhum `ignoreBuildErrors`, `ignoreDuringBuilds` ou `@ts-ignore` novo (R16)
 - [ ] Cabeçalhos de segurança em `next.config.ts`
 
 ---

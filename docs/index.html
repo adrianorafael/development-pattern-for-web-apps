@@ -38,6 +38,7 @@
         <a href="#rotas" class="hover:text-gray-950 dark:hover:text-white">Rotas</a>
         <a href="#wizard" class="hover:text-gray-950 dark:hover:text-white">Wizard</a>
         <a href="#qa" class="hover:text-gray-950 dark:hover:text-white">Testes</a>
+        <a href="#build" class="hover:text-gray-950 dark:hover:text-white">Build</a>
       </nav>
       <div class="flex items-center gap-1 border-l border-gray-950/10 pl-4 dark:border-white/10">
         <button id="alternar-tema" type="button" aria-pressed="false"
@@ -70,7 +71,7 @@
     <span class="bg-gradient-to-r from-marca-500 to-marca-700 bg-clip-text text-transparent dark:from-marca-300 dark:to-marca-500">acumular dívida em silêncio</span>.
   </h1>
   <p class="mt-6 max-w-2xl text-lg/8 text-pretty text-gray-600 dark:text-gray-400">
-    Quinze regras que mantêm um agente de IA dentro das boas práticas: SQL sempre parametrizado,
+    Dezesseis regras que mantêm um agente de IA dentro das boas práticas: SQL sempre parametrizado,
     segredos fora do repositório, URLs como rotas semânticas, Wizard de instalação, atualização
     por pacote ZIP — e um roteiro de testes que o Claude Cowork executa sozinho.
   </p>
@@ -84,10 +85,10 @@
   </div>
 
   <dl class="mt-14 grid grid-cols-2 gap-x-8 gap-y-8 border-t border-gray-950/5 pt-8 sm:grid-cols-4 dark:border-white/10">
-    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">15</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">regras inegociáveis</dd></div>
+    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">16</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">regras inegociáveis</dd></div>
     <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">8</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">fases, 3 portões duros</dd></div>
-    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">15</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">referências sob demanda</dd></div>
-    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">18</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">templates + 2 scanners</dd></div>
+    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">16</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">referências sob demanda</dd></div>
+    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">19</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">templates + 2 scanners</dd></div>
   </dl>
 
   <p class="aviso mt-10">
@@ -183,7 +184,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 
 <section id="regras" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">O núcleo</p>
-  <h2 class="titulo-secao">Quinze regras inegociáveis</h2>
+  <h2 class="titulo-secao">Dezesseis regras inegociáveis</h2>
   <p class="texto-secao">Elas passam por cima de qualquer outro instinto, inclusive "mas essa mudança é
     minúscula". Se uma não puder ser cumprida, o agente para e diz — nunca entrega uma versão degradada
     em silêncio.</p>
@@ -206,6 +207,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
         <tr><td class="id-regra">R13</td><td><b class="font-semibold text-gray-950 dark:text-white">Versão, documentação e schema andam juntos</b>, no mesmo commit.</td></tr>
         <tr><td class="id-regra">R14</td><td><b class="font-semibold text-gray-950 dark:text-white">Deploy é explícito, nomeado e reversível</b>, com backup antes e rollback documentado.</td></tr>
         <tr><td class="id-regra">R15</td><td><b class="font-semibold text-gray-950 dark:text-white">A URL é interface, não caminho de arquivo.</b> <code>/cadastrar-novo-usuario</code>, nunca <code>/usuarios/cadastro.php</code>. Rota em português, kebab-case, sem extensão; navegação jamais por query string.</td></tr>
+        <tr><td class="id-regra">R16</td><td><b class="font-semibold text-gray-950 dark:text-white">Build quebrado se conserta com o log na mão e a correção provada localmente.</b> Reproduzir com <code>vercel build</code>, corrigir a causa raiz, um push por volta, teto de três voltas. Nunca <code>ignoreBuildErrors</code>.</td></tr>
       </tbody>
     </table>
   </div>
@@ -470,6 +472,59 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
   </div>
 </section>
 
+<section id="build" class="divisoria interno py-16 sm:py-20">
+  <p class="rotulo">R16</p>
+  <h2 class="titulo-secao">Build quebrado na Vercel, corrigido em ciclo fechado</h2>
+  <p class="texto-secao">Você pede, o agente se conecta à sua conta, acha o deploy que falhou, lê o log,
+    corrige e empurra — e o CI/CD da Vercel publica a versão nova. O ciclo repete até o preview ficar
+    verde. O que impede isso de virar <em>empurra e reza</em> são o passo 3 e o teto.</p>
+
+  <div class="painel-codigo mt-10">
+    <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>o ciclo</div>
+<pre class="bloco"><span class="p">1 OBTER</span>      identificar o deploy que falhou e baixar o LOG COMPLETO
+<span class="p">2 LER</span>        classificar: falha de <span class="k">CÓDIGO</span> ou de <span class="v">AMBIENTE</span>
+<span class="p">3 REPRODUZIR</span> vercel pull &amp;&amp; vercel build   <span class="c">→ a MESMA mensagem tem que aparecer</span>
+<span class="p">4 CORRIGIR</span>   a menor mudança que resolve a causa raiz
+<span class="p">5 PROVAR</span>     vercel build + tsc + lint + testes + os dois scanners
+<span class="p">6 EMPURRAR</span>   UM push, no ramo de trabalho <span class="c">→ deploy de preview</span>
+<span class="p">7 CONFIRMAR</span>  verde? Se não, volta ao passo 1 com o NOVO log
+<span class="p">8 PORTÃO</span>     <span class="k">⛔ merge em main (produção) só com aprovação</span></pre>
+  </div>
+
+  <div class="mt-6 grid gap-5 lg:grid-cols-2">
+    <div class="cartao"><h3>O passo 3 não é opcional</h3>
+      <p>Falha que não foi reproduzida localmente é falha que não foi entendida — e a correção é chute.
+         <code>vercel build</code> reproduz o build da Vercel com a configuração e as variáveis do ambiente
+         escolhido, que é justamente o que pega a falha que só aparece no deploy.</p>
+      <div class="cartao-nota"><b class="font-semibold text-gray-700 dark:text-gray-300">Teto de três voltas.</b>
+        Depois disso o agente para e escala com uma hipótese e um pedido concreto, em vez de queimar
+        minutos de CI e poluir o histórico.</div></div>
+    <div class="cartao"><h3>Código × ambiente é a separação que importa</h3>
+      <p>A causa não-código mais comum é uma variável que existe em Production e <b class="font-semibold text-gray-800 dark:text-gray-200">não
+         em Preview</b> — são ambientes separados.</p>
+      <ul class="setas">
+        <li>O agente <b class="font-semibold text-gray-800 dark:text-gray-200">não conserta isso</b>: nomeia a variável e o ambiente, e para</li>
+        <li>Inventar um valor padrão no código trocaria uma falha visível por uma silenciosa em produção</li>
+      </ul></div>
+  </div>
+
+  <p class="mt-8 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
+    E o que ele <b class="font-semibold text-gray-950 dark:text-white">nunca</b> faz para ficar verde:</p>
+  <div class="painel-codigo mt-4">
+    <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>next.config.ts</div>
+<pre class="bloco"><span class="r">// ❌ proibidos pela regra — o erro continua lá, agora invisível</span>
+<span class="p">export default</span> {
+  typescript: { ignoreBuildErrors: <span class="v">true</span> },
+  eslint:     { ignoreDuringBuilds: <span class="v">true</span> },
+};</pre>
+  </div>
+  <p class="destaque">Também proibidos: apagar o teste que falha, <code>@ts-ignore</code> num erro real,
+    <code>any</code> para atravessar uma incompatibilidade, e commit vazio para reprocessar. Se a única
+    saída for uma dessas, é <b class="font-semibold">decisão sua</b> — o agente apresenta o trade-off e espera.
+    O acesso é por servidor MCP da Vercel (detectado antes de perguntar), CLI com <code>VERCEL_TOKEN</code>
+    ou API REST; o token vive em <code>.env</code>, com escopo mínimo, nunca versionado.</p>
+</section>
+
 <section id="seguranca" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">R7</p>
   <h2 class="titulo-secao">Segurança proporcional — mas nunca abaixo do piso</h2>
@@ -543,11 +598,11 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 <section id="estrutura" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">Conteúdo</p>
   <h2 class="titulo-secao">O que vem na caixa</h2>
-  <p class="texto-secao">Um <code>SKILL.md</code>, quinze referências carregadas sob demanda, dezoito
+  <p class="texto-secao">Um <code>SKILL.md</code>, dezesseis referências carregadas sob demanda, dezenove
     templates e dois scanners — e nenhuma cópia da documentação de terceiros.</p>
   <div class="painel-codigo mt-10">
     <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>skills/development-pattern-for-web-apps/</div>
-<pre class="bloco">├── <span class="k">SKILL.md</span>                          <span class="c"># 15 regras, 8 fases, 3 portões, roteamento</span>
+<pre class="bloco">├── <span class="k">SKILL.md</span>                          <span class="c"># 16 regras, 8 fases, 3 portões, roteamento</span>
 ├── references/
 │   ├── segredos-e-configuracao.md    <span class="c"># R1 — .env, config fora do webroot, Vercel, rotação</span>
 │   ├── git-e-publicacao.md           <span class="c"># R2 — privado por padrão, commits, publicação</span>
@@ -563,7 +618,8 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 │   ├── roteiro-de-testes-cowork.md   <span class="c"># R11 — as seis suítes, payloads, rastreabilidade</span>
 │   ├── checklist-de-revisao.md       <span class="c"># R12 — checklist + 7 perguntas adversariais</span>
 │   ├── release-e-deploy.md           <span class="c"># R13, R14 — SemVer, CHANGELOG, deploy, rollback</span>
-│   └── rotas-e-urls.md               <span class="c"># R15 — convenções, roteador, 301, 404, tradução</span>
+│   ├── rotas-e-urls.md               <span class="c"># R15 — convenções, roteador, 301, 404, tradução</span>
+│   └── vercel-build-e-correcao.md    <span class="c"># R16 — conectar, ler log, reproduzir, corrigir</span>
 └── assets/
     ├── templates/                    <span class="c"># wizard, updater, Database.php, db.ts, schema,</span>
     │                                 <span class="c">#   migração, manifesto, .htaccess, spec, roteiro…</span>

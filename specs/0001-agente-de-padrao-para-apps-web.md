@@ -45,6 +45,7 @@ mesmas exigências de segurança, instalação, atualização e teste.
 | RF-012 | Exige alvo nomeado, backup e caminho de rollback antes de qualquer deploy. |
 | RF-013 | Faz os apps expor URLs como rotas semânticas, nunca caminhos de arquivo. |
 | RF-014 | Publica uma página do projeto em Tailwind, com modo claro padrão e escuro opcional. |
+| RF-015 | Conecta-se à conta Vercel do autor para diagnosticar e corrigir build quebrado, em ciclo com teto. |
 
 ## 4. Requisitos não funcionais
 
@@ -59,9 +60,9 @@ mesmas exigências de segurança, instalação, atualização e teste.
 ## 5. Modelo de conteúdo
 
 ```
-SKILL.md            15 regras · 8 fases · 3 portões · roteamento de referências
-references/         15 documentos, um por área de risco
-assets/templates/   18 arquivos copiáveis
+SKILL.md            16 regras · 8 fases · 3 portões · roteamento de referências
+references/         16 documentos, um por área de risco
+assets/templates/   19 arquivos copiáveis
 assets/scripts/     2 scanners executáveis
 docs/               página do projeto (Tailwind compilado, claro/escuro)
 ```
@@ -128,7 +129,7 @@ RF-007
 | CT-006 | RF-009 | `php -l updater.php.template` → sem erro de sintaxe |
 | CT-007 | — | `manifest.json.template` é JSON válido |
 | CT-008 | — | `pages.yml` é YAML válido |
-| CT-009 | — | Contagens (15 regras, 15 referências, 18 templates) batem entre SKILL, README e página |
+| CT-009 | — | Contagens (16 regras, 16 referências, 19 templates) batem entre SKILL, README e página |
 | CT-010 | RF-014 | Página sem rolagem horizontal e sem erro de console em 1440 px e 375 px, nos dois temas |
 | CT-011 | RF-014 | Modo claro é o padrão; o botão alterna, persiste em `localStorage` e sobrevive ao reload |
 | CT-012 | RF-014 | Toda classe usada em `docs/index.html` existe em `docs/tailwind.css` |
@@ -146,6 +147,9 @@ RF-007
 | Formato Agent Skills | agentskills.io | ✅ 2026-09-05 |
 | Tailwind v4 usa `prefers-color-scheme` por padrão; classe exige `@custom-variant` | tailwindcss.com/docs/dark-mode | ✅ 2026-09-05 |
 | Item de grid tem `min-width: auto` e estica a coluna | medido no Chromium 141, 375 px | ✅ 2026-09-05 |
+| `overflow` no `<body>` é propagado para o viewport | medido no Chromium 141 | ✅ 2026-09-05 |
+| Empurrar `gh-pages` **não** habilita o Pages sozinho | 404 observado no repositório novo | ✅ 2026-09-05 |
+| Superfície do CLI e da API REST da Vercel | ⚠️ **não verificada** — vercel.com bloqueado pelo proxy desta sessão; a referência instrui o agente a confirmar com `vercel --help` e a doc | ⚠️ pendente |
 
 ## 11. Questões em aberto
 

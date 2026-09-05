@@ -16,7 +16,7 @@
 | **Chaves de API** | Stripe, Mercado Pago, SendGrid, Resend, OpenAI, Google Maps, reCAPTCHA *secret* | Cobrança na sua conta, envio em seu nome |
 | **Segredos de sessão e token** | `APP_KEY`, `JWT_SECRET`, `NEXTAUTH_SECRET`, chave de assinatura de cookie | Falsificação de sessão de qualquer usuário |
 | **Arquivos de ambiente** | `.env`, `.env.local`, `.env.production`, `config.local.php` | Quase sempre contêm os três acima |
-| **Acesso à hospedagem** | senha de FTP, chave SSH, token da Vercel, `.ftpconfig`, `sftp.json` do VS Code | Controle do servidor |
+| **Acesso à hospedagem** | senha de FTP, chave SSH, `VERCEL_TOKEN`, `.ftpconfig`, `sftp.json` do VS Code | Controle do servidor e da conta de deploy |
 | **Pessoas** | e-mails reais, telefones, CPF, endereços em fixtures e dumps | Dado pessoal — LGPD, mesmo em projeto pessoal |
 | **Dumps e backups** | `backup.sql`, `dump.sql`, `*.sql.gz` com dados reais | O vazamento mais comum e mais completo |
 | **Capturas de tela** | print do painel com nome de cliente real | Vaza contexto e às vezes token na URL |
@@ -88,7 +88,14 @@ DATABASE_URL="postgres://SEU-USUARIO:SUA-SENHA@SEU-HOST/SEU-BANCO?sslmode=requir
 AUTH_SECRET="GERE-COM-openssl-rand-base64-32"
 RESEND_API_KEY="re_SUA-CHAVE-AQUI"
 NEXT_PUBLIC_SITE_URL="https://seu-dominio.com.br"
+
+# Diagnóstico de build (R16). Crie em Vercel → Settings → Tokens, com escopo
+# mínimo — só o projeto necessário. Revogue quando não precisar mais.
+VERCEL_TOKEN="SEU-TOKEN-DA-VERCEL"
 ```
+
+`.vercel/` também entra no `.gitignore`: ele guarda o vínculo com o projeto e, dependendo
+da versão do CLI, credenciais em cache.
 
 ⚠️ **`NEXT_PUBLIC_` é público.** Tudo com esse prefixo é embutido no bundle do navegador e
 visível para qualquer visitante. Use-o só para valores que você imprimiria na página:

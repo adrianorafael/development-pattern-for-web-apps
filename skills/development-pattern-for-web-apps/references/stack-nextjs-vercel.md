@@ -281,6 +281,10 @@ Segredos:   NUNCA com prefixo NEXT_PUBLIC_ (R1)
 - Trabalho longo (relatório grande, envio em massa) vai para fila ou cron, não para a
   requisição.
 - Confira o build de produção localmente antes de publicar: `npm run build && npm start`.
+- Melhor ainda: **`vercel build`** reproduz o build da Vercel, com a configuração e as
+  variáveis do ambiente escolhido — é o que pega a falha que só aparece no deploy.
+  Quando um build falha, o ciclo de diagnóstico e correção é a R16.
+  → [vercel-build-e-correcao.md](vercel-build-e-correcao.md)
 
 ---
 
@@ -316,5 +320,6 @@ enxerga.
 - [ ] Os quatro estados de tela implementados
 - [ ] Nada sensível em variável `NEXT_PUBLIC_` (R1)
 - [ ] Cabeçalhos de segurança em `next.config.ts` (R7)
-- [ ] `npm run build` passa localmente antes do push
+- [ ] `npm run build` — e, quando houver acesso à conta, `vercel build` — passa antes do push
+- [ ] `.vercel/` no `.gitignore`; `VERCEL_TOKEN` só em `.env` (R1, R16)
 - [ ] `qa/roteiro-de-testes.md` gerado, executável na URL de preview (R11)
