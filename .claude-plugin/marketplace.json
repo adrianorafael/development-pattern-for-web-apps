@@ -1,0 +1,11 @@
+{
+  "name": "development-pattern-for-web-apps",
+  "owner": { "name": "adrianorafael" },
+  "plugins": [
+    {
+      "name": "development-pattern-for-web-apps",
+      "description": "Padrão de desenvolvimento e guarda-corpo para apps web pessoais em PHP+MySQL (Hostinger) e Next.js+Tailwind (Vercel), com foco em segurança, instalação, atualização e QA automatizável.",
+      "source": "./"
+    }
+  ]
+}

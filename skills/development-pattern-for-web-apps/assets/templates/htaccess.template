@@ -1,0 +1,82 @@
+# ─────────────────────────────────────────────────────────────
+# public_html/.htaccess — app PHP na Hostinger (Apache)
+# Parte de "Development Pattern for Web Apps" — regras R7 e R8.
+#
+# Depois de enviar, CONFIRME o resultado real:
+#   curl -sI https://seu-dominio.com.br | grep -iE 'content-security|x-frame|strict-transport'
+#   curl -so /dev/null -w '%{http_code}\n' https://seu-dominio.com.br/config/app.config.php   # 403
+# ─────────────────────────────────────────────────────────────
+
+Options -Indexes -MultiViews
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # HTTPS obrigatório
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Arquivos e diretórios reais são servidos direto; o resto vai ao front controller,
+  # que resolve a URL pelo mapa de rotas (R15). É isto que permite
+  # /cadastrar-novo-usuario em vez de /usuarios/cadastro.php.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# ── Cabeçalhos de segurança (R7) ─────────────────────────────
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+  # Suba primeiro como Report-Only, veja o que quebra no console, e só então
+  # troque para Content-Security-Policy.
+  Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; form-action 'self'; frame-ancestors 'self'; base-uri 'self'; object-src 'none'"
+
+  # Não anuncie a versão do PHP
+  Header unset X-Powered-By
+</IfModule>
+
+# ── Arquivos que nunca devem ser servidos (R1) ───────────────
+<FilesMatch "\.(env|ini|log|sql|sh|bak|bkp|old|swp|dist|lock|md|yml|yaml|json|config\.php)$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "^(composer\.(json|lock)|package(-lock)?\.json|\.gitignore|\.htaccess|README\.md)$">
+  Require all denied
+</FilesMatch>
+
+# ── Diretórios que nunca devem ser navegáveis ────────────────
+RedirectMatch 404 /\.git(/|$)
+RedirectMatch 404 /(config|storage|specs|qa|tests|vendor|node_modules)(/|$)
+
+# ── PHP endurecido (quando o plano permitir) ─────────────────
+<IfModule mod_php.c>
+  php_flag display_errors        off
+  php_flag log_errors            on
+  php_flag expose_php            off
+  php_flag allow_url_fopen       off
+  php_flag allow_url_include     off
+  php_value upload_max_filesize  8M
+  php_value post_max_size        10M
+</IfModule>
+
+# ── Compressão e cache de estáticos ──────────────────────────
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json image/svg+xml
+</IfModule>
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css                "access plus 1 month"
+  ExpiresByType application/javascript  "access plus 1 month"
+  ExpiresByType image/png               "access plus 1 year"
+  ExpiresByType image/jpeg              "access plus 1 year"
+  ExpiresByType image/svg+xml           "access plus 1 year"
+  ExpiresByType text/html               "access plus 0 seconds"
+</IfModule>
+
+ErrorDocument 403 /erro.php?codigo=403
+ErrorDocument 404 /erro.php?codigo=404
+ErrorDocument 500 /erro.php?codigo=500

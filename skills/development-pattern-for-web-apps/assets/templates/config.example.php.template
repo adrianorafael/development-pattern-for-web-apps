@@ -1,0 +1,58 @@
+<?php
+/**
+ * config/app.config.example.php
+ *
+ * VERSIONADO — só placeholders. O arquivo real (app.config.php) é gerado
+ * pelo Wizard de instalação (R9), fica FORA do public_html e está no
+ * .gitignore. Parte de "Development Pattern for Web Apps" — regra R1.
+ *
+ * Se este arquivo precisar ficar dentro do webroot, acompanhe-o de um
+ * .htaccess com "Require all denied" — e TESTE no navegador que responde 403.
+ */
+
+declare(strict_types=1);
+
+return [
+    'app' => [
+        'nome'     => 'Nome do Aplicativo',
+        'url'      => 'https://seu-dominio.com.br',
+        'ambiente' => 'producao',          // local | teste | producao
+        'debug'    => false,               // SEMPRE false em producao
+        'timezone' => 'America/Sao_Paulo',
+        'versao'   => '0.1.0',
+    ],
+
+    // Onde achar: hPanel → Bancos de dados → MySQL
+    'db' => [
+        'host'     => 'localhost',
+        'porta'    => 3306,
+        'banco'    => 'SEU-BANCO',
+        'usuario'  => 'SEU-USUARIO',
+        'senha'    => 'SUA-SENHA',
+        'charset'  => 'utf8mb4',
+        'prefixo'  => '',
+    ],
+
+    // Gere com: php -r "echo bin2hex(random_bytes(32));"
+    'app_key' => 'GERE-UMA-CHAVE-DE-64-CARACTERES-HEXADECIMAIS',
+
+    'sessao' => [
+        'nome'                => 'APPSESS',
+        'tempo_inatividade'   => 1800,     // segundos
+        'secure'              => true,     // só HTTPS
+    ],
+
+    'uploads' => [
+        'caminho'      => __DIR__ . '/../storage/uploads',
+        'tamanho_max'  => 5 * 1024 * 1024,
+        'tipos'        => ['image/jpeg' => 'jpg', 'image/png' => 'png', 'application/pdf' => 'pdf'],
+    ],
+
+    'mail' => [
+        'host'      => 'smtp.hostinger.com',
+        'porta'     => 587,
+        'usuario'   => 'nao-responda@seu-dominio.com.br',
+        'senha'     => 'SUA-SENHA-DE-EMAIL',
+        'remetente' => 'nao-responda@seu-dominio.com.br',
+    ],
+];

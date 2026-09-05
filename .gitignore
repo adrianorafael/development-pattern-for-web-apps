@@ -1,0 +1,41 @@
+# ─────────────────────────────────────────────────────────────
+# .gitignore deste repositório (a skill em si).
+# Os .gitignore para os PROJETOS estão em
+# skills/development-pattern-for-web-apps/assets/templates/
+# ─────────────────────────────────────────────────────────────
+
+# Ambiente
+.env
+.env.*
+!.env.example
+
+# Dados reais — nunca aqui
+*.sql
+!skills/**/*.sql.template
+*.sql.gz
+dumps/
+backups/
+
+# Dependências e build
+node_modules/
+vendor/
+dist/
+.next/
+
+# Editores e sistema
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+*.swp
+
+# Logs e temporários
+*.log
+tmp/
+.cache/
+
+# Cópias locais dos scanners na raiz (eles vivem em assets/scripts/)
+/scan-secrets.sh
+/scan-sql-injection.sh

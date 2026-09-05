@@ -1,0 +1,73 @@
+# ─────────────────────────────────────────────────────────────
+# .gitignore — projeto PHP + MySQL (Hostinger)
+# Parte de "Development Pattern for Web Apps" — regra R1.
+# COPIE ISTO ANTES DO PRIMEIRO `git add`.
+# ─────────────────────────────────────────────────────────────
+
+# Configuração com credenciais reais — NUNCA versionar
+.env
+.env.*
+!.env.example
+config/app.config.php
+config/config.local.php
+config/*.local.php
+config/instalado.lock
+
+# Credenciais de FTP/SFTP de editores
+.ftpconfig
+sftp.json
+.vscode/sftp.json
+deploy.php
+deployment-config.json
+
+# Dados reais — dump de banco é vazamento de dado pessoal, não arquivo de apoio
+*.sql
+!database/schema.sql
+!database/migrations/*.sql
+!database/seeds/exemplo.sql
+*.sql.gz
+*.dump
+dumps/
+backups/
+storage/backups/
+
+# Conteúdo enviado por usuários
+storage/uploads/*
+!storage/uploads/.gitkeep
+public_html/uploads/*
+!public_html/uploads/.gitkeep
+
+# Logs — podem conter dado sensível
+*.log
+error_log
+storage/logs/*
+!storage/logs/.gitkeep
+
+# Dependências (reprodutíveis pelo composer.lock, que É versionado)
+/vendor/
+/node_modules/
+
+# Pacotes de atualização gerados
+dist/
+*.zip
+!skills/**/*.zip
+
+# Estado de manutenção
+storage/manutencao.flag
+storage/cache/
+
+# Editores e sistema
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Testes e cobertura
+/coverage/
+.phpunit.result.cache
+.php-cs-fixer.cache

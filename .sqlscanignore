@@ -1,0 +1,6 @@
+# Caminhos ignorados por scan-sql-injection.sh (comparação por substring).
+#
+# Este repositório É a skill: os templates e referências mostram tanto o padrão
+# correto quanto o incorreto, para o leitor conseguir distinguir os dois.
+# Em um repositório de APLICAÇÃO, este arquivo deve estar vazio ou quase.
+.sqlscanignore

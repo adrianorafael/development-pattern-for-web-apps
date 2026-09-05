@@ -1,0 +1,75 @@
+-- ─────────────────────────────────────────────────────────────
+-- database/migrations/NNNN_descricao_curta.sql
+-- Parte de "Development Pattern for Web Apps" — regras R10 e R13.
+--
+-- REGRAS
+--   1. Nome ordenável: 0007_adiciona_anexos.sql. A ordem do nome É a ordem
+--      de execução.
+--   2. Idempotente: rodar duas vezes não pode quebrar. O updater registra em
+--      schema_migrations, mas uma falha no meio pode deixar o arquivo pela
+--      metade — e ele será reexecutado.
+--   3. Uma migração faz UMA coisa. Estrutura e dados em arquivos separados.
+--   4. Qualquer DROP/DELETE/TRUNCATE aparece destacado na prévia do painel e
+--      exige backup. Prefira o padrão de três releases (release-e-deploy.md §7).
+--   5. Teste em base LIMPA e em base COM DADOS antes de empacotar.
+-- ─────────────────────────────────────────────────────────────
+
+-- ── Criar tabela: já é idempotente ───────────────────────────
+CREATE TABLE IF NOT EXISTS `anexos` (
+  `id`              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `chamado_id`      BIGINT UNSIGNED NOT NULL,
+  `nome_original`   VARCHAR(255) NOT NULL,
+  `nome_armazenado` VARCHAR(64)  NOT NULL,
+  `mime`            VARCHAR(100) NOT NULL,
+  `tamanho`         INT UNSIGNED NOT NULL,
+  `criado_em`       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_anexos_armazenado` (`nome_armazenado`),
+  KEY `idx_anexos_chamado` (`chamado_id`),
+  CONSTRAINT `fk_anexos_chamado` FOREIGN KEY (`chamado_id`)
+    REFERENCES `chamados` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Adicionar coluna: MySQL não tem ADD COLUMN IF NOT EXISTS ──
+-- em todas as versões. Consulte information_schema antes.
+SET @existe := (
+  SELECT COUNT(*) FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME   = 'chamados'
+    AND COLUMN_NAME  = 'prioridade'
+);
+SET @sql := IF(@existe = 0,
+  'ALTER TABLE `chamados` ADD COLUMN `prioridade` TINYINT UNSIGNED NOT NULL DEFAULT 3',
+  'DO 0'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- ── Adicionar índice: mesmo padrão ───────────────────────────
+SET @existe := (
+  SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME   = 'chamados'
+    AND INDEX_NAME   = 'idx_chamados_prioridade'
+);
+SET @sql := IF(@existe = 0,
+  'CREATE INDEX `idx_chamados_prioridade` ON `chamados` (`prioridade`, `status`)',
+  'DO 0'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- ── Migração de DADOS: sempre com condição que a torne repetível ──
+UPDATE `chamados`
+   SET `prioridade` = 3
+ WHERE `prioridade` IS NULL OR `prioridade` = 0;
+
+-- ── Novos valores de configuração ────────────────────────────
+INSERT IGNORE INTO `configuracoes` (`chave`, `valor`) VALUES
+  ('anexos_habilitados',   '1'),
+  ('anexos_tamanho_max_mb', '5');
+
+-- ─────────────────────────────────────────────────────────────
+-- ⚠️ REMOÇÃO DE COLUNA — só na terceira fase do padrão de três
+-- releases, e nunca no mesmo pacote que introduz a substituta.
+--
+-- ALTER TABLE `chamados` DROP COLUMN `campo_antigo`;
+-- ─────────────────────────────────────────────────────────────

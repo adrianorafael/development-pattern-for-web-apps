@@ -1,0 +1,536 @@
+<?php
+/**
+ * install/index.php — Wizard de instalação
+ *
+ * Parte de "Development Pattern for Web Apps" — regra R9.
+ * Esqueleto funcional em arquivo único. Adapte APP_SLUG, TABELAS_DO_APP,
+ * o schema em database/schema.sql e os requisitos em requisitos().
+ *
+ * Cinco passos:
+ *   1 REQUISITOS  → 2 BANCO → 3 ESTRATÉGIA → 4 ADMIN → 5 CONCLUSÃO
+ *
+ * Nada é gravado antes do passo 5. Desistir no meio não deixa resíduo.
+ * Ao terminar, o instalador se tranca e instrui a apagar esta pasta.
+ */
+
+declare(strict_types=1);
+
+// ── Constantes do app ────────────────────────────────────────────────────────
+const APP_SLUG    = 'meu-app';
+const APP_NOME    = 'Nome do Aplicativo';
+const APP_VERSAO  = '0.1.0';
+const PHP_MINIMO  = '8.1.0';
+
+/** Só estas tabelas podem ser removidas em "limpar e recriar". Allowlist (R5). */
+const TABELAS_DO_APP = ['schema_migrations', 'usuarios', 'chamados', 'anexos', 'configuracoes'];
+
+/** Migrações já contempladas pelo schema base — registradas para o updater (R10/R13). */
+const MIGRACOES_BASE = ['0001_estrutura_inicial.sql'];
+
+define('RAIZ',         dirname(__DIR__));
+define('CAMINHO_CONFIG', RAIZ . '/config/app.config.php');
+define('CAMINHO_LOCK',   RAIZ . '/config/instalado.lock');
+define('CAMINHO_SCHEMA', RAIZ . '/database/schema.sql');
+
+// ── Trava: já instalado? ─────────────────────────────────────────────────────
+if (is_file(CAMINHO_LOCK)) {
+    http_response_code(403);
+    exit('Este aplicativo já está instalado. Para reinstalar, remova config/instalado.lock via FTP.');
+}
+
+session_start();
+$_SESSION['csrf'] ??= bin2hex(random_bytes(32));
+$_SESSION['wizard'] ??= [];
+
+// ── Utilitários ──────────────────────────────────────────────────────────────
+function e(?string $v): string {
+    return htmlspecialchars($v ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+function conferirCsrf(): void {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') { return; }
+    if (!hash_equals($_SESSION['csrf'] ?? '', $_POST['_csrf'] ?? '')) {
+        http_response_code(419);
+        exit('Sessão expirada. Recarregue a página e comece de novo.');
+    }
+}
+
+function irPara(int $passo): never {
+    header('Location: ?passo=' . $passo);
+    exit;
+}
+
+/** Traduz o erro do MySQL para algo acionável (R9, passo 2). */
+function traduzirErroPdo(PDOException $e): string {
+    $m = $e->getMessage();
+    return match (true) {
+        str_contains($m, '1045') => 'Usuário ou senha incorretos. Confira em hPanel → Bancos de dados MySQL.',
+        str_contains($m, '2002'), str_contains($m, '2005')
+            => 'Não foi possível alcançar o servidor. Na Hostinger o host costuma ser "localhost".',
+        str_contains($m, '1049') => 'O banco informado não existe. Crie-o no hPanel — o instalador cria as tabelas, não a base.',
+        str_contains($m, '1044') => 'O usuário não tem permissão neste banco. Associe o usuário ao banco no hPanel.',
+        default                  => 'Não foi possível conectar ao banco de dados. Confira os dados informados.',
+    };
+}
+
+function conectar(array $d): PDO {
+    return new PDO(
+        sprintf('mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4', $d['host'], (int)$d['porta'], $d['banco']),
+        $d['usuario'],
+        $d['senha'],
+        [
+            PDO::ATTR_ERRMODE          => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_EMULATE_PREPARES => false,      // R5 — o item crítico
+            PDO::ATTR_TIMEOUT          => 5,
+        ]
+    );
+}
+
+// ── Passo 1: requisitos ──────────────────────────────────────────────────────
+/** @return array<int,array{nome:string,ok:bool,encontrado:string,exigido:string,acao:string,obrigatorio:bool}> */
+function requisitos(): array {
+    $r = [];
+    $add = function (string $nome, bool $ok, string $encontrado, string $exigido,
+                     string $acao, bool $obrigatorio = true) use (&$r): void {
+        $r[] = compact('nome', 'ok', 'encontrado', 'exigido', 'acao', 'obrigatorio');
+    };
+
+    $add('Versão do PHP', version_compare(PHP_VERSION, PHP_MINIMO, '>='),
+         PHP_VERSION, PHP_MINIMO . ' ou superior',
+         'hPanel → Avançado → Configuração PHP → selecione uma versão compatível.');
+
+    foreach ([
+        'pdo_mysql' => ['Acesso ao MySQL', true],
+        'mbstring'  => ['Textos com acentuação', true],
+        'json'      => ['Serialização de dados', true],
+        'openssl'   => ['Geração de tokens seguros', true],
+        'fileinfo'  => ['Validação de uploads', true],
+        'zip'       => ['Painel de atualização (pacotes ZIP)', true],
+        'gd'        => ['Manipulação de imagens', false],
+        'intl'      => ['Formatação regional', false],
+    ] as $ext => [$para, $obrig]) {
+        $add("Extensão {$ext} — {$para}", extension_loaded($ext),
+             extension_loaded($ext) ? 'presente' : 'ausente', 'presente',
+             "hPanel → Configuração PHP → marque a extensão {$ext}.", $obrig);
+    }
+
+    foreach (['config' => 'gravar a configuração', 'storage' => 'uploads, logs e backups'] as $dir => $para) {
+        $caminho = RAIZ . '/' . $dir;
+        if (!is_dir($caminho)) { @mkdir($caminho, 0755, true); }
+        $add("Escrita em {$dir}/ — {$para}", is_dir($caminho) && is_writable($caminho),
+             is_dir($caminho) ? (is_writable($caminho) ? 'gravável' : 'somente leitura') : 'não existe',
+             'gravável',
+             "Crie a pasta {$dir}/ no gerenciador de arquivos e aplique permissão 755.");
+    }
+
+    $https = (($_SERVER['HTTPS'] ?? '') === 'on') || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+    $add('HTTPS ativo', $https, $https ? 'sim' : 'não', 'sim',
+         'hPanel → Segurança → SSL. Ative o certificado gratuito antes de usar em produção.', false);
+
+    $add('Limite de upload', true, ini_get('upload_max_filesize') ?: '?', 'informativo',
+         'Define o tamanho máximo do pacote de atualização.', false);
+    $add('Tempo de execução', true, (ini_get('max_execution_time') ?: '?') . 's', 'informativo',
+         'Migrações longas serão executadas em lotes.', false);
+
+    return $r;
+}
+
+// ── Fluxo ────────────────────────────────────────────────────────────────────
+conferirCsrf();
+$passo  = max(1, min(5, (int)($_GET['passo'] ?? 1)));
+$w      = &$_SESSION['wizard'];
+$erros  = [];
+$aviso  = null;
+
+// Passo 2 — testar a conexão
+if ($passo === 2 && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $dados = [
+        'host'    => trim((string)($_POST['host']    ?? 'localhost')),
+        'porta'   => (int)($_POST['porta'] ?? 3306),
+        'banco'   => trim((string)($_POST['banco']   ?? '')),
+        'usuario' => trim((string)($_POST['usuario'] ?? '')),
+        'senha'   => (string)($_POST['senha']        ?? ''),
+        'prefixo' => preg_replace('/[^a-z0-9_]/i', '', (string)($_POST['prefixo'] ?? '')) ?? '',
+    ];
+    if ($dados['banco'] === '' || $dados['usuario'] === '') {
+        $erros[] = 'Informe ao menos o nome do banco e o usuário.';
+    } else {
+        try {
+            $pdo = conectar($dados);
+            $versaoMysql = (string)$pdo->query('SELECT VERSION()')->fetchColumn();
+
+            // Charset da base: se não for utf8mb4, acentos e emoji quebram.
+            $cs = $pdo->query("SHOW VARIABLES LIKE 'character_set_database'")->fetch(PDO::FETCH_ASSOC);
+            if (($cs['Value'] ?? '') !== 'utf8mb4') {
+                $aviso = 'A base usa charset "' . e((string)($cs['Value'] ?? '?')) .
+                         '". Recomendado: utf8mb4. Acentos e emoji podem ser gravados incorretamente.';
+            }
+
+            // Estado da base: quais tabelas do app já existem?
+            $existentes = [];
+            foreach ($pdo->query('SHOW TABLES', PDO::FETCH_COLUMN) as $t) {
+                $semPrefixo = $dados['prefixo'] !== '' && str_starts_with((string)$t, $dados['prefixo'])
+                    ? substr((string)$t, strlen($dados['prefixo'])) : (string)$t;
+                if (in_array($semPrefixo, TABELAS_DO_APP, true)) { $existentes[] = (string)$t; }
+            }
+
+            $w['db']          = $dados;
+            $w['mysql']       = $versaoMysql;
+            $w['existentes']  = $existentes;
+            $w['aviso']       = $aviso;
+            irPara(3);
+        } catch (PDOException $ex) {
+            error_log('[install] ' . $ex->getMessage());
+            $erros[] = traduzirErroPdo($ex);
+        }
+    }
+}
+
+// Passo 3 — estratégia
+if ($passo === 3 && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $estrategia = (string)($_POST['estrategia'] ?? '');
+    if (!in_array($estrategia, ['criar', 'manter', 'recriar'], true)) {
+        $erros[] = 'Escolha uma opção para continuar.';
+    } elseif ($estrategia === 'recriar' && ($_POST['confirmacao'] ?? '') !== 'APAGAR') {
+        $erros[] = 'Para limpar e recriar, digite APAGAR no campo de confirmação.';
+    } else {
+        $w['estrategia'] = $estrategia;
+        irPara($estrategia === 'manter' ? 5 : 4);
+    }
+}
+
+// Passo 4 — administrador
+if ($passo === 4 && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nome  = trim((string)($_POST['nome'] ?? ''));
+    $email = filter_var(trim((string)($_POST['email'] ?? '')), FILTER_VALIDATE_EMAIL);
+    $senha = (string)($_POST['senha'] ?? '');
+
+    if ($nome === '' || mb_strlen($nome) > 120)  { $erros[] = 'Informe um nome de 1 a 120 caracteres.'; }
+    if ($email === false)                        { $erros[] = 'Informe um e-mail válido.'; }
+    if (mb_strlen($senha) < 10)                  { $erros[] = 'A senha precisa de ao menos 10 caracteres.'; }
+    if ($senha !== ($_POST['senha_confirmacao'] ?? '')) { $erros[] = 'As senhas não conferem.'; }
+    if (in_array(strtolower($senha), ['admin', 'administrador', '1234567890', 'senha12345'], true)) {
+        $erros[] = 'Escolha uma senha menos previsível.';
+    }
+
+    if ($erros === []) {
+        $w['admin'] = ['nome' => $nome, 'email' => $email, 'hash' => password_hash($senha, PASSWORD_DEFAULT)];
+        irPara(5);
+    }
+}
+
+// Passo 5 — executar
+$relatorio = [];
+if ($passo === 5 && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'instalar') {
+    try {
+        if (empty($w['db'])) { throw new RuntimeException('Dados do banco ausentes. Recomece pelo passo 2.'); }
+        $pdo     = conectar($w['db']);
+        $prefixo = $w['db']['prefixo'] ?? '';
+
+        // 5.1 — limpar, quando pedido. Só tabelas da allowlist. Nunca DROP DATABASE.
+        if (($w['estrategia'] ?? '') === 'recriar') {
+            $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+            try {
+                foreach (TABELAS_DO_APP as $t) {
+                    $nomeTabela = str_replace('`', '``', $prefixo . $t);
+                    // $nomeTabela sai de TABELAS_DO_APP (allowlist) com as crases escapadas,
+                    // scan-sql:allow — e $prefixo foi sanitizado com preg_replace no passo 2.
+                    $pdo->exec("DROP TABLE IF EXISTS `{$nomeTabela}`");
+                    $relatorio[] = "Removida: {$prefixo}{$t}";
+                }
+            } finally {
+                $pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
+            }
+        }
+
+        // 5.2 — criar o schema (idempotente: CREATE TABLE IF NOT EXISTS)
+        if (($w['estrategia'] ?? '') !== 'manter') {
+            if (!is_file(CAMINHO_SCHEMA)) { throw new RuntimeException('Arquivo database/schema.sql não encontrado.'); }
+            $sql = (string)file_get_contents(CAMINHO_SCHEMA);
+            if ($prefixo !== '') { $sql = str_replace('{{prefixo}}', $prefixo, $sql); }
+            else                 { $sql = str_replace('{{prefixo}}', '',       $sql); }
+            $pdo->exec($sql);
+            $relatorio[] = 'Estrutura criada a partir de database/schema.sql';
+        }
+
+        // 5.3 — registrar as migrações já contempladas (R13)
+        // scan-sql:allow — $prefixo é sanitizado com preg_replace no passo 2; o dado vai em :v
+        $ins = $pdo->prepare("INSERT IGNORE INTO `{$prefixo}schema_migrations` (versao) VALUES (:v)");
+        foreach (MIGRACOES_BASE as $m) { $ins->execute([':v' => $m]); }
+        $relatorio[] = 'Versão do schema registrada: ' . implode(', ', MIGRACOES_BASE);
+
+        // 5.4 — administrador
+        if (!empty($w['admin'])) {
+            $stmt = $pdo->prepare(
+                // scan-sql:allow — $prefixo sanitizado no passo 2; nome, e-mail e hash vão vinculados
+                "INSERT INTO `{$prefixo}usuarios` (nome, email, senha_hash, papel, ativo, criado_em)
+                 VALUES (:n, :e, :h, 'admin', 1, NOW())
+                 ON DUPLICATE KEY UPDATE senha_hash = VALUES(senha_hash), papel = 'admin', ativo = 1"
+            );
+            $stmt->execute([':n' => $w['admin']['nome'], ':e' => $w['admin']['email'], ':h' => $w['admin']['hash']]);
+            $relatorio[] = 'Administrador criado: ' . $w['admin']['email'];
+        }
+
+        // 5.5 — gravar a configuração fora do webroot
+        $config = [
+            'app' => [
+                'nome'     => APP_NOME,
+                'url'      => rtrim((string)($_POST['url_base'] ?? ''), '/'),
+                'ambiente' => 'producao',
+                'debug'    => false,
+                'timezone' => 'America/Sao_Paulo',
+                'versao'   => APP_VERSAO,
+            ],
+            'db'      => $w['db'],
+            'app_key' => bin2hex(random_bytes(32)),
+        ];
+        $conteudo = "<?php\n// Gerado pelo instalador em " . date('c') . ". NÃO versionar.\n"
+                  . "declare(strict_types=1);\nreturn " . var_export($config, true) . ";\n";
+
+        if (@file_put_contents(CAMINHO_CONFIG, $conteudo, LOCK_EX) === false) {
+            throw new RuntimeException('Não foi possível gravar config/app.config.php. Verifique a permissão da pasta.');
+        }
+        @chmod(CAMINHO_CONFIG, 0640);
+        $relatorio[] = 'Configuração gravada em config/app.config.php (0640)';
+
+        // 5.6 — se config/ estiver dentro do webroot, negar acesso e TESTAR
+        $htaccess = RAIZ . '/config/.htaccess';
+        if (!is_file($htaccess)) {
+            @file_put_contents($htaccess, "Require all denied\n");
+            $relatorio[] = 'config/.htaccess criado (nega acesso pelo navegador)';
+        }
+
+        // 5.7 — trancar o instalador
+        file_put_contents(CAMINHO_LOCK, date('c') . ' v' . APP_VERSAO . PHP_EOL, LOCK_EX);
+        $relatorio[] = 'Instalador trancado (config/instalado.lock)';
+
+        $w = ['concluido' => true, 'relatorio' => $relatorio, 'admin_email' => $w['admin']['email'] ?? null];
+
+    } catch (Throwable $ex) {
+        error_log('[install] ' . $ex->getMessage());
+        $erros[] = $ex->getMessage();
+    }
+}
+
+$existentes = $w['existentes'] ?? [];
+$csrf       = $_SESSION['csrf'];
+?><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instalação — <?= e(APP_NOME) ?></title>
+<style>
+  :root { --ok:#15803d; --erro:#b91c1c; --aviso:#b45309; --borda:#e2e8f0; --texto:#0f172a; --fraco:#64748b; }
+  * { box-sizing:border-box; }
+  body { font-family:system-ui,-apple-system,"Segoe UI",sans-serif; background:#f8fafc; color:var(--texto);
+         margin:0; padding:2rem 1rem; line-height:1.55; }
+  .caixa { max-width:760px; margin:0 auto; background:#fff; border:1px solid var(--borda);
+           border-radius:12px; padding:2rem; }
+  h1 { margin:0 0 .25rem; font-size:1.5rem; }
+  .sub { color:var(--fraco); margin:0 0 1.5rem; }
+  .passos { display:flex; gap:.5rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+  .passos span { flex:1; min-width:110px; font-size:.78rem; padding:.5rem; text-align:center;
+                 border-radius:6px; background:#f1f5f9; color:var(--fraco); }
+  .passos .atual { background:var(--texto); color:#fff; font-weight:600; }
+  .passos .feito { background:#dcfce7; color:var(--ok); }
+  table { width:100%; border-collapse:collapse; font-size:.9rem; }
+  th,td { text-align:left; padding:.6rem .5rem; border-bottom:1px solid var(--borda); vertical-align:top; }
+  th { font-size:.75rem; text-transform:uppercase; color:var(--fraco); }
+  .ok { color:var(--ok); font-weight:700; } .falha { color:var(--erro); font-weight:700; }
+  .opcional { color:var(--aviso); font-weight:700; }
+  label { display:block; font-weight:600; font-size:.88rem; margin:1rem 0 .25rem; }
+  input[type=text],input[type=password],input[type=email],input[type=number],input[type=url] {
+    width:100%; padding:.6rem .7rem; border:1px solid var(--borda); border-radius:8px; font-size:1rem; }
+  .dica { font-size:.8rem; color:var(--fraco); margin-top:.2rem; }
+  button { margin-top:1.5rem; padding:.7rem 1.4rem; border:0; border-radius:8px; background:var(--texto);
+           color:#fff; font-size:1rem; font-weight:600; cursor:pointer; }
+  button[disabled] { background:#cbd5e1; cursor:not-allowed; }
+  .alerta { padding:.8rem 1rem; border-radius:8px; margin:1rem 0; font-size:.9rem; }
+  .alerta.erro   { background:#fef2f2; border:1px solid #fecaca; color:var(--erro); }
+  .alerta.aviso  { background:#fffbeb; border:1px solid #fde68a; color:var(--aviso); }
+  .alerta.perigo { background:#fef2f2; border:2px solid var(--erro); color:var(--erro); }
+  .alerta.sucesso{ background:#f0fdf4; border:1px solid #bbf7d0; color:var(--ok); }
+  .opcao { border:1px solid var(--borda); border-radius:8px; padding:1rem; margin-bottom:.75rem; }
+  .opcao input { margin-right:.5rem; }
+  code { background:#f1f5f9; padding:.1rem .35rem; border-radius:4px; font-size:.88em; }
+  ul { margin:.5rem 0; padding-left:1.2rem; }
+</style>
+</head>
+<body>
+<div class="caixa">
+  <h1>Instalação — <?= e(APP_NOME) ?></h1>
+  <p class="sub">Versão <?= e(APP_VERSAO) ?></p>
+
+  <div class="passos">
+    <?php foreach (['Requisitos','Banco de dados','Estrutura','Administrador','Conclusão'] as $i => $rotulo): ?>
+      <span class="<?= $passo === $i+1 ? 'atual' : ($passo > $i+1 ? 'feito' : '') ?>">
+        <?= $i+1 ?>. <?= e($rotulo) ?>
+      </span>
+    <?php endforeach; ?>
+  </div>
+
+  <?php foreach ($erros as $msg): ?>
+    <div class="alerta erro"><?= e($msg) ?></div>
+  <?php endforeach; ?>
+  <?php if (!empty($w['aviso']) && $passo === 3): ?>
+    <div class="alerta aviso"><?= $w['aviso'] ?></div>
+  <?php endif; ?>
+
+<?php if ($passo === 1):
+    $reqs = requisitos();
+    $bloqueia = array_filter($reqs, static fn($r) => $r['obrigatorio'] && !$r['ok']);
+?>
+  <p>Conferindo se este servidor atende aos requisitos do aplicativo.</p>
+  <table>
+    <thead><tr><th>Item</th><th>Encontrado</th><th>Exigido</th><th></th></tr></thead>
+    <tbody>
+    <?php foreach ($reqs as $r): ?>
+      <tr>
+        <td><?= e($r['nome']) ?>
+          <?php if (!$r['ok']): ?><div class="dica"><?= e($r['acao']) ?></div><?php endif; ?>
+        </td>
+        <td><?= e($r['encontrado']) ?></td>
+        <td><?= e($r['exigido']) ?></td>
+        <td class="<?= $r['ok'] ? 'ok' : ($r['obrigatorio'] ? 'falha' : 'opcional') ?>">
+          <?= $r['ok'] ? '✓' : ($r['obrigatorio'] ? '✗' : '!') ?>
+        </td>
+      </tr>
+    <?php endforeach; ?>
+    </tbody>
+  </table>
+
+  <?php if ($bloqueia): ?>
+    <div class="alerta erro">
+      <?= count($bloqueia) ?> requisito(s) obrigatório(s) não atendido(s). Ajuste no hPanel e verifique novamente.
+    </div>
+    <form method="get"><button type="submit">Verificar novamente</button></form>
+  <?php else: ?>
+    <form method="get"><input type="hidden" name="passo" value="2"><button type="submit">Continuar</button></form>
+  <?php endif; ?>
+
+<?php elseif ($passo === 2): ?>
+  <p>Informe os dados do banco MySQL. Na Hostinger eles estão em
+     <strong>hPanel → Bancos de dados → MySQL</strong>.</p>
+  <div class="alerta aviso">
+    O instalador cria as <strong>tabelas</strong> dentro de uma base que já existe.
+    Crie a base no hPanel antes de continuar — o usuário do plano compartilhado
+    normalmente não tem permissão para <code>CREATE DATABASE</code>.
+  </div>
+  <form method="post">
+    <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+    <label for="host">Servidor</label>
+    <input type="text" id="host" name="host" value="<?= e($_POST['host'] ?? 'localhost') ?>" required>
+    <p class="dica">Na Hostinger costuma ser <code>localhost</code>.</p>
+
+    <label for="porta">Porta</label>
+    <input type="number" id="porta" name="porta" value="<?= e((string)($_POST['porta'] ?? '3306')) ?>" required>
+
+    <label for="banco">Nome do banco</label>
+    <input type="text" id="banco" name="banco" value="<?= e($_POST['banco'] ?? '') ?>" required maxlength="64">
+
+    <label for="usuario">Usuário</label>
+    <input type="text" id="usuario" name="usuario" value="<?= e($_POST['usuario'] ?? '') ?>" required maxlength="64">
+
+    <label for="senha">Senha</label>
+    <input type="password" id="senha" name="senha" autocomplete="off" required>
+
+    <label for="prefixo">Prefixo das tabelas (opcional)</label>
+    <input type="text" id="prefixo" name="prefixo" value="<?= e($_POST['prefixo'] ?? '') ?>" maxlength="16">
+    <p class="dica">Use se esta base for compartilhada com outro aplicativo. Ex.: <code>app_</code></p>
+
+    <button type="submit">Testar conexão e continuar</button>
+  </form>
+
+<?php elseif ($passo === 3): ?>
+  <p>Conectado ao MySQL <strong><?= e($w['mysql'] ?? '?') ?></strong>.</p>
+  <form method="post">
+    <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+    <?php if ($existentes === []): ?>
+      <div class="alerta sucesso">Nenhuma tabela deste aplicativo foi encontrada. A estrutura será criada do zero.</div>
+      <input type="hidden" name="estrategia" value="criar">
+    <?php else: ?>
+      <div class="alerta aviso">
+        Já existem tabelas deste aplicativo nesta base:
+        <ul><?php foreach ($existentes as $t): ?><li><code><?= e($t) ?></code></li><?php endforeach; ?></ul>
+      </div>
+      <div class="opcao">
+        <label style="font-weight:600;margin:0">
+          <input type="radio" name="estrategia" value="manter" checked> Manter os dados existentes
+        </label>
+        <p class="dica">Recomendado. Nenhuma tabela é alterada; o aplicativo passa a usar a base como está.</p>
+      </div>
+      <div class="opcao">
+        <label style="font-weight:600;margin:0">
+          <input type="radio" name="estrategia" value="recriar"> Limpar e recriar
+        </label>
+        <div class="alerta perigo">
+          <strong>Isto apaga permanentemente</strong> as tabelas listadas acima e todos os seus dados.
+          Faça backup pelo hPanel antes. Para confirmar, digite <code>APAGAR</code> abaixo.
+        </div>
+        <label for="confirmacao">Confirmação</label>
+        <input type="text" id="confirmacao" name="confirmacao" placeholder="APAGAR" autocomplete="off">
+      </div>
+    <?php endif; ?>
+    <button type="submit">Continuar</button>
+  </form>
+
+<?php elseif ($passo === 4): ?>
+  <p>Crie o primeiro administrador. Não existe usuário padrão — contas como
+     <code>admin/admin</code> são o primeiro alvo de varreduras automáticas.</p>
+  <form method="post">
+    <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+    <label for="nome">Nome</label>
+    <input type="text" id="nome" name="nome" value="<?= e($_POST['nome'] ?? '') ?>" required maxlength="120">
+
+    <label for="email">E-mail</label>
+    <input type="email" id="email" name="email" value="<?= e($_POST['email'] ?? '') ?>" required maxlength="190">
+
+    <label for="senha">Senha</label>
+    <input type="password" id="senha" name="senha" required minlength="10" autocomplete="new-password">
+    <p class="dica">Mínimo de 10 caracteres. Prefira uma frase longa a símbolos difíceis de lembrar.</p>
+
+    <label for="senha_confirmacao">Confirme a senha</label>
+    <input type="password" id="senha_confirmacao" name="senha_confirmacao" required minlength="10" autocomplete="new-password">
+
+    <button type="submit">Continuar</button>
+  </form>
+
+<?php elseif ($passo === 5 && !empty($w['concluido'])): ?>
+  <div class="alerta sucesso"><strong>Instalação concluída.</strong></div>
+  <ul><?php foreach (($w['relatorio'] ?? []) as $linha): ?><li><?= e($linha) ?></li><?php endforeach; ?></ul>
+  <div class="alerta perigo">
+    <strong>Faça isto agora:</strong> apague a pasta <code>install/</code> do servidor.
+    Enquanto ela existir, o painel administrativo exibirá um alerta permanente.
+  </div>
+  <p>Administrador: <strong><?= e($w['admin_email'] ?? '—') ?></strong></p>
+  <p><a href="../">Ir para o aplicativo →</a></p>
+  <?php session_destroy(); ?>
+
+<?php elseif ($passo === 5): ?>
+  <p>Revise antes de aplicar. Até aqui <strong>nada foi gravado</strong>.</p>
+  <table>
+    <tr><th>Servidor</th><td><?= e($w['db']['host'] ?? '—') ?>:<?= e((string)($w['db']['porta'] ?? '')) ?></td></tr>
+    <tr><th>Banco</th><td><?= e($w['db']['banco'] ?? '—') ?></td></tr>
+    <tr><th>Usuário</th><td><?= e($w['db']['usuario'] ?? '—') ?></td></tr>
+    <tr><th>Prefixo</th><td><?= e(($w['db']['prefixo'] ?? '') ?: '(nenhum)') ?></td></tr>
+    <tr><th>Estratégia</th><td><?= e(match ($w['estrategia'] ?? '') {
+        'criar'   => 'Criar a estrutura',
+        'manter'  => 'Manter os dados existentes',
+        'recriar' => 'LIMPAR E RECRIAR (apaga dados)',
+        default   => '—',
+    }) ?></td></tr>
+    <tr><th>Administrador</th><td><?= e($w['admin']['email'] ?? '(mantido)') ?></td></tr>
+  </table>
+  <form method="post">
+    <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+    <input type="hidden" name="acao" value="instalar">
+    <label for="url_base">URL do aplicativo</label>
+    <input type="url" id="url_base" name="url_base"
+           value="<?= e((($_SERVER['HTTPS'] ?? '') === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '')) ?>" required>
+    <button type="submit">Instalar agora</button>
+  </form>
+<?php endif; ?>
+</div>
+</body>
+</html>

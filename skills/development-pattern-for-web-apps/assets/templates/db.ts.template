@@ -1,0 +1,124 @@
+/**
+ * lib/db.ts — acesso a dados, só no servidor.
+ *
+ * Parte de "Development Pattern for Web Apps" — regras R1 e R5.
+ *
+ * `server-only` transforma um import acidental a partir de um Client Component
+ * em erro de build, em vez de vazar a string de conexão para o navegador.
+ */
+
+import 'server-only';
+import { neon } from '@neondatabase/serverless';
+
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL não configurada. Defina no painel da Vercel (por ambiente).');
+}
+
+/**
+ * A template tag transforma cada ${} em parâmetro vinculado ($1, $2…).
+ *
+ *   ✅ sql`SELECT * FROM u WHERE email = ${email}`     → parametrizado
+ *   ❌ sql(`SELECT * FROM u WHERE email = '${email}'`)  → concatenação
+ *   ❌ sql.unsafe(...) / sql.raw(...) com interpolação   → concatenação
+ */
+export const sql = neon(process.env.DATABASE_URL);
+
+// ─────────────────────────────────────────────────────────────
+// Tipos de domínio — fonte única, importada por página e por action
+// ─────────────────────────────────────────────────────────────
+
+export type Chamado = {
+  id: number;
+  titulo: string;
+  status: 'aberto' | 'andamento' | 'fechado';
+  usuario_id: number;
+  criado_em: string;
+};
+
+// ─────────────────────────────────────────────────────────────
+// Consultas
+//
+// Regra: o `usuarioId` vem SEMPRE da sessão, nunca de searchParams.
+// É a diferença entre autorização e uma URL editável (R7).
+// ─────────────────────────────────────────────────────────────
+
+const STATUS_VALIDOS = ['aberto', 'andamento', 'fechado'] as const;
+type Status = (typeof STATUS_VALIDOS)[number];
+
+export async function listarChamadosDoUsuario(
+  usuarioId: number,
+  status?: string,
+): Promise<Chamado[]> {
+  const filtro = STATUS_VALIDOS.includes(status as Status) ? (status as Status) : undefined;
+
+  if (filtro) {
+    return (await sql`
+      SELECT id, titulo, status, usuario_id, criado_em
+      FROM chamados
+      WHERE usuario_id = ${usuarioId} AND status = ${filtro}
+      ORDER BY criado_em DESC
+      LIMIT 100
+    `) as Chamado[];
+  }
+
+  return (await sql`
+    SELECT id, titulo, status, usuario_id, criado_em
+    FROM chamados
+    WHERE usuario_id = ${usuarioId}
+    ORDER BY criado_em DESC
+    LIMIT 100
+  `) as Chamado[];
+}
+
+export async function buscarChamado(id: number, usuarioId: number): Promise<Chamado | null> {
+  // O dono faz parte da consulta. Sem isso, trocar o id na URL lê o registro alheio.
+  const linhas = (await sql`
+    SELECT id, titulo, status, usuario_id, criado_em
+    FROM chamados
+    WHERE id = ${id} AND usuario_id = ${usuarioId}
+  `) as Chamado[];
+  return linhas[0] ?? null;
+}
+
+export async function inserirChamado(dados: {
+  titulo: string;
+  descricao?: string;
+  usuarioId: number;
+}): Promise<number> {
+  const linhas = (await sql`
+    INSERT INTO chamados (titulo, descricao, usuario_id, status, criado_em)
+    VALUES (${dados.titulo}, ${dados.descricao ?? null}, ${dados.usuarioId}, 'aberto', NOW())
+    RETURNING id
+  `) as { id: number }[];
+  return linhas[0].id;
+}
+
+/**
+ * ORDER BY dinâmico: o valor do usuário é uma CHAVE de um mapa que você
+ * controla, nunca um fragmento de SQL. Um identificador não pode ser
+ * parametrizado — por isso a allowlist é a única defesa correta.
+ */
+const COLUNAS_ORDENAVEIS = {
+  titulo: 'titulo',
+  data: 'criado_em',
+  status: 'status',
+} as const;
+
+export async function listarOrdenado(
+  usuarioId: number,
+  ordenarPor: string,
+  direcao: string,
+): Promise<Chamado[]> {
+  const coluna = COLUNAS_ORDENAVEIS[ordenarPor as keyof typeof COLUNAS_ORDENAVEIS] ?? 'criado_em';
+  const dir = direcao === 'asc' ? 'ASC' : 'DESC';
+
+  // Só os dois valores acima — ambos provenientes de constantes deste arquivo —
+  // participam do texto. Todo dado continua indo por ${}.
+  // scan-sql:allow — coluna e dir saem de COLUNAS_ORDENAVEIS/constante deste arquivo
+  const query = `
+    SELECT id, titulo, status, usuario_id, criado_em
+    FROM chamados WHERE usuario_id = $1
+    ORDER BY ${coluna} ${dir} LIMIT 100
+  `;
+  return (await sql.query(query, [usuarioId])) as Chamado[];
+}

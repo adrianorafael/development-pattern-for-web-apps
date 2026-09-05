@@ -1,0 +1,477 @@
+<?php
+/**
+ * app/Core/AtualizadorDePacote.php
+ *
+ * Instalador de pacotes ZIP de atualização, usado pelo painel administrativo.
+ * Parte de "Development Pattern for Web Apps" — regra R10.
+ *
+ * Este é o código mais perigoso do aplicativo: ele grava arquivos PHP no
+ * servidor. Toda validação aqui é obrigatória, e nenhuma é "paranoia".
+ *
+ * Uso, a partir de uma rota já autenticada e com papel de administrador:
+ *
+ *   $at = new AtualizadorDePacote($pdo, RAIZ, APP_SLUG, APP_VERSAO, $prefixoTabelas);
+ *   $previa = $at->analisar($caminhoZipTemporario);   // nada é escrito ainda
+ *   // …mostrar $previa ao administrador e obter confirmação explícita…
+ *   $resultado = $at->aplicar($caminhoZipTemporario);
+ */
+
+declare(strict_types=1);
+
+final class FalhaNaAtualizacao extends RuntimeException {}
+
+final class AtualizadorDePacote
+{
+    /** Só estas extensões podem vir dentro do pacote. */
+    private const EXTENSOES_PERMITIDAS = ['php','html','css','js','svg','png','jpg','jpeg','webp','gif','json','md','txt'];
+
+    /** Só estas pastas de primeiro nível podem receber arquivos. */
+    private const PASTAS_PERMITIDAS = ['app', 'assets', 'admin', 'install'];
+
+    /** Nunca escritas por um pacote: são do usuário, não do aplicativo. */
+    private const PASTAS_PROIBIDAS = ['config', 'storage', 'database', '.git', 'vendor', 'node_modules'];
+
+    private const TAMANHO_MAX = 50 * 1024 * 1024;   // 50 MB
+    private const BACKUPS_MANTIDOS = 3;
+
+    private array $log = [];
+
+    public function __construct(
+        private PDO $pdo,
+        private string $raiz,
+        private string $appSlug,
+        private string $versaoAtual,
+        private string $prefixoTabelas = '',
+    ) {}
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Etapas 1–3: validar e montar a prévia. NADA é escrito aqui.
+    // ─────────────────────────────────────────────────────────────────────
+
+    /** @return array{manifesto:array,novos:string[],alterados:string[],removidos:string[],migracoes:string[],destrutivas:string[]} */
+    public function analisar(string $caminhoZip): array
+    {
+        if (!is_file($caminhoZip)) { throw new FalhaNaAtualizacao('Pacote não encontrado.'); }
+        if (filesize($caminhoZip) > self::TAMANHO_MAX) {
+            throw new FalhaNaAtualizacao('Pacote maior que o limite de ' . (self::TAMANHO_MAX / 1048576) . ' MB.');
+        }
+
+        $zip = new ZipArchive();
+        if ($zip->open($caminhoZip) !== true) {
+            throw new FalhaNaAtualizacao('Arquivo ZIP inválido ou corrompido.');
+        }
+
+        try {
+            $m = $this->lerManifesto($zip);
+            $this->validarCompatibilidade($m);
+            $this->validarArquivos($zip, $m);
+
+            $novos = $alterados = [];
+            foreach ($m['arquivos'] as $arq) {
+                $destino = $this->caminhoDestinoSeguro($arq['caminho']);
+                if (is_file($destino)) { $alterados[] = $arq['caminho']; }
+                else                   { $novos[]     = $arq['caminho']; }
+            }
+
+            $migracoes   = $this->migracoesPendentes($m['migracoes'] ?? []);
+            $destrutivas = $this->detectarMigracoesDestrutivas($zip, $migracoes);
+
+            return [
+                'manifesto'   => $m,
+                'novos'       => $novos,
+                'alterados'   => $alterados,
+                'removidos'   => $m['remover'] ?? [],
+                'migracoes'   => $migracoes,
+                'destrutivas' => $destrutivas,
+            ];
+        } finally {
+            $zip->close();
+        }
+    }
+
+    private function lerManifesto(ZipArchive $zip): array
+    {
+        $bruto = $zip->getFromName('manifest.json');
+        if ($bruto === false) {
+            throw new FalhaNaAtualizacao('Pacote sem manifest.json — não é um pacote de atualização deste padrão.');
+        }
+        try {
+            $m = json_decode($bruto, true, 32, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            throw new FalhaNaAtualizacao('manifest.json inválido: ' . $e->getMessage());
+        }
+        foreach (['app', 'versao', 'versao_minima', 'arquivos'] as $campo) {
+            if (!isset($m[$campo])) { throw new FalhaNaAtualizacao("manifest.json sem o campo obrigatório: {$campo}"); }
+        }
+        return $m;
+    }
+
+    private function validarCompatibilidade(array $m): void
+    {
+        if ($m['app'] !== $this->appSlug) {
+            throw new FalhaNaAtualizacao("Este pacote é do aplicativo \"{$m['app']}\", não de \"{$this->appSlug}\".");
+        }
+        if (version_compare($m['versao'], $this->versaoAtual, '<=')) {
+            throw new FalhaNaAtualizacao("Versão {$m['versao']} é igual ou anterior à instalada ({$this->versaoAtual}).");
+        }
+        if (version_compare($this->versaoAtual, $m['versao_minima'], '<')) {
+            throw new FalhaNaAtualizacao(
+                "Este pacote exige a versão {$m['versao_minima']} instalada; você está na {$this->versaoAtual}. " .
+                'Instale antes o pacote intermediário.'
+            );
+        }
+        if (isset($m['php_minimo']) && version_compare(PHP_VERSION, $m['php_minimo'], '<')) {
+            throw new FalhaNaAtualizacao("Requer PHP {$m['php_minimo']}; este servidor tem " . PHP_VERSION . '.');
+        }
+        foreach ($m['extensoes'] ?? [] as $ext) {
+            if (!extension_loaded($ext)) {
+                throw new FalhaNaAtualizacao("Extensão PHP obrigatória ausente: {$ext}");
+            }
+        }
+    }
+
+    /** Confere presença e integridade de TODO arquivo declarado, antes de qualquer escrita. */
+    private function validarArquivos(ZipArchive $zip, array $m): void
+    {
+        foreach ($m['arquivos'] as $arq) {
+            if (!isset($arq['caminho'], $arq['sha256'])) {
+                throw new FalhaNaAtualizacao('Entrada de arquivo incompleta no manifesto.');
+            }
+            $conteudo = $zip->getFromName('files/' . $arq['caminho']);
+            if ($conteudo === false) {
+                throw new FalhaNaAtualizacao("Arquivo declarado no manifesto mas ausente no ZIP: {$arq['caminho']}");
+            }
+            if (!hash_equals($arq['sha256'], hash('sha256', $conteudo))) {
+                throw new FalhaNaAtualizacao("Integridade falhou (sha256) em: {$arq['caminho']}");
+            }
+            $this->caminhoDestinoSeguro($arq['caminho']);   // lança se o caminho for inválido
+        }
+
+        // Nenhuma entrada fora do que o manifesto declara — um ZIP com carga extra é recusado.
+        $declarados = array_map(static fn($a) => 'files/' . $a['caminho'], $m['arquivos']);
+        $permitidos = array_merge($declarados, ['manifest.json', 'remove.txt', 'CHANGELOG.md']);
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $nome = $zip->getNameIndex($i);
+            if ($nome === false || str_ends_with($nome, '/')) { continue; }
+            if (str_starts_with($nome, 'migrations/')) {
+                if (!in_array(basename($nome), $m['migracoes'] ?? [], true)) {
+                    throw new FalhaNaAtualizacao("Migração não declarada no manifesto: {$nome}");
+                }
+                continue;
+            }
+            if (!in_array($nome, $permitidos, true)) {
+                throw new FalhaNaAtualizacao("Entrada não declarada no manifesto: {$nome}");
+            }
+        }
+    }
+
+    /**
+     * A defesa contra *zip slip* e contra escrita fora das pastas do aplicativo.
+     * Quatro checagens, todas necessárias.
+     */
+    private function caminhoDestinoSeguro(string $relativo): string
+    {
+        // 1. Forma do caminho
+        if ($relativo === ''
+            || str_contains($relativo, "\0")
+            || str_contains($relativo, '..')
+            || str_contains($relativo, '\\')
+            || str_starts_with($relativo, '/')
+            || preg_match('#(^|/)\.#', $relativo) === 1) {
+            throw new FalhaNaAtualizacao("Caminho inválido no pacote: {$relativo}");
+        }
+
+        // 2. Extensão em allowlist
+        $ext = strtolower(pathinfo($relativo, PATHINFO_EXTENSION));
+        if (!in_array($ext, self::EXTENSOES_PERMITIDAS, true)) {
+            throw new FalhaNaAtualizacao("Extensão não permitida em pacote: {$relativo}");
+        }
+
+        // 3. Pasta de primeiro nível em allowlist, e nunca uma das proibidas
+        $primeiro = explode('/', $relativo)[0];
+        if (in_array($primeiro, self::PASTAS_PROIBIDAS, true) || !in_array($primeiro, self::PASTAS_PERMITIDAS, true)) {
+            throw new FalhaNaAtualizacao("Destino fora das pastas permitidas: {$relativo}");
+        }
+
+        // 4. Depois de normalizar, o resultado continua dentro da raiz
+        $destino  = $this->raiz . '/' . $relativo;
+        $raizReal = realpath($this->raiz);
+        $paiReal  = realpath(dirname($destino)) ?: dirname($destino);
+        if ($raizReal === false || !str_starts_with($paiReal, $raizReal)) {
+            throw new FalhaNaAtualizacao("Escape de diretório detectado: {$relativo}");
+        }
+
+        return $destino;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Etapas 4–9: aplicar, com backup e rollback
+    // ─────────────────────────────────────────────────────────────────────
+
+    /** @return array{versao:string,log:string[],backup:string} */
+    public function aplicar(string $caminhoZip): array
+    {
+        $previa    = $this->analisar($caminhoZip);
+        $m         = $previa['manifesto'];
+        $backupDir = $this->criarBackup($previa);
+        $this->ligarManutencao();
+
+        $zip = new ZipArchive();
+        if ($zip->open($caminhoZip) !== true) { throw new FalhaNaAtualizacao('ZIP inválido.'); }
+
+        try {
+            // Etapa 6 — arquivos
+            foreach ($m['arquivos'] as $arq) {
+                $destino  = $this->caminhoDestinoSeguro($arq['caminho']);
+                $conteudo = $zip->getFromName('files/' . $arq['caminho']);
+                $pasta    = dirname($destino);
+                if (!is_dir($pasta) && !@mkdir($pasta, 0755, true) && !is_dir($pasta)) {
+                    throw new FalhaNaAtualizacao("Não foi possível criar a pasta {$pasta}.");
+                }
+                // Escreve em temporário e move: uma falha no meio não deixa arquivo pela metade.
+                $tmp = $destino . '.novo';
+                if (@file_put_contents($tmp, $conteudo, LOCK_EX) === false || !@rename($tmp, $destino)) {
+                    @unlink($tmp);
+                    throw new FalhaNaAtualizacao("Não foi possível gravar {$arq['caminho']}. Verifique as permissões.");
+                }
+                @chmod($destino, 0644);
+                $this->log[] = "arquivo: {$arq['caminho']}";
+            }
+
+            foreach ($m['remover'] ?? [] as $relativo) {
+                $alvo = $this->caminhoDestinoSeguro($relativo);
+                if (is_file($alvo)) { @unlink($alvo); $this->log[] = "removido: {$relativo}"; }
+            }
+
+            // Etapa 7 — migrações
+            foreach ($previa['migracoes'] as $arquivo) {
+                $sql = $zip->getFromName('migrations/' . $arquivo);
+                if ($sql === false) { throw new FalhaNaAtualizacao("Migração ausente no ZIP: {$arquivo}"); }
+                $this->executarMigracao($arquivo, $sql);
+            }
+
+            // Etapa 8 — finalização
+            $this->registrarVersao($m['versao']);
+            $this->registrarAuditoria('atualizacao_aplicada', $m['versao'], 'sucesso');
+            $this->desligarManutencao();
+            $this->podarBackups();
+
+            return ['versao' => $m['versao'], 'log' => $this->log, 'backup' => $backupDir];
+
+        } catch (Throwable $e) {
+            $this->log[] = 'FALHA: ' . $e->getMessage();
+            $this->restaurar($backupDir);
+            $this->desligarManutencao();
+            $this->registrarAuditoria('atualizacao_aplicada', $m['versao'] ?? '?', 'falha: ' . $e->getMessage());
+            throw new FalhaNaAtualizacao(
+                $e->getMessage() . ' O sistema foi restaurado a partir do backup em ' . $backupDir . '.',
+                0, $e
+            );
+        } finally {
+            $zip->close();
+            @unlink($caminhoZip);
+        }
+    }
+
+    private function executarMigracao(string $arquivo, string $sql): void
+    {
+        $inicio = microtime(true);
+        try {
+            $this->pdo->exec($sql);
+        } catch (PDOException $e) {
+            error_log("[migracao] {$arquivo}: " . $e->getMessage());
+            throw new FalhaNaAtualizacao("A migração {$arquivo} falhou: " . $e->getMessage(), 0, $e);
+        }
+        $stmt = $this->pdo->prepare(
+            // scan-sql:allow — o prefixo vem da configuração gravada pelo instalador, já sanitizada
+            "INSERT INTO `{$this->prefixoTabelas}schema_migrations` (versao, duracao_ms) VALUES (:v, :d)"
+        );
+        $stmt->execute([':v' => $arquivo, ':d' => (int)((microtime(true) - $inicio) * 1000)]);
+        $this->log[] = "migracao: {$arquivo}";
+    }
+
+    /** @param string[] $doPacote @return string[] */
+    private function migracoesPendentes(array $doPacote): array
+    {
+        // scan-sql:allow — só o prefixo da configuração participa do texto; não há dado de usuário
+        $stmt = $this->pdo->query("SELECT versao FROM `{$this->prefixoTabelas}schema_migrations`");
+        $aplicadas = $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+        $pendentes = array_values(array_diff($doPacote, $aplicadas));
+        sort($pendentes, SORT_STRING);      // a ordem de execução é a ordem do nome
+        return $pendentes;
+    }
+
+    /** Marca as migrações que podem causar perda de dados, para destaque na prévia. */
+    private function detectarMigracoesDestrutivas(ZipArchive $zip, array $migracoes): array
+    {
+        $destrutivas = [];
+        foreach ($migracoes as $arquivo) {
+            $sql = $zip->getFromName('migrations/' . $arquivo);
+            if ($sql === false) { continue; }
+            if (preg_match('/\b(DROP\s+(TABLE|COLUMN|DATABASE)|TRUNCATE|DELETE\s+FROM)\b/i', $sql)) {
+                $destrutivas[] = $arquivo;
+            }
+        }
+        return $destrutivas;
+    }
+
+    // ── Backup, restauração, manutenção ──────────────────────────────────
+
+    private function criarBackup(array $previa): string
+    {
+        $dir = $this->raiz . '/storage/backups/' . date('Y-m-d-His') . '-v' . $this->versaoAtual;
+        if (!is_dir($dir) && !@mkdir($dir, 0750, true) && !is_dir($dir)) {
+            throw new FalhaNaAtualizacao('Não foi possível criar a pasta de backup.');
+        }
+
+        // Só os arquivos que serão sobrescritos ou removidos.
+        $zip = new ZipArchive();
+        if ($zip->open($dir . '/arquivos.zip', ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+            foreach (array_merge($previa['alterados'], $previa['removidos']) as $relativo) {
+                $origem = $this->raiz . '/' . $relativo;
+                if (is_file($origem)) { $zip->addFile($origem, $relativo); }
+            }
+            $zip->close();
+        }
+
+        file_put_contents($dir . '/banco.sql', $this->gerarDump());
+        file_put_contents($dir . '/manifesto-anterior.json', json_encode(
+            ['versao' => $this->versaoAtual, 'data' => date('c'), 'novos' => $previa['novos']],
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+        ));
+
+        $this->log[] = 'backup: ' . $dir;
+        return $dir;
+    }
+
+    /**
+     * Dump em PHP puro — `mysqldump` costuma estar indisponível em hospedagem
+     * compartilhada (`disable_functions`). Aqui o resultado é um ARQUIVO, não
+     * uma consulta executada: o quote de valores é geração de texto, não SQL
+     * dinâmico. Consultas continuam parametrizadas em todo o resto do sistema.
+     */
+    private function gerarDump(): string
+    {
+        $saida  = "-- Backup automático — " . date('c') . "\n";
+        $saida .= "SET FOREIGN_KEY_CHECKS = 0;\nSET NAMES utf8mb4;\n\n";
+
+        foreach ($this->pdo->query('SHOW TABLES', PDO::FETCH_COLUMN) as $tabela) {
+            $tabela = (string)$tabela;
+            $cria   = $this->pdo->query('SHOW CREATE TABLE `' . str_replace('`', '``', $tabela) . '`')
+                                ->fetch(PDO::FETCH_NUM);
+            // Geração de DUMP: $tabela vem de SHOW TABLES do próprio banco e as crases são
+            // escapadas. scan-sql:allow — o resultado é um ARQUIVO, não uma consulta executada.
+            $saida .= "DROP TABLE IF EXISTS `{$tabela}`;\n" . ($cria[1] ?? '') . ";\n\n";
+
+            $linhas = $this->pdo->query('SELECT * FROM `' . str_replace('`', '``', $tabela) . '`');
+            $lote   = [];
+            foreach ($linhas as $linha) {
+                $valores = array_map(
+                    fn($v) => $v === null ? 'NULL' : $this->pdo->quote((string)$v),
+                    array_values($linha)
+                );
+                $lote[] = '(' . implode(',', $valores) . ')';
+                if (count($lote) >= 200) {
+                    // scan-sql:allow — geração de dump (ver acima)
+                    $saida .= "INSERT INTO `{$tabela}` VALUES\n" . implode(",\n", $lote) . ";\n";
+                    $lote = [];
+                }
+            }
+            if ($lote !== []) {
+                // scan-sql:allow — geração de dump (ver acima)
+                $saida .= "INSERT INTO `{$tabela}` VALUES\n" . implode(",\n", $lote) . ";\n";
+            }
+            $saida .= "\n";
+        }
+        // scan-sql:allow — literal fixo concatenado ao texto do dump; nenhuma variável no SQL
+        return $saida . "SET FOREIGN_KEY_CHECKS = 1;\n";
+    }
+
+    private function restaurar(string $backupDir): void
+    {
+        $zipArquivos = $backupDir . '/arquivos.zip';
+        if (is_file($zipArquivos)) {
+            $zip = new ZipArchive();
+            if ($zip->open($zipArquivos) === true) {
+                // Cada entrada do backup passa pela MESMA validação de caminho.
+                for ($i = 0; $i < $zip->numFiles; $i++) {
+                    $nome = $zip->getNameIndex($i);
+                    if ($nome === false || str_ends_with($nome, '/')) { continue; }
+                    try {
+                        $destino = $this->caminhoDestinoSeguro($nome);
+                        @file_put_contents($destino, $zip->getFromIndex($i), LOCK_EX);
+                    } catch (FalhaNaAtualizacao) { /* ignora entrada inválida no backup */ }
+                }
+                $zip->close();
+                $this->log[] = 'restaurados: arquivos';
+            }
+        }
+
+        $dump = $backupDir . '/banco.sql';
+        if (is_file($dump)) {
+            try {
+                $this->pdo->exec((string)file_get_contents($dump));
+                $this->log[] = 'restaurado: banco de dados';
+            } catch (PDOException $e) {
+                error_log('[rollback] falha ao restaurar o banco: ' . $e->getMessage());
+                $this->log[] = 'ATENÇÃO: a restauração automática do banco falhou. Restaure ' . $dump . ' manualmente.';
+            }
+        }
+    }
+
+    private function podarBackups(): void
+    {
+        $base = $this->raiz . '/storage/backups';
+        $dirs = glob($base . '/*', GLOB_ONLYDIR) ?: [];
+        rsort($dirs, SORT_STRING);
+        foreach (array_slice($dirs, self::BACKUPS_MANTIDOS) as $antigo) {
+            foreach (glob($antigo . '/*') ?: [] as $f) { @unlink($f); }
+            @rmdir($antigo);
+        }
+    }
+
+    private function ligarManutencao(): void
+    {
+        file_put_contents($this->raiz . '/storage/manutencao.flag', json_encode([
+            'iniciado_em' => time(),
+            'expira_em'   => time() + 900,     // 15 min: se a atualização morrer, o site volta sozinho
+        ]));
+    }
+
+    private function desligarManutencao(): void
+    {
+        @unlink($this->raiz . '/storage/manutencao.flag');
+    }
+
+    private function registrarVersao(string $versao): void
+    {
+        $stmt = $this->pdo->prepare(
+            // scan-sql:allow — só o prefixo da configuração; a versão vai vinculada em :v
+            "INSERT INTO `{$this->prefixoTabelas}configuracoes` (chave, valor)
+             VALUES ('versao_app', :v)
+             ON DUPLICATE KEY UPDATE valor = VALUES(valor)"
+        );
+        $stmt->execute([':v' => $versao]);
+        $this->log[] = "versao: {$versao}";
+    }
+
+    private function registrarAuditoria(string $acao, string $alvo, string $resultado): void
+    {
+        try {
+            $stmt = $this->pdo->prepare(
+                // scan-sql:allow — só o prefixo da configuração; todos os campos vão vinculados
+                "INSERT INTO `{$this->prefixoTabelas}auditoria` (usuario_id, acao, alvo, resultado, ip, criado_em)
+                 VALUES (:u, :a, :alvo, :r, :ip, NOW())"
+            );
+            $stmt->execute([
+                ':u'    => $_SESSION['usuario_id'] ?? null,
+                ':a'    => $acao,
+                ':alvo' => $alvo,
+                ':r'    => mb_substr($resultado, 0, 500),
+                ':ip'   => $_SERVER['REMOTE_ADDR'] ?? null,
+            ]);
+        } catch (PDOException $e) {
+            error_log('[auditoria] ' . $e->getMessage());   // auditoria nunca derruba a operação
+        }
+    }
+}

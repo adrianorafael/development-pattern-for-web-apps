@@ -1,0 +1,60 @@
+# Publica docs/ no ramo gh-pages, que o GitHub Pages serve.
+#
+# Por que um ramo e não actions/deploy-pages: criar um site do Pages pela API REST
+# exige permissão de administrador no repositório, que o GITHUB_TOKEN nunca tem —
+# actions/configure-pages com `enablement: true` falha com "Resource not accessible
+# by integration". Empurrar um ramo gh-pages habilita o Pages sem passo manual.
+#
+# docs/ é a única fonte da verdade; gh-pages é gerado e sobrescrito com force-push.
+#
+# Só o ramo padrão publica. Disparar também em ramos de trabalho fazia cada push
+# rodar o job duas vezes, cada uma com force-push, e a primeira build do Pages era
+# cancelada no meio pela segunda.
+
+name: Publicar página do projeto
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-page
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Montar a árvore de gh-pages a partir de docs/
+        run: |
+          set -euo pipefail
+          rm -rf "$RUNNER_TEMP/site"
+          cp -r docs "$RUNNER_TEMP/site"
+          # Sem Jekyll: a página é HTML puro e não precisa de pré-processamento.
+          touch "$RUNNER_TEMP/site/.nojekyll"
+
+      - name: Force-push para gh-pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/site"
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Publica a página do projeto a partir de ${GITHUB_SHA:0:7}"
+          git push -f \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            gh-pages

@@ -1,0 +1,138 @@
+/*
+ * tailwind.input.css — fonte do CSS da página do projeto (docs/index.html).
+ *
+ * Recompile depois de qualquer mudança no HTML:
+ *   npm install && npm run build:css
+ *
+ * O resultado (docs/tailwind.css) é VERSIONADO de propósito: o workflow do GitHub
+ * Pages apenas copia docs/, sem etapa de build. Assim a página não depende de CDN,
+ * não carrega 400 KB de JavaScript e renderiza sem piscar.
+ */
+
+@import "tailwindcss";
+
+/* Onde procurar as classes usadas. */
+@source "./docs/index.html";
+
+/*
+ * Modo escuro por CLASSE, não por preferência do sistema: o modo claro é o padrão
+ * pedido, e o escuro é uma opção que o visitante escolhe. O padrão do Tailwind v4
+ * é seguir prefers-color-scheme, então esta linha é obrigatória.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-marca-400: oklch(0.78 0.13 210);
+  --color-marca-500: oklch(0.68 0.14 210);
+  --color-marca-600: oklch(0.58 0.13 210);
+  --color-marca-700: oklch(0.48 0.11 210);
+}
+
+@layer components {
+  .wrap {
+    @apply mx-auto w-full max-w-5xl px-5 sm:px-6;
+  }
+
+  /* min-w-0: item de grid/flex tem min-width:auto por padrão, e um <pre> largo
+     dentro dele estica a coluna inteira e cria rolagem horizontal na página. */
+  .card {
+    @apply min-w-0 rounded-xl border border-slate-200 bg-white p-6 transition
+           dark:border-slate-800 dark:bg-slate-900;
+  }
+  .card-hover {
+    @apply hover:-translate-y-0.5 hover:border-marca-500 dark:hover:border-marca-500;
+  }
+  .card h3 {
+    @apply mb-2 text-base font-semibold text-slate-900 dark:text-slate-100;
+  }
+  .card p {
+    @apply text-sm leading-relaxed text-slate-600 dark:text-slate-400;
+  }
+  .card-meta {
+    @apply mt-3 border-t border-slate-200 pt-2.5 text-xs text-slate-500
+           dark:border-slate-800 dark:text-slate-500;
+  }
+
+  .kicker {
+    @apply mb-2 block text-xs font-bold uppercase tracking-widest text-emerald-600
+           dark:text-emerald-400;
+  }
+  .sec-h2 {
+    @apply text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl
+           dark:text-slate-50;
+  }
+  .sec-p {
+    @apply mx-auto mt-3 max-w-2xl text-slate-600 dark:text-slate-400;
+  }
+
+  .tbl-wrap {
+    @apply overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800;
+  }
+  .tbl {
+    @apply w-full border-collapse text-sm;
+  }
+  .tbl th {
+    @apply border-b border-slate-200 bg-slate-100 px-4 py-3 text-left text-xs font-semibold
+           uppercase tracking-wide text-slate-600
+           dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400;
+  }
+  .tbl td {
+    @apply border-b border-slate-200 px-4 py-3 align-top text-slate-700
+           dark:border-slate-800 dark:text-slate-300;
+  }
+  .tbl tr:last-child td {
+    @apply border-b-0;
+  }
+  .tbl code {
+    @apply whitespace-nowrap;
+  }
+
+  .rid {
+    @apply whitespace-nowrap font-extrabold text-emerald-600 dark:text-emerald-400;
+  }
+
+  .codeblock {
+    @apply min-w-0 max-w-full overflow-x-auto rounded-xl border border-slate-200 bg-slate-50
+           p-5 text-[0.8rem] leading-relaxed text-slate-800
+           dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  .codeblock .c { @apply text-slate-500 dark:text-slate-500; }
+  .codeblock .k { @apply text-emerald-700 dark:text-emerald-400; }
+  .codeblock .r { @apply text-rose-700 dark:text-rose-400; }
+
+  .callout {
+    @apply mt-5 rounded-xl border border-marca-500/40 bg-marca-500/5 px-5 py-4 text-sm
+           text-slate-700 dark:text-slate-300;
+  }
+
+  .tick {
+    @apply mt-2 space-y-2;
+  }
+  .tick li {
+    @apply relative pl-6 text-sm text-slate-600 dark:text-slate-400;
+  }
+  .tick li::before {
+    content: "→";
+    @apply absolute left-0 font-bold text-emerald-600 dark:text-emerald-400;
+  }
+
+  .lnk {
+    @apply text-marca-700 underline-offset-2 hover:underline dark:text-marca-400;
+  }
+}
+
+@layer base {
+  code {
+    @apply rounded bg-slate-100 px-1.5 py-0.5 text-[0.87em] text-marca-700
+           dark:bg-slate-800 dark:text-marca-400;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  .codeblock code {
+    @apply bg-transparent p-0 text-inherit;
+  }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+}

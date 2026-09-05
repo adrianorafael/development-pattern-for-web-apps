@@ -1,0 +1,115 @@
+-- ─────────────────────────────────────────────────────────────
+-- database/schema.sql — estrutura base, executada pelo Wizard (R9)
+-- Parte de "Development Pattern for Web Apps".
+--
+-- REGRAS DESTE ARQUIVO
+--   1. Idempotente: rodar duas vezes não pode quebrar nada.
+--   2. utf8mb4 + InnoDB em todas as tabelas.
+--   3. Índice em toda coluna usada em WHERE, JOIN ou ORDER BY.
+--   4. Chave estrangeira declarada, não "garantida pela aplicação".
+--   5. {{prefixo}} é substituído pelo Wizard (vazio quando não há prefixo).
+-- ─────────────────────────────────────────────────────────────
+
+SET NAMES utf8mb4;
+SET time_zone = '+00:00';
+
+-- ── Controle de versão do schema (R13) ───────────────────────
+CREATE TABLE IF NOT EXISTS `{{prefixo}}schema_migrations` (
+  `versao`      VARCHAR(50)  NOT NULL,
+  `aplicada_em` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `duracao_ms`  INT UNSIGNED NULL,
+  PRIMARY KEY (`versao`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Configurações chave/valor do aplicativo ──────────────────
+CREATE TABLE IF NOT EXISTS `{{prefixo}}configuracoes` (
+  `chave`         VARCHAR(100) NOT NULL,
+  `valor`         TEXT         NULL,
+  `atualizado_em` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`chave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Usuários ─────────────────────────────────────────────────
+-- senha_hash guarda o resultado de password_hash(); NUNCA a senha nem md5/sha1.
+CREATE TABLE IF NOT EXISTS `{{prefixo}}usuarios` (
+  `id`               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nome`             VARCHAR(120) NOT NULL,
+  `email`            VARCHAR(190) NOT NULL,
+  `senha_hash`       VARCHAR(255) NOT NULL,
+  `papel`            ENUM('admin','usuario') NOT NULL DEFAULT 'usuario',
+  `ativo`            TINYINT(1)   NOT NULL DEFAULT 1,
+  `ultimo_acesso_em` DATETIME     NULL,
+  `criado_em`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_usuarios_email` (`email`),
+  KEY `idx_usuarios_papel_ativo` (`papel`, `ativo`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Recuperação de senha ─────────────────────────────────────
+-- Guarda o HASH do token, nunca o token: um vazamento da tabela não permite
+-- redefinir a senha de ninguém.
+CREATE TABLE IF NOT EXISTS `{{prefixo}}tokens_recuperacao` (
+  `id`         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `usuario_id` BIGINT UNSIGNED NOT NULL,
+  `token_hash` CHAR(64)     NOT NULL,
+  `expira_em`  DATETIME     NOT NULL,
+  `usado_em`   DATETIME     NULL,
+  `criado_em`  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_token_hash` (`token_hash`),
+  KEY `idx_token_usuario` (`usuario_id`, `expira_em`),
+  CONSTRAINT `fk_token_usuario` FOREIGN KEY (`usuario_id`)
+    REFERENCES `{{prefixo}}usuarios` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Tentativas de login (rate limiting, R7) ──────────────────
+CREATE TABLE IF NOT EXISTS `{{prefixo}}tentativas_login` (
+  `id`        BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `email`     VARCHAR(190)  NOT NULL,
+  `ip`        VARBINARY(16) NOT NULL,
+  `sucesso`   TINYINT(1)    NOT NULL DEFAULT 0,
+  `criado_em` DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_tentativas_email` (`email`, `criado_em`),
+  KEY `idx_tentativas_ip` (`ip`, `criado_em`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Auditoria (R7, R10) ──────────────────────────────────────
+CREATE TABLE IF NOT EXISTS `{{prefixo}}auditoria` (
+  `id`         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `usuario_id` BIGINT UNSIGNED NULL,
+  `acao`       VARCHAR(60)  NOT NULL,
+  `alvo`       VARCHAR(190) NULL,
+  `resultado`  VARCHAR(500) NULL,
+  `ip`         VARCHAR(45)  NULL,
+  `criado_em`  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_auditoria_acao_data` (`acao`, `criado_em`),
+  KEY `idx_auditoria_usuario` (`usuario_id`, `criado_em`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ─────────────────────────────────────────────────────────────
+-- TABELAS DO SEU DOMÍNIO — substitua o exemplo abaixo
+-- ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS `{{prefixo}}chamados` (
+  `id`            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `titulo`        VARCHAR(200) NOT NULL,
+  `descricao`     TEXT         NULL,
+  `status`        ENUM('aberto','andamento','fechado') NOT NULL DEFAULT 'aberto',
+  `prioridade`    TINYINT UNSIGNED NOT NULL DEFAULT 3,
+  `usuario_id`    BIGINT UNSIGNED NOT NULL,
+  `criado_em`     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_chamados_usuario` (`usuario_id`, `criado_em`),
+  KEY `idx_chamados_status_data` (`status`, `criado_em`),
+  CONSTRAINT `fk_chamados_usuario` FOREIGN KEY (`usuario_id`)
+    REFERENCES `{{prefixo}}usuarios` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Valores iniciais (INSERT IGNORE = idempotente) ───────────
+INSERT IGNORE INTO `{{prefixo}}configuracoes` (`chave`, `valor`) VALUES
+  ('versao_app',        '0.1.0'),
+  ('itens_por_pagina',  '20'),
+  ('manutencao',        '0');

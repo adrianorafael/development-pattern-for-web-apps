@@ -1,0 +1,42 @@
+{
+  "_comentario": [
+    "manifest.json — pacote de atualização. Parte de 'Development Pattern for Web Apps' (R10).",
+    "Gere os sha256 com: cd files && find . -type f -print0 | xargs -0 sha256sum",
+    "O painel recusa o pacote se qualquer sha256 divergir, se houver entrada não declarada,",
+    "ou se algum caminho sair das pastas permitidas (app, assets, admin, install).",
+    "Remova este campo _comentario no pacote real."
+  ],
+
+  "app":           "meu-app",
+  "versao":        "1.3.0",
+  "versao_minima": "1.2.0",
+  "php_minimo":    "8.1",
+  "extensoes":     ["pdo_mysql", "mbstring", "json", "zip", "fileinfo"],
+  "gerado_em":     "2026-09-05T14:20:00-03:00",
+
+  "migracoes": [
+    "0007_adiciona_anexos.sql",
+    "0008_indice_status_data.sql"
+  ],
+
+  "arquivos": [
+    {
+      "caminho": "app/Controllers/ChamadoController.php",
+      "sha256":  "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "caminho": "app/Views/chamados/lista.php",
+      "sha256":  "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "caminho": "assets/css/app.css",
+      "sha256":  "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+
+  "remover": [
+    "app/Views/chamados/antigo.php"
+  ],
+
+  "notas": "Adiciona anexos aos chamados. Requer storage/uploads gravável e 5 MB livres. A migração 0007 é aditiva; nenhum dado é removido."
+}

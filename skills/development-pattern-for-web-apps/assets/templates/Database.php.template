@@ -1,0 +1,228 @@
+<?php
+/**
+ * app/Core/Database.php
+ *
+ * Fábrica única de conexão PDO + auxiliares que tornam o caminho seguro
+ * também o caminho mais curto.
+ *
+ * Parte de "Development Pattern for Web Apps" — regra R5.
+ * Nenhum dado de usuário entra no TEXTO de uma query. Nunca.
+ */
+
+declare(strict_types=1);
+
+final class Database
+{
+    private static ?PDO $conexao = null;
+
+    /**
+     * @param array{host:string,porta:int,banco:string,usuario:string,senha:string,charset?:string} $cfg
+     */
+    public static function conectar(array $cfg): PDO
+    {
+        if (self::$conexao instanceof PDO) {
+            return self::$conexao;
+        }
+
+        $dsn = sprintf(
+            'mysql:host=%s;port=%d;dbname=%s;charset=%s',
+            $cfg['host'],
+            $cfg['porta'] ?? 3306,
+            $cfg['banco'],
+            $cfg['charset'] ?? 'utf8mb4'
+        );
+
+        $opcoes = [
+            // Falha vira exceção. Sem isso uma query quebrada devolve false e o
+            // código segue com dado errado, em silêncio.
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+
+            // ⚠️ O ITEM CRÍTICO DESTA CLASSE. O padrão do PDO é `true`: o PHP monta
+            // a query interpolando os parâmetros, e volta a existir superfície de
+            // injeção em cenários de charset. Com `false`, quem separa estrutura de
+            // dado é o próprio MySQL.
+            PDO::ATTR_EMULATE_PREPARES   => false,
+
+            // Um comando por chamada: fecha a porta do "; DROP TABLE".
+            PDO::MYSQL_ATTR_MULTI_STATEMENTS => false,
+
+            PDO::ATTR_STRINGIFY_FETCHES  => false,
+            PDO::ATTR_PERSISTENT         => false,
+        ];
+
+        try {
+            self::$conexao = new PDO($dsn, $cfg['usuario'], $cfg['senha'], $opcoes);
+        } catch (PDOException $e) {
+            // A mensagem original contém host, usuário e às vezes a senha.
+            // Ela vai para o log; o usuário vê uma frase genérica.
+            error_log('[DB] Falha ao conectar: ' . $e->getMessage());
+            throw new RuntimeException('Não foi possível conectar ao banco de dados.', 0, $e);
+        }
+
+        return self::$conexao;
+    }
+
+    /** Consulta que retorna várias linhas. */
+    public static function todos(string $sql, array $params = []): array
+    {
+        $stmt = self::$conexao->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    /** Consulta que retorna uma linha, ou null. */
+    public static function um(string $sql, array $params = []): ?array
+    {
+        $stmt = self::$conexao->prepare($sql);
+        $stmt->execute($params);
+        $linha = $stmt->fetch();
+        return $linha === false ? null : $linha;
+    }
+
+    /** Consulta que retorna um único valor escalar. */
+    public static function valor(string $sql, array $params = []): mixed
+    {
+        $stmt = self::$conexao->prepare($sql);
+        $stmt->execute($params);
+        $v = $stmt->fetchColumn();
+        return $v === false ? null : $v;
+    }
+
+    /** INSERT/UPDATE/DELETE. Retorna o número de linhas afetadas. */
+    public static function executar(string $sql, array $params = []): int
+    {
+        $stmt = self::$conexao->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->rowCount();
+    }
+
+    public static function ultimoId(): int
+    {
+        return (int) self::$conexao->lastInsertId();
+    }
+
+    /** Executa o callback em transação, com rollback automático em qualquer erro. */
+    public static function transacao(callable $fn): mixed
+    {
+        self::$conexao->beginTransaction();
+        try {
+            $resultado = $fn(self::$conexao);
+            self::$conexao->commit();
+            return $resultado;
+        } catch (Throwable $e) {
+            if (self::$conexao->inTransaction()) {
+                self::$conexao->rollBack();
+            }
+            throw $e;
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Auxiliares que existem porque estes são os pontos onde se escorrega
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * Gera os placeholders de um IN (...) — nunca os valores.
+     *
+     *   [$sql, $params] = Database::listaIn('SELECT * FROM p WHERE id IN (%s)', $ids);
+     *   $linhas = Database::todos($sql, $params);
+     *
+     * @return array{0:string,1:array}
+     */
+    public static function listaIn(string $sqlComPlaceholder, array $valores): array
+    {
+        $valores = array_values($valores);
+        if ($valores === []) {
+            // IN () é sintaxe inválida no MySQL. Uma condição sempre-falsa é o
+            // comportamento correto para uma lista vazia.
+            return [sprintf($sqlComPlaceholder, 'NULL'), []];
+        }
+        $marcadores = implode(',', array_fill(0, count($valores), '?'));
+        return [sprintf($sqlComPlaceholder, $marcadores), $valores];
+    }
+
+    /**
+     * Escapa os curingas do LIKE DENTRO DO VALOR. O valor continua sendo
+     * vinculado como parâmetro — isto não substitui o prepared statement.
+     *
+     *   $stmt->execute([':t' => '%' . Database::escaparLike($busca) . '%']);
+     */
+    public static function escaparLike(string $valor): string
+    {
+        return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $valor);
+    }
+
+    /**
+     * Resolve um identificador (coluna, direção) a partir de uma ALLOWLIST.
+     * É a única forma aceita de ter ORDER BY dinâmico neste padrão.
+     *
+     *   $coluna = Database::identificador($_GET['ordenar'] ?? null,
+     *               ['nome' => 'p.nome', 'data' => 'p.criado_em'], 'p.criado_em');
+     */
+    public static function identificador(?string $chave, array $permitidos, string $padrao): string
+    {
+        if ($chave === null) {
+            return $padrao;
+        }
+        return $permitidos[$chave] ?? $padrao;
+    }
+
+    /** Inteiro com faixa — para LIMIT, OFFSET e paginação. */
+    public static function inteiro(mixed $valor, int $min, int $max, int $padrao): int
+    {
+        $n = filter_var($valor, FILTER_VALIDATE_INT);
+        if ($n === false) {
+            return $padrao;
+        }
+        return max($min, min($max, $n));
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   EXEMPLOS — o jeito certo de cada caso que costuma escorregar
+   ─────────────────────────────────────────────────────────────
+
+   // Consulta simples
+   $u = Database::um('SELECT id, nome FROM usuarios WHERE id = :id', [':id' => $id]);
+
+   // Autorização: o dono entra no WHERE, não num if depois (R7)
+   $pedido = Database::um(
+       'SELECT * FROM pedidos WHERE id = :id AND usuario_id = :u',
+       [':id' => $id, ':u' => $_SESSION['usuario_id']]
+   );
+   if ($pedido === null) { http_response_code(404); exit; }
+
+   // IN (...)
+   [$sql, $params] = Database::listaIn('SELECT id, nome FROM produtos WHERE id IN (%s)', $ids);
+   $produtos = Database::todos($sql, $params);
+
+   // LIKE
+   $produtos = Database::todos(
+       'SELECT id, nome FROM produtos WHERE nome LIKE :t LIMIT 50',
+       [':t' => '%' . Database::escaparLike($busca) . '%']
+   );
+
+   // ORDER BY dinâmico + paginação
+   $coluna = Database::identificador($_GET['ordenar'] ?? null,
+                 ['nome' => 'p.nome', 'data' => 'p.criado_em'], 'p.criado_em');
+   $dir    = Database::identificador(strtolower($_GET['dir'] ?? ''),
+                 ['asc' => 'ASC', 'desc' => 'DESC'], 'DESC');
+   $lim    = Database::inteiro($_GET['por_pagina'] ?? null, 1, 100, 20);
+   $off    = Database::inteiro($_GET['offset'] ?? null, 0, 1000000, 0);
+
+   // scan-sql:allow — $coluna e $dir saem de Database::identificador(), não da entrada
+   $stmt = $pdo->prepare("SELECT * FROM pedidos p ORDER BY $coluna $dir LIMIT :l OFFSET :o");
+   $stmt->bindValue(':l', $lim, PDO::PARAM_INT);
+   $stmt->bindValue(':o', $off, PDO::PARAM_INT);
+   $stmt->execute();
+
+   // Transação
+   Database::transacao(function (PDO $pdo) use ($de, $para, $valor) {
+       $pdo->prepare('UPDATE contas SET saldo = saldo - :v WHERE id = :c')
+           ->execute([':v' => $valor, ':c' => $de]);
+       $pdo->prepare('UPDATE contas SET saldo = saldo + :v WHERE id = :c')
+           ->execute([':v' => $valor, ':c' => $para]);
+   });
+   ───────────────────────────────────────────────────────────── */

@@ -1,0 +1,25 @@
+{
+  "name": "development-pattern-for-web-apps",
+  "version": "1.0.0",
+  "description": "Guarda-corpo para construir apps web pessoais com um agente de IA: PHP+MySQL na Hostinger e Next.js+Tailwind na Vercel. SQL sempre parametrizado, segredos fora do repositório, repositório privado por padrão, Wizard de instalação, painel de atualização por pacote ZIP, e um roteiro de testes em Markdown para o Claude Cowork executar QA e regressão.",
+  "author": {
+    "name": "adrianorafael",
+    "url": "https://github.com/adrianorafael"
+  },
+  "homepage": "https://adrianorafael.github.io/development-pattern-for-web-apps/",
+  "repository": "https://github.com/adrianorafael/development-pattern-for-web-apps",
+  "license": "MIT",
+  "keywords": [
+    "php",
+    "mysql",
+    "hostinger",
+    "nextjs",
+    "vercel",
+    "tailwind",
+    "sql-injection",
+    "seguranca",
+    "spec-driven-development",
+    "qa",
+    "claude-cowork"
+  ]
+}

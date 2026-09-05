@@ -1,0 +1,66 @@
+# ─────────────────────────────────────────────────────────────
+# .gitignore — projeto Next.js + Tailwind (Vercel)
+# Parte de "Development Pattern for Web Apps" — regra R1.
+# COPIE ISTO ANTES DO PRIMEIRO `git add`.
+# ─────────────────────────────────────────────────────────────
+
+# Ambiente — valores reais NUNCA versionados
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# Dependências
+/node_modules
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Build
+/.next/
+/out/
+/build
+/dist
+next-env.d.ts
+*.tsbuildinfo
+
+# Vercel
+.vercel
+
+# Dados reais
+*.sql
+!db/schema.sql
+!db/migrations/*.sql
+*.sql.gz
+dumps/
+backups/
+
+# Uploads locais
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Testes
+/coverage
+/playwright-report
+/test-results
+/blob-report
+/.playwright
+qa/evidencias/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Editores e sistema
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+*.pem
