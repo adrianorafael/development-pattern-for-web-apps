@@ -58,8 +58,9 @@ Primeira versão.
   template de registro do ciclo.
 - **R17: o texto é escrito na língua de quem usa, e nunca entrega que foi gerado.**
   Referência dedicada com o protocolo de pesquisa do domínio antes da primeira frase de
-  interface, dossiês de banco e de ITSM montados a partir de fontes reais, a proibição do
-  travessão com tabela de substituição, a lista das muletas que marcam texto gerado, os
+  interface (o protocolo e as cinco dimensões a extrair de qualquer setor, sem dossiês
+  prontos: um dossiê congelado envelhece parecendo autoritativo e convida a pular a
+  pesquisa), a proibição do travessão com tabela de substituição, a lista das muletas, os
   padrões de botão, mensagem de erro, estado vazio e confirmação destrutiva, e as regras de
   justificação com hifenização. Acompanha o `scan-linguagem.sh`, que em Markdown ignora o
   que está entre crases, onde o caractere está sendo citado e não usado.

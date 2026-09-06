@@ -71,109 +71,70 @@ bash skills/development-pattern-for-web-apps/assets/scripts/scan-linguagem.sh
 
 Cada setor tem vocabulário próprio, expectativa de tom e, às vezes, obrigação legal sobre o
 que se pode dizer. Escrever "seu dinheiro sumiu" num app bancário e "chamado encerrado com
-sucesso!" num ITSM são erros do mesmo tipo: linguagem que ignora a convenção de quem lê.
+sucesso!" num sistema de suporte são erros do mesmo tipo: linguagem que ignora a convenção de
+quem lê.
 
-**O protocolo, na Fase 1 (pesquisa):**
+> ⚠️ **Este documento não carrega respostas de domínio, de propósito.**
+>
+> Seria fácil listar aqui o vocabulário de banco, de ITSM, de saúde. Seria também um erro,
+> pelo mesmo motivo que esta skill não vendoriza documentação de terceiros: um dossiê
+> congelado envelhece parecendo autoritativo, e a existência dele convida o agente a pular a
+> pesquisa, que é justamente a regra. Convenção de setor muda, e o que vale é o produto real
+> que o usuário do seu app já usa hoje.
+>
+> **Pesquise o domínio do projeto que está na sua frente, nesta sessão.** Um dossiê pronto
+> nunca substitui isso.
 
-1. Descubra quem lê: cliente final, colaborador interno, técnico, gestor. Não é o mesmo texto.
-2. Abra de três a cinco produtos reais do mesmo domínio e leia as telas equivalentes.
-3. Anote o **vocabulário canônico**: os termos que o setor usa e que o usuário reconhece.
-4. Anote o **tom**: formal, neutro, próximo. E o que o setor **nunca** faz.
-5. Registre no `specs/<slug>.md`, na seção de linguagem, com as fontes lidas (R4).
+### O protocolo, na Fase 1 (pesquisa)
 
-Sem isso, o agente escreve na única língua que conhece de fábrica, que é a genérica.
+1. **Descubra quem lê.** Cliente final, colaborador interno, técnico, gestor. Não é o mesmo
+   texto, e a diferença entre eles costuma ser maior que a diferença entre setores.
+2. **Abra de três a cinco produtos reais do mesmo domínio** e leia as telas equivalentes às
+   que você vai construir: login, listagem, formulário, erro, confirmação, estado vazio.
+   Produto real vale mais que artigo sobre o setor.
+3. **Extraia as cinco dimensões** da tabela abaixo.
+4. **Confirme com quem conhece o domínio**, se houver alguém. Uma frase de quem atende o
+   cliente vale mais que uma hora de leitura.
+5. **Registre em `specs/<slug>.md`**, na seção de linguagem, com as fontes lidas e a data (R4).
 
-### Bancos e produtos financeiros
+### As cinco dimensões a extrair de qualquer domínio
 
-Fontes lidas nesta redação:
-[UX Writing e o Mercado Financeiro](https://medium.com/@uxschwarz/ux-writing-e-o-mercado-financeiro-uma-jornada-complexa-por-uma-comunica%C3%A7%C3%A3o-essencialmente-delicada-3e660f4fb9cb) ·
-[Clareza e segurança: a base da confiança](https://uxschwarz.medium.com/clareza-e-seguran%C3%A7a-a-base-da-confian%C3%A7a-da-pessoa-usu%C3%A1ria-em-um-produto-financeiro-e7c57fd434bb) ·
-[A comunicação de sistemas e aplicativos financeiros](https://alexhobigomes.medium.com/ux-writing-a-comunica%C3%A7%C3%A3o-de-sistemas-e-aplicativos-financeiros-com-seus-usu%C3%A1rios-a9b22ea2ce0b)
+O que muda entre setores são as respostas. As perguntas são sempre estas:
 
-O que a leitura mostra:
-
-- **Clareza e segurança se revezam como protagonistas.** O texto precisa tranquilizar sem
-  esconder, e informar sem assustar. Toda tela que mexe com dinheiro é lida em estado de
-  alerta.
-- **Simplificar sem distorcer.** O jargão financeiro exclui: boa parte do público não é
-  bancarizada ou não domina termos econômicos, e falar de dinheiro ainda é tabu. Traduza o
-  conceito com analogia e exemplo prático, mas não invente um termo que não existe no
-  extrato, no contrato ou no atendimento.
-- **Tom casual e respeitoso funciona** (o Nubank consolidou isso no Brasil), desde que a
-  informação venha inteira. Simplicidade, transparência e proximidade não autorizam omitir
-  taxa, prazo ou risco.
-- **O equilíbrio difícil é quanto informar.** Informação demais numa tela de transferência
-  paralisa; de menos gera ligação para a central.
-
-Convenções práticas:
-
-| Situação | Escreva assim | Nunca |
+| Dimensão | O que apurar | Como reconhecer que você achou |
 | --- | --- | --- |
-| Valor negativo | `Saldo: -R$ 120,00` com rótulo claro | `Você está no vermelho` |
-| Falha na transferência | `Não conseguimos concluir a transferência. O valor não saiu da sua conta.` | `Erro 500` ou `Ops, algo deu errado` |
-| Confirmação de Pix | `Você vai transferir R$ 250,00 para Maria Souza, CPF ***.456.789-**. Confirmar?` | `Deseja continuar?` |
-| Taxa | `Tarifa de R$ 3,90, cobrada no dia 10` | `Pequena taxa pode ser aplicada` |
-| Prazo | `O valor cai na conta em até 1 dia útil` | `Em breve` |
-| Bloqueio de segurança | Diga o que aconteceu e o caminho concreto para resolver | Culpar o usuário |
+| **Vocabulário canônico** | Os termos que o setor usa e que o usuário reconhece, e quais deles **não** são sinônimos entre si | Você consegue listar dois termos que parecem iguais e explicar por que o setor os separa |
+| **Tom** | Formal, neutro, próximo. E o quanto de emoção o setor tolera | Você consegue dizer uma frase que soaria natural num produto do setor e outra que soaria falsa |
+| **O que nunca se diz** | A frase que o setor evita, e por quê. Costuma ter origem legal, regulatória ou em incidente antigo | Você consegue nomear pelo menos uma proibição e a razão dela |
+| **O que sempre se diz** | A informação que o usuário espera encontrar e cuja ausência gera contato com o suporte | Você consegue dizer o que precisa estar em toda tela de um certo tipo |
+| **Estado emocional de quem lê** | A pessoa chega àquela tela tranquila, com pressa, com medo, com o trabalho parado | Você consegue justificar por que texto animado ajuda ou atrapalha ali |
 
-Regra de ouro do setor: **depois de uma operação com dinheiro, diga sempre o que aconteceu
-com o dinheiro.** "Não foi possível" sem dizer se o valor saiu ou não gera pânico e ligação.
+A quinta é a que mais muda a escrita e a que menos gente investiga. Quem está com o trabalho
+parado não quer entusiasmo; quem está com medo de perder dinheiro não quer ambiguidade.
 
-### ITSM, service desk e suporte
+### Como fica o registro
 
-Fontes lidas nesta redação:
-[Glossário de termos de ITSM (ManageEngine)](https://blogs.manageengine.com/pt-br/2024/07/31/conheca-os-principais-termos-de-itsm-um-glossario-completo.html) ·
-[Gestão de incidentes, requisições e mudanças (Qualitor)](https://www.qualitor.com.br/blog/interna/gestao-de-incidentes-requisicoes-e-mudancas-como-o-itsm-orquestra-tudo) ·
-[Diferença entre incidente, requisição e evento](https://penseemti.com.br/artigos/diferenca-entre-incidente-requisicao-e-evento/) ·
-[Incidentes ou requisições (HDI Brasil)](https://hdibrasil.com.br/conteudo/incidentes-ou-requisicoes-como-classificar-problemas-de-desempenho-de-servicos)
+Exemplo do **formato** da saída, não de conteúdo para reaproveitar:
 
-O vocabulário canônico, que não é intercambiável:
+```markdown
+## Linguagem (R17)
 
-| Termo | O que é | Não confundir com |
-| --- | --- | --- |
-| **Chamado** (ou ticket) | O registro que o usuário abre | É o continente, não o conteúdo |
-| **Incidente** | Algo quebrou ou parou de funcionar como deveria, causando interrupção | Requisição |
-| **Requisição de serviço** | Pedido de algo previsto no catálogo, sem que nada esteja quebrado | Incidente |
-| **Problema** | A causa raiz por trás de um ou mais incidentes | Incidente |
-| **Evento** | Mudança de estado detectada por monitoramento | Incidente |
-| **Mudança** | Alteração planejada em um serviço | Requisição |
-| **SLA** | O prazo acordado, com consequência contratual | "prazo estimado" |
-| **Service desk** | O ponto único de contato (SPOC) entre usuário e TI | Help desk, que é mais restrito |
-| **Catálogo de serviços** | A lista do que pode ser pedido | Menu de telas |
+| Quem lê | Analista de suporte interno, e o colaborador que abre o pedido |
+| Domínio | Suporte de TI interno |
+| Tom | Neutro e objetivo. Sem exclamação, sem emoji |
+| Vocabulário | <os termos apurados, e os pares que o setor separa> |
+| Nunca dizer | <o que a pesquisa mostrou que o setor evita, e por quê> |
+| Sempre dizer | <a informação cuja ausência gera contato com o suporte> |
+| Estado de quem lê | <tranquilo / com pressa / com o trabalho parado> |
 
-Por que isso importa no texto e não só no banco de dados: a distinção entre incidente e
-requisição define priorização, SLA e a comunicação com o usuário. Um formulário que chama
-tudo de "problema" empurra pedido de acesso para a fila de urgência.
+**Fontes** (lidas em <data>): <produto 1, tela X> · <produto 2, tela Y> · <produto 3, tela Z>
+```
 
-Convenções práticas:
-
-| Situação | Escreva assim | Nunca |
-| --- | --- | --- |
-| Abertura | `Abrir chamado` | `Criar novo registro` |
-| Escolha do tipo | `Alguma coisa parou de funcionar` / `Preciso solicitar um serviço` | `Incidente` / `Requisição` sem explicação |
-| Status | `Aberto`, `Em atendimento`, `Aguardando você`, `Resolvido`, `Fechado` | `Pendente`, que não diz de quem |
-| Prazo | `Prazo de atendimento: até 4 horas úteis (SLA Alto)` | `Responderemos em breve` |
-| Fechamento | `Resolvido. Se o problema voltar, reabra este chamado em até 7 dias.` | `Chamado encerrado com sucesso!` |
-| Aguardando o usuário | `Precisamos de uma informação sua para continuar` | `Pendente de terceiros` |
-
-O usuário de ITSM está com o trabalho parado. Texto animado irrita: ele quer prazo, número
-do chamado e o que fazer agora.
-
-### Outros domínios: o que investigar
-
-| Domínio | Vocabulário a respeitar | Tom | Armadilha |
-| --- | --- | --- | --- |
-| Saúde | paciente, prontuário, agendamento, profissional | Formal e cuidadoso | Nunca sugerir diagnóstico nem minimizar sintoma |
-| Educação | aluno, turma, matrícula, avaliação, frequência | Claro e encorajador | Não infantilizar o adulto |
-| Jurídico | parte, processo, prazo, protocolo, petição | Formal | Não simplificar a ponto de mudar o sentido legal |
-| E-commerce | pedido, carrinho, frete, prazo de entrega, devolução | Direto e objetivo | Prazo e frete sempre explícitos, nunca "grátis*" |
-| Governo | cidadão, requerimento, protocolo, órgão | Impessoal e acessível | Linguagem simples é exigência, não estilo |
-| Interno corporativo | o jargão da própria empresa | Neutro | Copiar o jargão errado é pior que não usar nenhum |
-
-**Quando não houver referência disponível, diga isso** em vez de inventar um tom.
+Se a pesquisa não foi possível, isso vai escrito na spec, em vez de ser preenchido de
+memória: *"não consegui abrir produtos do domínio; a linguagem abaixo é uma proposta neutra,
+a revisar com quem conhece o setor."*
 → [protocolo-de-verificacao.md](protocolo-de-verificacao.md)
 
----
 
 ## 3. Microcopy: os lugares onde o texto decide
 

@@ -566,30 +566,39 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
     A segunda metade da regra é <b class="font-semibold text-gray-950 dark:text-white">pesquisar o
     domínio</b> antes de escrever a primeira frase de interface. Cada setor tem vocabulário próprio,
     expectativa de tom e, às vezes, obrigação legal sobre o que se pode dizer. Escrever "seu dinheiro
-    sumiu" num app bancário e "chamado encerrado com sucesso!" num ITSM são erros do mesmo tipo:
-    linguagem que ignora a convenção de quem lê.</p>
+    sumiu" num app bancário e "chamado encerrado com sucesso!" num sistema de suporte são erros do
+    mesmo tipo: linguagem que ignora a convenção de quem lê.</p>
+
+  <p class="destaque prosa">
+    <b class="font-semibold">A skill não carrega dossiês de domínio, de propósito.</b> Seria fácil
+    listar o vocabulário de banco, de saúde, de suporte. Seria também um erro, pelo mesmo motivo que
+    ela não vendoriza documentação de terceiros: um dossiê congelado envelhece parecendo autoritativo,
+    e a existência dele convida o agente a pular a pesquisa, que é justamente a regra. O que a
+    referência traz é o protocolo e as perguntas, não as respostas.
+  </p>
 
   <div class="mt-6 grid gap-5 lg:grid-cols-2">
-    <div class="cartao"><h3>Banco: clareza e segurança se revezam</h3>
-      <p>Toda tela que mexe com dinheiro é lida em estado de alerta. O texto precisa tranquilizar sem
-         esconder, e informar sem assustar. Simplificar o jargão sem distorcer o que está no contrato.</p>
+    <div class="cartao"><h3>O protocolo</h3>
       <ul class="setas">
-        <li><code>Não conseguimos concluir a transferência. O valor não saiu da sua conta.</code></li>
-        <li>Nunca <code>Ops, algo deu errado</code> depois de uma operação com dinheiro</li>
-        <li>Tarifa e prazo sempre explícitos: <code>R$ 3,90, cobrada no dia 10</code></li>
+        <li>Descobrir quem lê: cliente final, colaborador interno, técnico, gestor</li>
+        <li>Abrir de três a cinco produtos reais do domínio e ler as telas equivalentes</li>
+        <li>Extrair as cinco dimensões ao lado</li>
+        <li>Confirmar com quem conhece o setor, se houver alguém</li>
+        <li>Registrar na spec, com as fontes lidas e a data</li>
       </ul>
-      <div class="cartao-nota">Regra de ouro do setor: depois de uma operação com dinheiro, diga sempre
-        o que aconteceu com o dinheiro.</div></div>
-    <div class="cartao"><h3>ITSM: o vocabulário não é intercambiável</h3>
-      <p>Incidente é algo que quebrou. Requisição é um pedido do catálogo, sem nada quebrado. A distinção
-         define priorização, SLA e a comunicação com o usuário.</p>
+      <div class="cartao-nota">Produto real que o usuário já usa vale mais que artigo sobre o setor.
+        Se a pesquisa não foi possível, isso vai escrito na spec, em vez de preenchido de memória.</div></div>
+    <div class="cartao"><h3>As cinco dimensões</h3>
+      <p>O que muda entre setores são as respostas. As perguntas são sempre estas:</p>
       <ul class="setas">
-        <li><code>Abrir chamado</code>, nunca <code>Criar novo registro</code></li>
-        <li><code>Aguardando você</code>, nunca <code>Pendente</code>, que não diz de quem</li>
-        <li><code>Prazo de atendimento: até 4 horas úteis (SLA Alto)</code></li>
+        <li><b class="font-semibold text-gray-800 dark:text-gray-200">Vocabulário canônico</b>, e quais termos o setor separa de propósito</li>
+        <li><b class="font-semibold text-gray-800 dark:text-gray-200">Tom</b>, e quanta emoção ele tolera</li>
+        <li><b class="font-semibold text-gray-800 dark:text-gray-200">O que nunca se diz</b>, e a razão legal ou histórica</li>
+        <li><b class="font-semibold text-gray-800 dark:text-gray-200">O que sempre se diz</b>, cuja ausência gera contato com o suporte</li>
+        <li><b class="font-semibold text-gray-800 dark:text-gray-200">O estado emocional de quem lê</b> ao chegar naquela tela</li>
       </ul>
-      <div class="cartao-nota">Quem abre chamado está com o trabalho parado. Texto animado irrita: ele
-        quer prazo, número do chamado e o que fazer agora.</div></div>
+      <div class="cartao-nota">A quinta é a que mais muda a escrita e a que menos gente investiga. Quem
+        está com o trabalho parado não quer entusiasmo; quem teme perder dinheiro não quer ambiguidade.</div></div>
   </div>
 
   <p class="destaque prosa">

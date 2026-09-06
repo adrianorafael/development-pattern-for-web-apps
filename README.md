@@ -456,13 +456,30 @@ o travessão está sendo citado e não usado.
 
 **A segunda metade da regra é pesquisar o domínio** antes de escrever a primeira frase de
 interface. Escrever "seu dinheiro sumiu" num app bancário e "chamado encerrado com sucesso!"
-num ITSM são erros do mesmo tipo: linguagem que ignora a convenção de quem lê.
+num sistema de suporte são erros do mesmo tipo: linguagem que ignora a convenção de quem lê.
 
-| Domínio | O que a pesquisa mostra |
+**A skill não carrega dossiês de domínio, de propósito.** Seria fácil listar aqui o
+vocabulário de banco, de saúde, de suporte. Seria também um erro, pelo mesmo motivo que ela
+não vendoriza documentação de terceiros: um dossiê congelado envelhece parecendo autoritativo,
+e a existência dele convida o agente a pular a pesquisa, que é justamente a regra. O que a
+referência traz é o protocolo e as perguntas, não as respostas.
+
+O protocolo: descobrir quem lê, abrir de três a cinco produtos reais do domínio e ler as
+telas equivalentes, extrair as cinco dimensões abaixo, confirmar com quem conhece o setor, e
+registrar na spec com as fontes e a data. Produto real que o usuário já usa vale mais que
+artigo sobre o setor.
+
+| Dimensão | O que apurar |
 | --- | --- |
-| **Banco** | Clareza e segurança se revezam como protagonistas, porque toda tela com dinheiro é lida em estado de alerta. Simplificar o jargão sem distorcer o que está no contrato. Regra de ouro: depois de uma operação com dinheiro, diga sempre o que aconteceu com o dinheiro. `Não conseguimos concluir a transferência. O valor não saiu da sua conta.`, nunca `Ops, algo deu errado`. |
-| **ITSM** | O vocabulário não é intercambiável: incidente é algo que quebrou, requisição é um pedido do catálogo. A distinção define priorização, SLA e comunicação. `Abrir chamado`, não `Criar novo registro`. `Aguardando você`, não `Pendente`, que não diz de quem. Quem abre chamado está com o trabalho parado: quer prazo e número, não animação. |
-| **Outros** | A referência traz saúde, educação, jurídico, e-commerce, governo e interno corporativo, com o vocabulário a respeitar, o tom e a armadilha de cada um. |
+| **Vocabulário canônico** | Os termos que o setor usa, e quais deles **não** são sinônimos entre si |
+| **Tom** | Formal, neutro ou próximo, e quanta emoção o setor tolera |
+| **O que nunca se diz** | A frase que o setor evita, e a razão legal, regulatória ou histórica |
+| **O que sempre se diz** | A informação cuja ausência gera contato com o suporte |
+| **Estado emocional de quem lê** | Chega tranquilo, com pressa, com medo, ou com o trabalho parado |
+
+A quinta é a que mais muda a escrita e a que menos gente investiga. Quem está com o trabalho
+parado não quer entusiasmo; quem teme perder dinheiro não quer ambiguidade. Se a pesquisa não
+foi possível, isso vai escrito na spec, em vez de preenchido de memória.
 
 A terceira parte é tipográfica: corpo de texto **justificado**, com `hyphens: auto` e o idioma
 declarado no `<html>`. Justificar sem hifenizar é pior que não justificar, porque o navegador

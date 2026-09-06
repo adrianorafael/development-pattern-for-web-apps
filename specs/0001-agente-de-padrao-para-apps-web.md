@@ -26,6 +26,10 @@ mesmas exigências de segurança, instalação, atualização e teste.
 - Outras hospedagens além de Hostinger e Vercel.
 - Executar os testes: a skill **gera** o roteiro; quem executa é o Claude Cowork ou o autor.
 - Substituir revisão humana. A skill reduz a chance de erro; não elimina a leitura do diff.
+- **Carregar conhecimento de domínio pronto.** A R17 manda pesquisar o setor do projeto; ela
+  não traz dossiês de banco, ITSM ou saúde. Um dossiê congelado envelhece parecendo
+  autoritativo e convida o agente a pular a pesquisa, que é a regra. Vale aqui o mesmo
+  princípio que impede vendorizar documentação de terceiros.
 
 ## 3. Requisitos funcionais
 
@@ -153,8 +157,6 @@ RF-007
 | Item de grid tem `min-width: auto` e estica a coluna | medido no Chromium 141, 375 px | ✅ 2026-09-05 |
 | `overflow` no `<body>` é propagado para o viewport | medido no Chromium 141 | ✅ 2026-09-05 |
 | Empurrar `gh-pages` **não** habilita o Pages sozinho | 404 observado no repositório novo | ✅ 2026-09-05 |
-| Convenções de linguagem em produtos financeiros | uxschwarz e alexhobigomes no Medium, lidos nesta sessão | ✅ 2026-09-05 |
-| Vocabulário canônico de ITSM (incidente, requisição, problema) | ManageEngine, Qualitor, HDI Brasil, PenseemTI | ✅ 2026-09-05 |
 | Justificar sem hifenizar abre rios de espaço | medido no Chromium 141 a 375 px | ✅ 2026-09-05 |
 | Superfície do CLI e da API REST da Vercel | ⚠️ **não verificada**: vercel.com bloqueado pelo proxy desta sessão; a referência instrui o agente a confirmar com `vercel --help` e a doc | ⚠️ pendente |
 
