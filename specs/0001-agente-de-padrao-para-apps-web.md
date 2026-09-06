@@ -51,6 +51,8 @@ mesmas exigências de segurança, instalação, atualização e teste.
 | RF-014 | Publica uma página do projeto em Tailwind, com modo claro padrão e escuro opcional. |
 | RF-015 | Conecta-se à conta Vercel do autor para diagnosticar e corrigir build quebrado, em ciclo com teto. |
 | RF-016 | Faz o texto de interface seguir as convenções do domínio, sem travessão e com corpo justificado. |
+| RF-017 | Decide, a cada modificação de um app, quais documentos precisam ser atualizados no mesmo commit. |
+| RF-018 | Impede que qualquer artefato do projeto credite uma ferramenta de IA como autora. |
 
 ## 4. Requisitos não funcionais
 
@@ -65,10 +67,10 @@ mesmas exigências de segurança, instalação, atualização e teste.
 ## 5. Modelo de conteúdo
 
 ```
-SKILL.md            17 regras · 8 fases · 3 portões · roteamento de referências
-references/         17 documentos, um por área de risco
-assets/templates/   19 arquivos copiáveis
-assets/scripts/     3 scanners executáveis
+SKILL.md            18 regras · 8 fases · 3 portões · roteamento de referências
+references/         18 documentos, um por área de risco
+assets/templates/   20 arquivos copiáveis
+assets/scripts/     4 scanners executáveis
 docs/               página do projeto (Tailwind compilado, claro/escuro)
 ```
 
@@ -111,7 +113,7 @@ RF-003
   QUANDO scan-secrets.sh roda
   ENTÃO ele reporta achado de severidade ALTA
 
-  DADO os 18 templates deste repositório
+  DADO os 20 templates deste repositório
   QUANDO scan-secrets.sh roda sobre eles
   ENTÃO ele sai limpo: todos os placeholders são reconhecidos como tais
 
@@ -120,6 +122,21 @@ RF-007
   QUANDO a Fase 5 conclui
   ENTÃO existe qa/roteiro-de-testes.md com as seis suítes, a matriz de rastreabilidade,
     e os requisitos sem cobertura declarados por nome
+
+RF-017
+  DADO um commit que acrescenta uma rota nova a um app
+  QUANDO a Fase 6 conclui
+  ENTÃO o mesmo commit traz README, CHANGELOG, spec, roteiro de QA, versão e página
+    atualizados, porque é o que a matriz de mudança para documento exige dessa linha
+
+  DADO um commit que só renomeia variáveis internas
+  QUANDO a matriz é consultada
+  ENTÃO nenhum documento é exigido, e a decisão de não escrever nada fica registrada
+
+RF-018
+  DADO uma mensagem de commit contendo "Co-Authored-By: Claude"
+  QUANDO o hook commit-msg roda
+  ENTÃO o commit é recusado, com a linha ofensora e o número dela na tela
 ```
 
 ## 9. Casos de teste
@@ -129,18 +146,21 @@ RF-007
 | CT-001 | RF-002 | Fixture ruim (PHP e TS) → 11 achados |
 | CT-002 | RF-002 | Fixture bom (PHP e TS) → limpo |
 | CT-003 | RF-003 | Fixture com credencial → achado ALTA |
-| CT-004 | RF-003 | Os 18 templates → limpo |
+| CT-004 | RF-003 | Os 20 templates → limpo |
 | CT-005 | RF-008 | `php -l install-wizard.php.template` → sem erro de sintaxe |
 | CT-006 | RF-009 | `php -l updater.php.template` → sem erro de sintaxe |
 | CT-007 | não se aplica | `manifest.json.template` é JSON válido |
 | CT-008 | não se aplica | `pages.yml` é YAML válido |
-| CT-009 | não se aplica | Contagens (17 regras, 17 referências, 19 templates) batem entre SKILL, README e página |
+| CT-009 | não se aplica | Contagens (18 regras, 18 referências, 20 templates) batem entre SKILL, README e página |
 | CT-013 | RF-016 | `scan-linguagem.sh` acusa travessão e muleta em fixture ruim, e passa limpo no bom |
 | CT-014 | RF-016 | Repositório inteiro sem travessão fora das citações em crases |
 | CT-015 | RF-016 | Página justificada com hifenização em 1440 px, à esquerda em 375 px |
 | CT-010 | RF-014 | Página sem rolagem horizontal e sem erro de console em 1440 px e 375 px, nos dois temas |
 | CT-011 | RF-014 | Modo claro é o padrão; o botão alterna, persiste em `localStorage` e sobrevive ao reload |
 | CT-012 | RF-014 | Toda classe usada em `docs/index.html` existe em `docs/tailwind.css` |
+| CT-016 | RF-017 | `scan-doc-sync.sh` acusa CHANGELOG, `.env.example` e versão parados num staging com código novo, e sai limpo quando eles acompanham |
+| CT-017 | RF-018 | `commit-msg.template` recusa mensagem com `Co-Authored-By` de IA, "Generated with" ou link de sessão, e aceita mensagem limpa |
+| CT-018 | RF-018 | O histórico deste repositório não tem nenhum trailer de atribuição de IA |
 
 ## 10. Evidências
 

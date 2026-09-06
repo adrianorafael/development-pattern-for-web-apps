@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# Hook de commit-msg: "Development Pattern for Web Apps", regra R18.
+#
+# Bloqueia atribuição de IA na mensagem de commit. Os seus projetos são seus: o
+# histórico não menciona a ferramenta que ajudou a escrever, do mesmo jeito que não
+# menciona o editor de texto.
+#
+# Instalar:
+#   cp skills/development-pattern-for-web-apps/assets/templates/commit-msg.template .git/hooks/commit-msg
+#   chmod +x .git/hooks/commit-msg
+#
+# Este hook existe porque alguns ambientes acrescentam o trailer AUTOMATICAMENTE,
+# depois que o agente escreveu a mensagem. Confiar na memória do agente não basta:
+# o hook pega o que for acrescentado depois dele.
+#
+# Ignorar (só quando você tem certeza):
+#   git commit --no-verify
+
+set -uo pipefail
+ARQUIVO="$1"
+[ -f "$ARQUIVO" ] || exit 0
+
+PADROES=(
+  'Co-Authored-By:.*(Claude|Anthropic|Copilot|Cursor|GPT|Gemini|AI)'
+  'Co-authored-by:.*(Claude|Anthropic|Copilot|Cursor|GPT|Gemini)'
+  'Generated with .*(Claude|Anthropic|Copilot|Cursor)'
+  '🤖 Generated'
+  'Claude-Session:'
+  'claude\.ai/code'
+  'Assisted-By:.*(Claude|Anthropic|Copilot|GPT)'
+)
+
+# Uma linha pode casar com mais de um padrão. Reporta cada linha uma vez só.
+LINHAS=""
+for p in "${PADROES[@]}"; do
+  LINHAS="$LINHAS$(grep -inE "$p" "$ARQUIVO" || true)
+"
+done
+LINHAS="$(printf '%s' "$LINHAS" | grep -v '^$' | sort -t: -k1,1n -u || true)"
+
+if [ -n "$LINHAS" ]; then
+  echo "❌ Commit abortado: atribuição de IA na mensagem (R18)."
+  echo
+  printf '%s\n' "$LINHAS" | sed 's/^/   /'
+  ACHOU=1
+else
+  ACHOU=0
+fi
+
+if [ "$ACHOU" -eq 1 ]; then
+  echo
+  echo "Remova essas linhas da mensagem e faça o commit de novo."
+  echo
+  echo "Se o seu ambiente acrescenta o trailer sozinho, procure a configuração que o"
+  echo "desliga (no Claude Code ela fica em settings.json; confira o nome na documentação"
+  echo "da sua versão). Este hook é a rede que pega o que passar dela."
+  echo
+  echo "Para limpar o histórico já existente:"
+  echo "   git log --format='%H %s' --grep='Co-Authored-By' --grep='Generated with' --all-match"
+  echo "   git filter-repo --message-callback ..." 
+  echo "   (reescrever histórico publicado exige combinar com quem clonou)"
+  exit 1
+fi
+
+exit 0

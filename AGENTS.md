@@ -1,12 +1,12 @@
 # Instruções para agentes de IA: este repositório
 
 Este repositório **é** a skill *Development Pattern for Web Apps*. Ele não contém código de
-aplicação: só Markdown, templates e dois scripts de shell.
+aplicação: só Markdown, templates e quatro scripts de shell.
 
 ## Antes de editar qualquer coisa aqui
 
 Leia [`skills/development-pattern-for-web-apps/SKILL.md`](skills/development-pattern-for-web-apps/SKILL.md).
-As dezessete regras que ele define valem também para este repositório.
+As dezoito regras que ele define valem também para este repositório.
 
 ## Regras da casa
 
@@ -26,6 +26,7 @@ As dezessete regras que ele define valem também para este repositório.
   git diff --cached | bash skills/development-pattern-for-web-apps/assets/scripts/scan-secrets.sh --stdin
   bash skills/development-pattern-for-web-apps/assets/scripts/scan-sql-injection.sh
   bash skills/development-pattern-for-web-apps/assets/scripts/scan-linguagem.sh
+  bash skills/development-pattern-for-web-apps/assets/scripts/scan-doc-sync.sh
   ```
 
 - **R4: nada inventado, especialmente aqui.** A credibilidade desta skill depende de cada
@@ -46,11 +47,26 @@ As dezessete regras que ele define valem também para este repositório.
   precedido de `❌` e acompanhado da forma correta com `✅`. Nunca deixe um exemplo inseguro
   sem rótulo: alguém vai copiá-lo.
 
-- **R13. README e página andam juntos.** `README.md` e `docs/index.html` afirmam as mesmas
+- **R13. README, página e CHANGELOG andam juntos.** `README.md` e `docs/index.html` afirmam as mesmas
   coisas em profundidades diferentes. Quando um muda, o outro muda no mesmo commit: mesmo
   aviso, mesma contagem de regras, mesmos números. Acrescentar ou renumerar uma regra exige
   editar **os dois**, mais as estatísticas da página, mais o `CHANGELOG.md`, mais a `version`
   em `.claude-plugin/plugin.json`.
+
+- **R18: nenhum commit deste repositório credita uma ferramenta de IA.** Nada de
+  `Co-Authored-By`, "Generated with", link de sessão ou "Assisted-By" em mensagem de commit,
+  título ou corpo de pull request. Se a sua ferramenta insere o rodapé automaticamente,
+  desligue a opção antes do primeiro commit e instale o hook:
+
+  ```bash
+  cp skills/development-pattern-for-web-apps/assets/templates/commit-msg.template \
+     .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
+  git log --format='%H %s%n%b' | grep -inE 'co-authored-by:.*(claude|anthropic|copilot|gpt)'
+  ```
+
+  A auditoria acima tem que sair vazia. Se não sair, a correção está em
+  [`references/git-e-publicacao.md`](skills/development-pattern-for-web-apps/references/git-e-publicacao.md),
+  com o aviso de que reescrever histórico já publicado quebra o clone de quem já baixou.
 
 - **Português (pt-BR) em todo o conteúdo.** Nomes de arquivo em minúsculas com hífen. Os
   identificadores dos templates (`RF-001`, `CT-SEC-009`, `R5`) são estáveis: renomear um
@@ -60,11 +76,12 @@ As dezessete regras que ele define valem também para este repositório.
 
 ```
 skills/development-pattern-for-web-apps/
-├── SKILL.md              # as 17 regras, o pipeline de 8 fases, o roteamento
-├── references/           # 17 documentos, carregados sob demanda
+├── SKILL.md              # as 18 regras, o pipeline de 8 fases, o roteamento
+├── references/           # 18 documentos, carregados sob demanda
 └── assets/
-    ├── templates/        # 19 arquivos prontos para copiar em um projeto
-    └── scripts/          # scan-secrets.sh, scan-sql-injection.sh, scan-linguagem.sh
+    ├── templates/        # 20 arquivos prontos para copiar em um projeto
+    └── scripts/          # scan-secrets.sh, scan-sql-injection.sh,
+                          #   scan-linguagem.sh, scan-doc-sync.sh
 docs/                     # página do GitHub Pages: index.html + tailwind.css (compilado)
 tailwind.input.css        # fonte do CSS da página; compile com npm run build:css
 specs/                    # a spec desta própria skill (R3 aplicada a ela mesma)
@@ -170,8 +187,9 @@ npm run build:css
 Conferência de consistência: estes números aparecem em vários lugares e desalinham fácil:
 
 ```bash
-grep -c '^| \*\*R' skills/development-pattern-for-web-apps/SKILL.md    # 17 regras
-ls skills/development-pattern-for-web-apps/references/*.md | wc -l      # 17 referências
-ls skills/development-pattern-for-web-apps/assets/templates/* | wc -l   # 19 templates
+grep -c '^| \*\*R' skills/development-pattern-for-web-apps/SKILL.md    # 18 regras
+ls skills/development-pattern-for-web-apps/references/*.md | wc -l      # 18 referências
+ls skills/development-pattern-for-web-apps/assets/templates/* | wc -l   # 20 templates
+ls skills/development-pattern-for-web-apps/assets/scripts/*.sh | wc -l  # 4 scanners
 grep -rn "dezessete\|dezesseis\|quinze" README.md AGENTS.md docs/index.html skills/**/SKILL.md
 ```

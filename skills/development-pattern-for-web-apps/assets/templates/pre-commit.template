@@ -41,6 +41,12 @@ else
   echo "⚠️  scan-sql-injection.sh não encontrado em $BASE: varredura de SQL pulada."
 fi
 
+if [ -f "$BASE/scan-doc-sync.sh" ]; then
+  echo "📝 pre-commit: conferindo se a documentação acompanhou a mudança…"
+  # Consultivo: avisa, mas não bloqueia o commit. Quem decide é você.
+  bash "$BASE/scan-doc-sync.sh" || true
+fi
+
 # Sintaxe dos arquivos PHP staged
 if command -v php >/dev/null 2>&1; then
   for f in $(git diff --cached --name-only --diff-filter=ACM | grep -E '\.php$' || true); do

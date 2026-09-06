@@ -25,13 +25,13 @@ difíceis**, e não apenas desaconselhadas.
 
 ## Visão geral
 
-A skill é um `SKILL.md`, **17 documentos de referência**, **19 templates** prontos para
-copiar e **3 scanners** executáveis. Carrega em qualquer agente compatível com o formato
+A skill é um `SKILL.md`, **18 documentos de referência**, **20 templates** prontos para
+copiar e **4 scanners** executáveis. Carrega em qualquer agente compatível com o formato
 aberto [Agent Skills](https://agentskills.io), como Claude Code, Cursor, GitHub Copilot,
 OpenCode e Gemini CLI, e entra em ação no momento em que o agente começa a trabalhar em um
 app web.
 
-Ela codifica **dezessete regras inegociáveis** e um **pipeline de oito fases** com três
+Ela codifica **dezoito regras inegociáveis** e um **pipeline de oito fases** com três
 portões duros: nada de código sem spec aprovada, nada de push sem a versão e a documentação
 no mesmo commit, nada de produção sem alvo nomeado e caminho de volta.
 
@@ -44,7 +44,7 @@ lidas no momento em que fazem falta: uma cópia congelada envelhece parecendo au
 1. [Pré-requisitos](#pré-requisitos)
 2. [Instalação](#instalação)
 3. [Como usar](#como-usar)
-4. [As dezessete regras](#as-dezessete-regras)
+4. [As dezoito regras](#as-dezoito-regras)
 5. [O pipeline](#o-pipeline)
 6. [SQL injection: a regra que mais importa](#sql-injection-a-regra-que-mais-importa)
 7. [Wizard de instalação](#wizard-de-instalação)
@@ -53,12 +53,13 @@ lidas no momento em que fazem falta: uma cópia congelada envelhece parecendo au
 10. [URLs como rotas semânticas](#urls-como-rotas-semânticas)
 11. [Build quebrado na Vercel](#build-quebrado-na-vercel)
 12. [A linguagem do texto](#a-linguagem-do-texto)
-13. [Segurança proporcional ao porte](#segurança-proporcional-ao-porte)
-14. [O que ela previne](#o-que-ela-previne)
-15. [Comportamentos importantes](#comportamentos-importantes)
-16. [Estrutura do repositório](#estrutura-do-repositório)
-17. [Templates e ferramentas](#templates-e-ferramentas)
-18. [Versionamento](#versionamento)
+13. [Documentação viva](#documentação-viva)
+14. [Segurança proporcional ao porte](#segurança-proporcional-ao-porte)
+15. [O que ela previne](#o-que-ela-previne)
+16. [Comportamentos importantes](#comportamentos-importantes)
+17. [Estrutura do repositório](#estrutura-do-repositório)
+18. [Templates e ferramentas](#templates-e-ferramentas)
+19. [Versionamento](#versionamento)
 
 ## Pré-requisitos
 
@@ -112,7 +113,7 @@ lembrar de pedir a revisão de segurança, e não precisa pedir o roteiro de tes
 
 ### Rígido nas pontas, livre no meio
 
-Esta é a parte que importa, e é o oposto do que "dezessete regras" costuma sugerir:
+Esta é a parte que importa, e é o oposto do que "dezoito regras" costuma sugerir:
 
 | | O que acontece | Quem conduz |
 | --- | --- | --- |
@@ -177,7 +178,7 @@ Copie [`AGENTS.template.md`](skills/development-pattern-for-web-apps/assets/temp
 para o repositório do app como `AGENTS.md`. Assim a próxima sessão herda o padrão, incluindo
 as armadilhas que você já encontrou, em vez de começar do zero.
 
-## As dezessete regras
+## As dezoito regras
 
 | # | Regra |
 | --- | --- |
@@ -193,17 +194,18 @@ as armadilhas que você já encontrou, em vez de começar do zero.
 | **R10** | **Todo app PHP entrega um painel administrativo** que instala pacotes ZIP com arquivos e migrações SQL, com backup e rollback. |
 | **R11** | **Toda aplicação entrega um roteiro de testes** em Markdown, executável pelo Claude Cowork: unitário → integração → interface → segurança → regressão. |
 | **R12** | **Revise código de IA como código hostil**, contra um checklist, antes de todo push. |
-| **R13** | **Versão, documentação e schema andam juntos**, no mesmo commit. |
+| **R13** | **Versão, documentação e schema andam juntos.** Toda mudança atualiza, no mesmo commit, os documentos que ela afeta. Uma matriz diz quais: README, CHANGELOG, spec, roteiro de QA, `AGENTS.md`, `.env.example`, página. |
 | **R14** | **Deploy é explícito, nomeado e reversível**, com backup antes e rollback documentado. |
 | **R15** | **A URL é interface, não caminho de arquivo.** `/cadastrar-novo-usuario`, nunca `/usuarios/cadastro.php`. Rota em português, kebab-case, sem extensão; navegação jamais por query string. |
 | **R16** | **Build quebrado se conserta com o log na mão e a correção provada localmente.** Reproduzir com `vercel build`, corrigir a causa raiz, um push por volta, teto de três voltas. Nunca `ignoreBuildErrors`. |
 | **R17** | **O texto é escrito na língua de quem usa, e nunca entrega que foi gerado.** Pesquisar as convenções do domínio antes da primeira frase de interface. Travessão proibido. Corpo de texto justificado, com hifenização. |
+| **R18** | **Nenhuma atribuição de IA nos artefatos do projeto.** Nada de `Co-Authored-By`, "Generated with" ou link de sessão em commit, pull request, README, página ou comentário de código. |
 
 ## O pipeline
 
 ```
 0 BOOTSTRAP   trilha? repo? hospedagem? dados? identidade? QA?
-              → .gitignore armado, repo privado, primeira varredura limpa
+              → .gitignore armado, repo privado, hooks instalados, varredura limpa
 
 1 PESQUISA    documentação oficial do stack, lida ao vivo
               → registro de evidências: afirmação → URL/arquivo → verificado
@@ -217,13 +219,13 @@ as armadilhas que você já encontrou, em vez de começar do zero.
 
 4 VALIDAÇÃO   lint + tipos + testes unitários + testes de integração
               + scan-secrets.sh + scan-sql-injection.sh + scan-linguagem.sh
-              + checklist de revisão
+              + scan-doc-sync.sh + checklist de revisão
               → resultados reais, reportados honestamente
 
 5 QA/COWORK   gerar qa/roteiro-de-testes.md e executá-lo (ou entregá-lo ao Cowork)
               → evidências, defeitos registrados, suíte de regressão atualizada
 
-6 RELEASE     versão SemVer + CHANGELOG + README + versão do schema
+6 RELEASE     versão SemVer + a documentação que a matriz pede (scan-doc-sync.sh)
               → ⛔ PORTÃO DE APROVAÇÃO antes do push
 
 7 DEPLOY      Hostinger (FTP/SSH/Git) ou Vercel, alvo nomeado, backup, migração, rollback
@@ -401,7 +403,7 @@ O que impede isso de virar *empurra e reza*:
 2 LER        classificar: falha de CÓDIGO ou de AMBIENTE
 3 REPRODUZIR vercel pull && vercel build   → a MESMA mensagem tem que aparecer
 4 CORRIGIR   a menor mudança que resolve a causa raiz
-5 PROVAR     vercel build + tsc + lint + testes + os dois scanners
+5 PROVAR     vercel build + tsc + lint + testes + os scanners
 6 EMPURRAR   UM push, no ramo de trabalho → deploy de preview
 7 CONFIRMAR  verde? Se não, volta ao passo 1 com o NOVO log
 8 PORTÃO     ⛔ merge em main (produção) só com aprovação
@@ -496,6 +498,44 @@ A referência traz ainda a anatomia das mensagens de erro (o que houve, por quê
 os padrões de botão, estado vazio e confirmação destrutiva, e os casos de teste que entram no
 roteiro de QA.
 
+## Documentação viva
+
+Documentação desatualizada é pior que documentação ausente. A ausente você percebe e vai
+ler o código; a desatualizada você acredita, e ela te leva ao lugar errado com confiança.
+Um README que descreve o app de duas versões atrás faz alguém tentar instalar do jeito que
+não funciona mais e concluir que o projeto está quebrado.
+
+Por isso a regra é **no mesmo commit**, e não "antes do release". Se o commit que muda o
+comportamento não muda o texto que descreve o comportamento, o par nunca mais se encontra.
+
+A skill mantém o inventário do que um projeto deste padrão documenta (README, CHANGELOG,
+`AGENTS.md`, specs, roteiro e dados de teste, `.env.example`, schema e migrações, manifesto
+do pacote, arquivo de versão, página) e uma **matriz de mudança → documento**. Esta é a
+versão curta; a referência traz as catorze linhas e a coluna do `AGENTS.md`:
+
+| Mudei… | README | CHANGELOG | spec | QA | `.env.example` | Versão | Página |
+| --- | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
+| Comportamento visível ao usuário | ✅ | ✅ | ✅ | ✅ | | ✅ | ✅ |
+| Rota nova ou renomeada | ✅ | ✅ | ✅ | ✅ | | ✅ | ✅ |
+| Tabela ou coluna nova | | ✅ | ✅ | ✅ | | ✅ | |
+| Variável de ambiente nova | ✅ | ✅ | | | ✅ | ✅ | |
+| Correção de bug | | ✅ | | ✅ | | ✅ | |
+| Correção de segurança | ✅ | ✅ | ✅ | ✅ | | ✅ | |
+| Refatoração sem mudança visível | | | | | | | |
+
+A última linha existe de propósito: é o respaldo para dizer "esta não precisa", em vez de
+inventar uma entrada de CHANGELOG para uma mudança que ninguém percebe.
+
+E a pergunta que resolve os casos duvidosos: *se alguém instalar o app amanhã seguindo o
+README, e usar o app seguindo o CHANGELOG, algo vai surpreender essa pessoa por causa desta
+mudança?* Se sim, o documento entra no commit.
+
+O `scan-doc-sync.sh` lê o que está no staging e aponta o que a matriz pede e você não tocou:
+CHANGELOG intocado com código novo, `.env.example` intocado quando apareceu uma variável de
+ambiente no diff, versão parada, roteiro de QA parado com migração nova. Ele marca `[PEDE]`
+quando a matriz é clara e `[OLHE]` quando depende de julgamento, porque ele não sabe se a
+sua mudança é visível ao usuário. Essa parte é sua.
+
 ## Segurança proporcional ao porte
 
 O piso vale para todo projeto, inclusive o de fim de semana com três usuários:
@@ -539,6 +579,8 @@ Você pode subir de nível. Nunca descer.
 | Build verde com `ignoreBuildErrors`, e o erro estourando em produção | Amputação em vez de correção | R16 |
 | Funciona em produção e quebra no preview | Variável de ambiente que só existe num dos dois | R16 |
 | O texto da tela parece gerado por IA e o usuário desconfia do produto | Travessão e muletas genéricas | R17 |
+| O histórico do seu projeto pessoal credita uma ferramenta como coautora | Trailer automático não desligado | R18 |
+| README descreve o app de duas versões atrás, e alguém acredita nele | Documentação deixada para depois do commit | R13 |
 | App bancário dizendo "Ops, algo deu errado" depois de uma transferência | Linguagem sem pesquisa do domínio | R17 |
 | Formulário de ITSM chamando pedido de acesso de "problema" | Vocabulário canônico do setor ignorado | R17 |
 | A URL entrega a linguagem, a pasta e o nome do arquivo do servidor | Caminho de arquivo servido como rota | R15 |
@@ -579,7 +621,7 @@ abri-las durante a sessão.
 
 ```
 skills/development-pattern-for-web-apps/
-├── SKILL.md                          # 17 regras, 8 fases, 3 portões, roteamento
+├── SKILL.md                          # 18 regras, 8 fases, 3 portões, roteamento
 ├── references/
 │   ├── segredos-e-configuracao.md    # R1: .env, config fora do webroot, Vercel, rotação
 │   ├── git-e-publicacao.md           # R2: privado por padrão, commits, ramos, publicação
@@ -597,13 +639,15 @@ skills/development-pattern-for-web-apps/
 │   ├── release-e-deploy.md           # R13, R14. SemVer, CHANGELOG, deploy, rollback
 │   ├── rotas-e-urls.md               # R15: convenções, roteador, 301, 404, tradução
 │   ├── vercel-build-e-correcao.md    # R16: conectar, ler log, reproduzir, corrigir
-│   └── linguagem-e-texto-da-interface.md  # R17: domínio, travessão, microcopy, tipografia
+│   ├── linguagem-e-texto-da-interface.md  # R17: domínio, travessão, microcopy, tipografia
+│   └── documentacao-do-projeto.md    # R13: inventário e matriz de mudança → documento
 └── assets/
     ├── templates/                    # 18 arquivos prontos para copiar
     └── scripts/
         ├── scan-secrets.sh
         ├── scan-sql-injection.sh
-        └── scan-linguagem.sh
+        ├── scan-linguagem.sh
+        └── scan-doc-sync.sh
 docs/index.html                       # fonte da página deste projeto
 specs/                                # a spec desta própria skill (R3 aplicada a ela mesma)
 .github/workflows/pages.yml           # publica docs/ no ramo gh-pages, gerado
@@ -630,7 +674,17 @@ specs/                                # a spec desta própria skill (R3 aplicada
 | [`env.example.template`](skills/development-pattern-for-web-apps/assets/templates/env.example.template) · [`config.example.php.template`](skills/development-pattern-for-web-apps/assets/templates/config.example.php.template) | A metade versionada do par de configuração |
 | [`README.template.md`](skills/development-pattern-for-web-apps/assets/templates/README.template.md) · [`CHANGELOG.template.md`](skills/development-pattern-for-web-apps/assets/templates/CHANGELOG.template.md) | O padrão de documentação do app |
 | [`AGENTS.template.md`](skills/development-pattern-for-web-apps/assets/templates/AGENTS.template.md) | Para a próxima sessão herdar o padrão e as armadilhas já encontradas |
-| [`pre-commit.template`](skills/development-pattern-for-web-apps/assets/templates/pre-commit.template) | Hook que roda os dois scanners e `php -l` antes de cada commit |
+| [`pre-commit.template`](skills/development-pattern-for-web-apps/assets/templates/pre-commit.template) | Hook que roda os scanners e `php -l` antes de cada commit |
+| [`commit-msg.template`](skills/development-pattern-for-web-apps/assets/templates/commit-msg.template) | Hook que recusa o commit se a mensagem trouxer atribuição de IA (R18) |
+
+Instale os dois hooks no repositório do app, uma vez, logo no bootstrap:
+
+```bash
+T=skills/development-pattern-for-web-apps/assets/templates
+cp $T/pre-commit.template  .git/hooks/pre-commit
+cp $T/commit-msg.template  .git/hooks/commit-msg
+chmod +x .git/hooks/pre-commit .git/hooks/commit-msg
+```
 
 Rode os scanners a qualquer momento:
 
@@ -639,6 +693,7 @@ bash skills/development-pattern-for-web-apps/assets/scripts/scan-secrets.sh
 git diff --cached | bash skills/development-pattern-for-web-apps/assets/scripts/scan-secrets.sh --stdin
 bash skills/development-pattern-for-web-apps/assets/scripts/scan-sql-injection.sh
 bash skills/development-pattern-for-web-apps/assets/scripts/scan-linguagem.sh
+bash skills/development-pattern-for-web-apps/assets/scripts/scan-doc-sync.sh
 ```
 
 ## Versionamento

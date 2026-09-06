@@ -160,6 +160,8 @@ git diff --cached --stat
 - [ ] README atualizado se instalação, configuração ou uso mudaram (R13)
 - [ ] CHANGELOG com entrada datada (R13)
 - [ ] Versão subida no arquivo de configuração (R13)
+- [ ] `scan-doc-sync.sh` rodado, e cada aviso dele respondido (R13)
+- [ ] Nenhuma atribuição de IA na mensagem de commit nem nos arquivos (R18)
 
 ---
 

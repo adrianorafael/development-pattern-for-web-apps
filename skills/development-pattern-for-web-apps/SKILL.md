@@ -1,6 +1,6 @@
 ---
 name: development-pattern-for-web-apps
-description: "Padrão de desenvolvimento para apps web pessoais em dois stacks. HTML5 + PHP + MySQL hospedado na Hostinger, e Next.js + Tailwind publicado na Vercel. Carregue ANTES de escrever, revisar, testar, publicar ou implantar qualquer código destes projetos. Impõe: SQL sempre parametrizado (zero concatenação, prepared statements, allowlist de identificadores); segredos e credenciais de banco fora do repositório; repositório GitHub privado por padrão; desenvolvimento guiado por especificação com portão de aprovação; interface por componentes (Server Components + Tailwind no Next.js, front controller + partials no PHP); URLs como rotas semânticas em português (/cadastrar-novo-usuario, nunca /usuarios/cadastro.php); Wizard de instalação que verifica dependências e cria ou recria o banco em todo app PHP+MySQL; painel administrativo que instala pacotes ZIP de atualização com arquivos e migrações SQL; um roteiro de testes em Markdown para o Claude Cowork navegar e executar QA e regressão em toda aplicação entregue; revisão de segurança do código escrito por IA; diagnóstico e correção de build quebrado na Vercel, com o log em mãos e a correção provada localmente; texto de interface escrito na língua do domínio do usuário, sem travessão e sem as muletas que entregam texto de IA, com corpo justificado; e versão, CHANGELOG, README e schema movendo-se juntos. Dispare em: 'app PHP', 'PHP e MySQL', 'Hostinger', 'Next.js', 'Vercel', 'Tailwind', 'SQL injection', 'wizard de instalação', 'painel administrativo', 'roteiro de testes', 'Cowork', 'rotas amigáveis', 'URL amigável', 'build quebrado', 'deploy falhou', 'texto da interface', 'UX writing', 'microcopy', 'travessão', 'mensagem de erro', 'projeto pessoal', 'vibecoding de app web'."
+description: "Padrão de desenvolvimento para apps web pessoais em dois stacks. HTML5 + PHP + MySQL hospedado na Hostinger, e Next.js + Tailwind publicado na Vercel. Carregue ANTES de escrever, revisar, testar, publicar ou implantar qualquer código destes projetos. Impõe: SQL sempre parametrizado (zero concatenação, prepared statements, allowlist de identificadores); segredos e credenciais de banco fora do repositório; repositório GitHub privado por padrão; desenvolvimento guiado por especificação com portão de aprovação; interface por componentes (Server Components + Tailwind no Next.js, front controller + partials no PHP); URLs como rotas semânticas em português (/cadastrar-novo-usuario, nunca /usuarios/cadastro.php); Wizard de instalação que verifica dependências e cria ou recria o banco em todo app PHP+MySQL; painel administrativo que instala pacotes ZIP de atualização com arquivos e migrações SQL; um roteiro de testes em Markdown para o Claude Cowork navegar e executar QA e regressão em toda aplicação entregue; revisão de segurança do código escrito por IA; diagnóstico e correção de build quebrado na Vercel, com o log em mãos e a correção provada localmente; texto de interface escrito na língua do domínio do usuário, sem travessão e sem as muletas que entregam texto de IA, com corpo justificado; documentação atualizada no mesmo commit da mudança, por matriz (README, CHANGELOG, spec, roteiro de QA, AGENTS.md, .env.example, página); e nenhuma atribuição de IA em commit, pull request ou código. Dispare em: 'app PHP', 'PHP e MySQL', 'Hostinger', 'Next.js', 'Vercel', 'Tailwind', 'SQL injection', 'wizard de instalação', 'painel administrativo', 'roteiro de testes', 'Cowork', 'rotas amigáveis', 'URL amigável', 'build quebrado', 'deploy falhou', 'texto da interface', 'UX writing', 'microcopy', 'travessão', 'mensagem de erro', 'atualizar documentação', 'co-authored-by', 'projeto pessoal', 'vibecoding de app web'."
 license: MIT
 ---
 
@@ -48,7 +48,7 @@ Duas consequências disso, fáceis de errar:
 
 ---
 
-## As dezessete regras inegociáveis
+## As dezoito regras inegociáveis
 
 Elas passam por cima de qualquer outro instinto, inclusive "mas essa mudança é minúscula".
 
@@ -66,11 +66,12 @@ Elas passam por cima de qualquer outro instinto, inclusive "mas essa mudança é
 | **R10** | **Todo app PHP entrega um painel administrativo que instala pacotes ZIP de atualização.** Manifesto versionado, arquivos publicados só em caminhos permitidos, migrações SQL ordenadas e idempotentes, backup antes, rollback depois, recusa de pacote que não confere com o manifesto. | [pacotes-de-atualizacao.md](references/pacotes-de-atualizacao.md) |
 | **R11** | **Toda aplicação entregue vem com um roteiro de testes para o Claude Cowork.** `qa/roteiro-de-testes.md`: navegável passo a passo, determinístico, rastreado aos requisitos da spec, cobrindo unitário → integração → interface (E2E) → segurança → regressão. Cresce a cada defeito corrigido. | [roteiro-de-testes-cowork.md](references/roteiro-de-testes-cowork.md) |
 | **R12** | **Revise código escrito por IA como código hostil.** O checklist de segurança e qualidade roda antes de todo push, contra o diff real. | [checklist-de-revisao.md](references/checklist-de-revisao.md) |
-| **R13** | **Versão, documentação e schema andam juntos.** Toda publicação sobe a versão em SemVer, escreve entrada datada no `CHANGELOG.md`, atualiza o README **no mesmo commit** e registra a versão do schema dentro do próprio banco. | [release-e-deploy.md](references/release-e-deploy.md) |
+| **R13** | **Versão, documentação e schema andam juntos.** Toda mudança atualiza, **no mesmo commit**, os documentos que ela afeta: README, CHANGELOG, spec, roteiro de QA, `AGENTS.md`, `.env.example`, página. A matriz diz quais. Toda publicação sobe a versão em SemVer e registra a versão do schema no próprio banco. | [documentacao-do-projeto.md](references/documentacao-do-projeto.md) · [release-e-deploy.md](references/release-e-deploy.md) |
 | **R14** | **Deploy é explícito, nomeado e reversível.** Nenhum envio para Hostinger ou Vercel sem alvo nomeado e um "sim". Migração em ordem conhecida, backup antes, caminho de volta documentado. | [release-e-deploy.md](references/release-e-deploy.md) |
 | **R15** | **A URL é interface, não caminho de arquivo.** Toda rota descreve a ação ou o recurso em português, em kebab-case, sem extensão e sem revelar a estrutura de pastas: `/cadastrar-novo-usuario`, nunca `/usuarios/cadastro.php`. Navegação jamais depende de query string. | [rotas-e-urls.md](references/rotas-e-urls.md) |
 | **R16** | **Build quebrado se conserta com o log na mão e a correção provada localmente.** Ler o log completo, classificar como falha de código ou de ambiente, reproduzir com `vercel build`, corrigir a causa raiz, provar, e **um** push por volta, com teto de três voltas. Nunca `ignoreBuildErrors`, nunca inventar valor para variável ausente. | [vercel-build-e-correcao.md](references/vercel-build-e-correcao.md) |
-| **R17** | **O texto é escrito na língua de quem usa, e nunca entrega que foi gerado.** Pesquisar as convenções do domínio (banco, ITSM, saúde, governo) antes da primeira frase de interface. **Travessão é proibido** em texto visível, junto das muletas que marcam texto de IA. Corpo de texto justificado, com `hyphens: auto`. | [linguagem-e-texto-da-interface.md](references/linguagem-e-texto-da-interface.md) |
+| **R17** | **O texto é escrito na língua de quem usa, e nunca entrega que foi gerado.** Pesquisar as convenções do domínio antes da primeira frase de interface. **Travessão é proibido** em texto visível, junto das muletas que marcam texto de IA. Corpo de texto justificado, com `hyphens: auto`. | [linguagem-e-texto-da-interface.md](references/linguagem-e-texto-da-interface.md) |
+| **R18** | **Nenhuma atribuição de IA nos artefatos do projeto.** Nada de `Co-Authored-By`, "Generated with", link de sessão ou menção à ferramenta em commit, pull request, README, página ou comentário de código. O projeto é de quem o assina. | [git-e-publicacao.md](references/git-e-publicacao.md) |
 
 Se uma regra não puder ser cumprida, **pare e diga**. Não entregue silenciosamente uma versão
 degradada.
@@ -108,6 +109,7 @@ Ainda na mesma fase, **antes do primeiro commit**:
 
 - Armar o `.gitignore` da trilha escolhida e criar o par `.env` / `.env.example`.
 - Rodar a primeira varredura: `scan-secrets.sh`.
+- Instalar os hooks `pre-commit` e `commit-msg` em `.git/hooks/` (R18).
 - Confirmar que o repositório remoto é privado.
 
 → [segredos-e-configuracao.md](references/segredos-e-configuracao.md)
@@ -118,7 +120,7 @@ Ainda na mesma fase, **antes do primeiro commit**:
 
 ```
 0 BOOTSTRAP   trilha? repo? hospedagem? dados? identidade? QA?
-              → .gitignore armado, repo privado, primeira varredura limpa
+              → .gitignore armado, repo privado, hooks instalados, varredura limpa
 
 1 PESQUISA    documentação oficial do stack, lida ao vivo
               → registro de evidências: afirmação → URL/arquivo → verificado
@@ -132,13 +134,13 @@ Ainda na mesma fase, **antes do primeiro commit**:
 
 4 VALIDAÇÃO   lint + tipos + testes unitários + testes de integração
               + scan-secrets.sh + scan-sql-injection.sh + scan-linguagem.sh
-              + checklist de revisão
+              + scan-doc-sync.sh + checklist de revisão
               → resultados reais, reportados honestamente
 
 5 QA/COWORK   gerar qa/roteiro-de-testes.md e executá-lo (ou entregá-lo ao Cowork)
               → evidências, defeitos registrados, suíte de regressão atualizada
 
-6 RELEASE     versão SemVer + CHANGELOG + README + versão do schema
+6 RELEASE     versão SemVer + a documentação que a matriz pede (scan-doc-sync.sh)
               → ⛔ PORTÃO DE APROVAÇÃO antes do push
 
 7 DEPLOY      Hostinger (FTP/SSH/Git) ou Vercel, alvo nomeado, backup, migração, rollback
@@ -169,6 +171,7 @@ Carregue a referência **antes** de fazer o trabalho, não depois que ele falhar
 | Definir uma rota, nomear uma URL, renomear uma existente, tratar 404 e redirecionamento | [rotas-e-urls.md](references/rotas-e-urls.md) |
 | Investigar um build que falhou na Vercel, ler log de deploy, conectar-se à conta | [vercel-build-e-correcao.md](references/vercel-build-e-correcao.md) |
 | Escrever qualquer texto que o usuário vai ler: botão, erro, rótulo, estado vazio, e-mail | [linguagem-e-texto-da-interface.md](references/linguagem-e-texto-da-interface.md) |
+| Decidir qual documentação a sua mudança obriga a atualizar | [documentacao-do-projeto.md](references/documentacao-do-projeto.md) |
 | Construir ou alterar o instalador do app PHP | [wizard-de-instalacao.md](references/wizard-de-instalacao.md) |
 | Construir o painel administrativo, o formato do pacote ZIP ou uma migração | [pacotes-de-atualizacao.md](references/pacotes-de-atualizacao.md) |
 | Escrever ou atualizar o roteiro de testes, ou preparar o app para o Cowork | [roteiro-de-testes-cowork.md](references/roteiro-de-testes-cowork.md) |
@@ -284,6 +287,8 @@ instalado prova, mesmo que a outra pareça mais elegante.
 | Build verde com `ignoreBuildErrors`, e o erro de tipo estourando em produção | Amputação em vez de correção | R16 |
 | Funciona em produção e quebra no preview | Variável de ambiente que só existe num dos dois | R16 |
 | O texto da tela parece gerado por IA e o usuário desconfia do produto | Travessão e muletas genéricas | R17 |
+| O histórico do seu projeto pessoal credita uma ferramenta como coautora | Trailer automático não desligado | R18 |
+| README descreve o app de duas versões atrás, e alguém acredita nele | Documentação deixada para depois do commit | R13 |
 | App bancário dizendo "Ops, algo deu errado" depois de uma transferência | Linguagem sem pesquisa do domínio | R17 |
 | Formulário de ITSM chamando pedido de acesso de "problema" | Vocabulário canônico do setor ignorado | R17 |
 | A URL entrega a linguagem, a pasta e o nome do arquivo do servidor | Caminho de arquivo servido como rota | R15 |

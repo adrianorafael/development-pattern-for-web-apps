@@ -101,11 +101,52 @@ Casos CT-SEC-011 e CT-SEC-012 cobrem o cenário no roteiro de QA.
 
 **Um commit, um assunto.** "várias correções" é um commit que ninguém consegue reverter.
 
-### Atribuição de IA
+### Atribuição de IA: nenhuma
 
-Decisão sua, por projeto, não há regra neste padrão. O importante é **ser consistente**:
-ou todo commit assistido traz o trailer `Co-Authored-By:`, ou nenhum traz. Registre a
-escolha no `AGENTS.md` do projeto para que a próxima sessão siga a mesma convenção.
+> Regra **R18**. O histórico do projeto não menciona a ferramenta que ajudou a escrever,
+> do mesmo jeito que não menciona o editor de texto.
+
+Nada disto entra em commit, pull request, README, página, `CHANGELOG` ou comentário de código:
+
+```
+Co-Authored-By: Claude <noreply@anthropic.com>     ❌
+🤖 Generated with Claude Code                       ❌
+Claude-Session: https://claude.ai/code/...          ❌
+Assisted-By: Copilot                                ❌
+// gerado automaticamente por IA                    ❌
+```
+
+O projeto é de quem o assina. Creditar a ferramenta no histórico é ruído que não ajuda
+ninguém a entender a mudança, aparece em toda listagem de commits e, num repositório que um
+dia vira público, vira a primeira coisa que alguém repara.
+
+**Não basta o agente lembrar.** Alguns ambientes acrescentam o trailer **automaticamente**,
+depois que a mensagem foi escrita. Por isso a defesa é mecânica, e são duas camadas:
+
+1. **Desligue na configuração do seu ambiente**, se ele tiver essa opção. No Claude Code a
+   chave fica em `settings.json`; confirme o nome exato na documentação da sua versão (R4).
+2. **Instale o hook**, que pega o que passar da configuração:
+
+```bash
+cp skills/development-pattern-for-web-apps/assets/templates/commit-msg.template \
+   .git/hooks/commit-msg
+chmod +x .git/hooks/commit-msg
+```
+
+O hook roda depois de a mensagem estar pronta, que é exatamente onde o trailer automático
+aparece. Ele recusa o commit e mostra a linha ofensora.
+
+### Auditar o que já foi commitado
+
+```bash
+git log --format='%h %s' --grep='Co-Authored-By' --grep='Generated with' --grep='Claude-Session'
+git log --all --format='%b' | grep -inE 'co-authored-by|generated with|claude\.ai/code'
+```
+
+Encontrou em histórico já publicado? Limpar exige reescrever o histórico
+(`git filter-repo --message-callback`), o que muda todos os hashes. Num repositório pessoal
+sem forks o custo é baixo; ainda assim é decisão sua, e vale mais impedir daqui para a frente
+do que reescrever o passado.
 
 ---
 

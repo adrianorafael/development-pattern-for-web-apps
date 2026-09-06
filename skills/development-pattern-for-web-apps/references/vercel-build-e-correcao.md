@@ -92,7 +92,7 @@ para a seção 5.
 2 LER        classificar a falha pela taxonomia (§4), nunca adivinhar pelo título
 3 REPRODUZIR vercel pull && vercel build   → a MESMA mensagem tem que aparecer
 4 CORRIGIR   a menor mudança que resolve a causa raiz
-5 PROVAR     vercel build limpo + tsc + lint + testes + os dois scanners
+5 PROVAR     vercel build limpo + tsc + lint + testes + os scanners
 6 EMPURRAR   UM push, no ramo de trabalho → deploy de preview
 7 CONFIRMAR  o preview ficou verde? Se não, volte ao passo 1 com o NOVO log
 8 PORTÃO     ⛔ merge em main (produção) só com aprovação. R14
@@ -268,7 +268,7 @@ Nunca "corrigi o build". Diga qual linha do log, qual causa, e o que provou a co
 - [ ] Falha reproduzida com `vercel build` antes de qualquer correção
 - [ ] Correção é a menor que resolve a causa raiz: nada de escopo carona
 - [ ] Nenhum `ignoreBuildErrors`, `ignoreDuringBuilds`, `@ts-ignore` ou teste apagado
-- [ ] `tsc --noEmit`, lint, testes e os dois scanners limpos antes do push
+- [ ] `tsc --noEmit`, lint, testes e os scanners limpos antes do push
 - [ ] **Um** push por volta do ciclo
 - [ ] Teto de três voltas respeitado; escalonamento com hipótese e pedido concreto
 - [ ] Trechos do log citados sanitizados, nunca colados inteiros (R1)

@@ -267,6 +267,25 @@
     @apply whitespace-nowrap font-mono text-sm font-semibold text-marca-600 dark:text-marca-400;
   }
 
+  /*
+   * Matriz de mudança para documento (R13). Muitas colunas estreitas: a primeira
+   * carrega o rótulo da linha e nunca quebra, as demais são só marcador centralizado.
+   * O .tabela-caixa em volta rola na horizontal quando a tela é estreita.
+   */
+  .tabela-matriz th:not(:first-child),
+  .tabela-matriz td:not(:first-child) {
+    @apply px-3 text-center;
+  }
+  .tabela-matriz td:first-child {
+    @apply whitespace-nowrap font-medium text-gray-800 dark:text-gray-200;
+  }
+  .tabela-matriz .sim {
+    @apply font-semibold text-marca-600 dark:text-marca-400;
+  }
+  .tabela-matriz .nao {
+    @apply text-gray-300 dark:text-gray-700;
+  }
+
   /* ── Listas com seta ───────────────────────────────────────────────────── */
 
   .setas {

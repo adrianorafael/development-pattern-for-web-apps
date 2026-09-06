@@ -40,6 +40,10 @@ o que está rodando naquele servidor.
 
 ## 2. O que muda junto com a versão
 
+> A matriz completa de mudança → documento está em
+> [documentacao-do-projeto.md](documentacao-do-projeto.md). A tabela abaixo é o recorte
+> que interessa no momento do release.
+
 | A mudança… | Exige atualizar |
 | --- | --- |
 | Comportamento visível ao usuário | CHANGELOG, README (seção de uso), roteiro de QA |

@@ -40,6 +40,7 @@
         <a href="#qa" class="hover:text-gray-950 dark:hover:text-white">Testes</a>
         <a href="#build" class="hover:text-gray-950 dark:hover:text-white">Build</a>
         <a href="#linguagem" class="hover:text-gray-950 dark:hover:text-white">Texto</a>
+        <a href="#documentacao" class="hover:text-gray-950 dark:hover:text-white">Docs</a>
       </nav>
       <div class="flex items-center gap-1 border-l border-gray-950/10 pl-4 dark:border-white/10">
         <button id="alternar-tema" type="button" aria-pressed="false"
@@ -72,9 +73,10 @@
     <span class="bg-gradient-to-r from-marca-500 to-marca-700 bg-clip-text text-transparent dark:from-marca-300 dark:to-marca-500">acumular dívida em silêncio</span>.
   </h1>
   <p class="prosa mt-6 max-w-2xl text-lg/8 text-gray-600 dark:text-gray-400">
-    Dezessete regras que mantêm um agente de IA dentro das boas práticas: SQL sempre parametrizado,
+    Dezoito regras que mantêm um agente de IA dentro das boas práticas: SQL sempre parametrizado,
     segredos fora do repositório, URLs como rotas semânticas, Wizard de instalação, atualização
-    por pacote ZIP, e um roteiro de testes que o Claude Cowork executa sozinho.
+    por pacote ZIP, documentação que anda junto com o código, e um roteiro de testes que o Claude
+    Cowork executa sozinho.
   </p>
   <div class="mt-8 flex flex-wrap items-center gap-3">
     <a href="#instalar" class="botao-primario">Instalar</a>
@@ -86,10 +88,10 @@
   </div>
 
   <dl class="mt-14 grid grid-cols-2 gap-x-8 gap-y-8 border-t border-gray-950/5 pt-8 sm:grid-cols-4 dark:border-white/10">
-    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">17</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">regras inegociáveis</dd></div>
+    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">18</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">regras inegociáveis</dd></div>
     <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">8</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">fases, 3 portões duros</dd></div>
-    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">17</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">referências sob demanda</dd></div>
-    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">19</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">templates + 3 scanners</dd></div>
+    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">18</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">referências sob demanda</dd></div>
+    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">20</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">templates + 4 scanners</dd></div>
   </dl>
 
   <p class="aviso prosa mt-10">
@@ -173,7 +175,7 @@ Você constrói. Ela segura três linhas e sai da frente.
 
 <span class="c">6. O código pronto é verificado</span>
 php -l · composer audit · scan-secrets.sh · scan-sql-injection.sh · scan-linguagem.sh
-· checklist de revisão
+· scan-doc-sync.sh · checklist de revisão
 <span class="c">+ as sete perguntas adversariais ("qual linha deste diff eu atacaria primeiro?")</span>
 
 <span class="c">7. O roteiro de testes é gerado e executado</span>
@@ -181,13 +183,15 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 + XSS + IDOR + CSRF + upload + rotas + cabeçalhos    <span class="c"># o Cowork executa</span>
 
 <span class="c">8. Versão, documentação, push, deploy</span>
+A matriz de documentos diz o que esta mudança obriga a atualizar; o commit sai sem
+atribuição de IA <span class="c">(R18)</span>
 <span class="k">⛔ "Publicar v1.0.0?"</span>   <span class="k">⛔ "Implantar em seu-dominio.com.br? Há 1 migração. Faço backup antes."</span></pre>
   </div>
 </section>
 
 <section id="regras" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">O núcleo</p>
-  <h2 class="titulo-secao">Dezessete regras inegociáveis</h2>
+  <h2 class="titulo-secao">Dezoito regras inegociáveis</h2>
   <p class="texto-secao prosa">Elas passam por cima de qualquer outro instinto, inclusive "mas essa mudança é
     minúscula". Se uma não puder ser cumprida, o agente para e diz, nunca entrega uma versão degradada
     em silêncio.</p>
@@ -207,11 +211,12 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
         <tr><td class="id-regra">R10</td><td><b class="font-semibold text-gray-950 dark:text-white">Todo app PHP entrega um painel administrativo</b> que instala pacotes ZIP com arquivos e migrações SQL, com backup e rollback.</td></tr>
         <tr><td class="id-regra">R11</td><td><b class="font-semibold text-gray-950 dark:text-white">Toda aplicação entrega um roteiro de testes</b> em Markdown, executável pelo Claude Cowork: unitário → integração → interface → segurança → regressão.</td></tr>
         <tr><td class="id-regra">R12</td><td><b class="font-semibold text-gray-950 dark:text-white">Revise código de IA como código hostil</b>, contra um checklist, antes de todo push.</td></tr>
-        <tr><td class="id-regra">R13</td><td><b class="font-semibold text-gray-950 dark:text-white">Versão, documentação e schema andam juntos</b>, no mesmo commit.</td></tr>
+        <tr><td class="id-regra">R13</td><td><b class="font-semibold text-gray-950 dark:text-white">Versão, documentação e schema andam juntos.</b> Toda mudança atualiza, no mesmo commit, os documentos que ela afeta. Uma matriz diz quais: README, CHANGELOG, spec, roteiro de QA, <code>AGENTS.md</code>, <code>.env.example</code>, página.</td></tr>
         <tr><td class="id-regra">R14</td><td><b class="font-semibold text-gray-950 dark:text-white">Deploy é explícito, nomeado e reversível</b>, com backup antes e rollback documentado.</td></tr>
         <tr><td class="id-regra">R15</td><td><b class="font-semibold text-gray-950 dark:text-white">A URL é interface, não caminho de arquivo.</b> <code>/cadastrar-novo-usuario</code>, nunca <code>/usuarios/cadastro.php</code>. Rota em português, kebab-case, sem extensão; navegação jamais por query string.</td></tr>
         <tr><td class="id-regra">R16</td><td><b class="font-semibold text-gray-950 dark:text-white">Build quebrado se conserta com o log na mão e a correção provada localmente.</b> Reproduzir com <code>vercel build</code>, corrigir a causa raiz, um push por volta, teto de três voltas. Nunca <code>ignoreBuildErrors</code>.</td></tr>
         <tr><td class="id-regra">R17</td><td><b class="font-semibold text-gray-950 dark:text-white">O texto é escrito na língua de quem usa, e nunca entrega que foi gerado.</b> Pesquisar as convenções do domínio antes da primeira frase de interface. Travessão proibido em texto visível. Corpo de texto justificado, com hifenização.</td></tr>
+        <tr><td class="id-regra">R18</td><td><b class="font-semibold text-gray-950 dark:text-white">Nenhuma atribuição de IA nos artefatos do projeto.</b> Nada de <code>Co-Authored-By</code>, "Generated with" ou link de sessão em commit, pull request, README, página ou comentário de código. O projeto é de quem o assina.</td></tr>
       </tbody>
     </table>
   </div>
@@ -489,7 +494,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 <span class="p">2 LER</span>        classificar: falha de <span class="k">CÓDIGO</span> ou de <span class="v">AMBIENTE</span>
 <span class="p">3 REPRODUZIR</span> vercel pull &amp;&amp; vercel build   <span class="c">→ a MESMA mensagem tem que aparecer</span>
 <span class="p">4 CORRIGIR</span>   a menor mudança que resolve a causa raiz
-<span class="p">5 PROVAR</span>     vercel build + tsc + lint + testes + os dois scanners
+<span class="p">5 PROVAR</span>     vercel build + tsc + lint + testes + os scanners
 <span class="p">6 EMPURRAR</span>   UM push, no ramo de trabalho <span class="c">→ deploy de preview</span>
 <span class="p">7 CONFIRMAR</span>  verde? Se não, volta ao passo 1 com o NOVO log
 <span class="p">8 PORTÃO</span>     <span class="k">⛔ merge em main (produção) só com aprovação</span></pre>
@@ -612,6 +617,106 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
   </p>
 </section>
 
+<section id="documentacao" class="divisoria interno py-16 sm:py-20">
+  <p class="rotulo">R13 · R18</p>
+  <h2 class="titulo-secao">A documentação envelhece junto com o código</h2>
+  <p class="texto-secao prosa">Documentação desatualizada é pior que documentação ausente. A ausente
+    você percebe, e vai ler o código. A desatualizada você acredita, e ela te leva ao lugar errado com
+    confiança: um README que descreve o app de duas versões atrás faz alguém instalar do jeito que não
+    funciona mais e concluir que o projeto está quebrado.</p>
+
+  <p class="prosa mt-6 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
+    Por isso a regra é <b class="font-semibold text-gray-950 dark:text-white">no mesmo commit</b>, e não
+    "antes do release". Se o commit que muda o comportamento não muda o texto que descreve o
+    comportamento, os dois nunca mais se encontram. A cada modificação o agente reabre o inventário de
+    documentos do projeto e decide quais merecem atualização, com uma matriz no lugar da memória.
+    Esta é a versão curta, com as linhas mais comuns; a referência traz as catorze e mais a coluna
+    do <code>AGENTS.md</code>, onde entram as armadilhas que você já descobriu no projeto:
+  </p>
+
+  <div class="tabela-caixa mt-8">
+    <table class="tabela tabela-matriz">
+      <thead>
+        <tr>
+          <th scope="col">Mudei…</th>
+          <th scope="col">README</th>
+          <th scope="col">CHANGELOG</th>
+          <th scope="col">Spec</th>
+          <th scope="col">QA</th>
+          <th scope="col"><code>.env.example</code></th>
+          <th scope="col">Versão</th>
+          <th scope="col">Página</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Comportamento visível ao usuário</td>
+          <td><span class="sim">✓</span></td><td><span class="sim">✓</span></td><td><span class="sim">✓</span></td><td><span class="sim">✓</span></td><td><span class="nao">·</span></td><td><span class="sim">✓</span></td><td><span class="sim">✓</span></td></tr>
+        <tr><td>Rota nova ou renomeada</td>
+          <td><span class="sim">✓</span></td><td><span class="sim">✓</span></td><td><span class="sim">✓</span></td><td><span class="sim">✓</span></td><td><span class="nao">·</span></td><td><span class="sim">✓</span></td><td><span class="sim">✓</span></td></tr>
+        <tr><td>Tabela ou coluna nova</td>
+          <td><span class="nao">·</span></td><td><span class="sim">✓</span></td><td><span class="sim">✓</span></td><td><span class="sim">✓</span></td><td><span class="nao">·</span></td><td><span class="sim">✓</span></td><td><span class="nao">·</span></td></tr>
+        <tr><td>Variável de ambiente nova</td>
+          <td><span class="sim">✓</span></td><td><span class="sim">✓</span></td><td><span class="nao">·</span></td><td><span class="nao">·</span></td><td><span class="sim">✓</span></td><td><span class="sim">✓</span></td><td><span class="nao">·</span></td></tr>
+        <tr><td>Correção de bug</td>
+          <td><span class="nao">·</span></td><td><span class="sim">✓</span></td><td><span class="nao">·</span></td><td><span class="sim">✓</span></td><td><span class="nao">·</span></td><td><span class="sim">✓</span></td><td><span class="nao">·</span></td></tr>
+        <tr><td>Correção de segurança</td>
+          <td><span class="sim">✓</span></td><td><span class="sim">✓</span></td><td><span class="sim">✓</span></td><td><span class="sim">✓</span></td><td><span class="nao">·</span></td><td><span class="sim">✓</span></td><td><span class="nao">·</span></td></tr>
+        <tr><td>Refatoração sem mudança visível</td>
+          <td><span class="nao">·</span></td><td><span class="nao">·</span></td><td><span class="nao">·</span></td><td><span class="nao">·</span></td><td><span class="nao">·</span></td><td><span class="nao">·</span></td><td><span class="nao">·</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mt-5 grid gap-5 lg:grid-cols-2">
+    <div class="cartao"><h3>A última linha existe de propósito</h3>
+      <p>Refatoração que ninguém percebe não gera entrada de CHANGELOG. A linha vazia é o respaldo para
+         dizer "esta não precisa", em vez de inventar texto para uma mudança invisível e treinar quem
+         lê a ignorar o arquivo.</p>
+      <div class="cartao-nota">A pergunta que resolve os casos duvidosos: se alguém instalar o app
+        amanhã seguindo o README, e usar o app seguindo o CHANGELOG, algo vai surpreender essa pessoa
+        por causa desta mudança?</div></div>
+    <div class="cartao"><h3><code>scan-doc-sync.sh</code></h3>
+      <p>Lê o que está no staging e aponta o que a matriz pede e você não tocou: CHANGELOG parado com
+         código novo, <code>.env.example</code> intocado quando apareceu variável de ambiente no diff,
+         versão parada, roteiro de QA parado com migração nova.</p>
+      <div class="cartao-nota">Marca <code>[PEDE]</code> quando a matriz é clara e <code>[OLHE]</code>
+        quando depende de julgamento. Roda no <code>pre-commit</code> em modo aviso, sem travar o
+        commit: quem decide é você.</div></div>
+  </div>
+
+  <h3 class="mt-14 text-xl font-semibold tracking-tight text-gray-950 sm:text-2xl dark:text-white">
+    E o commit sai com o seu nome, só o seu
+  </h3>
+  <p class="prosa mt-4 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
+    Ferramenta de IA costuma assinar o que ajuda a escrever: um <code>Co-Authored-By</code> no rodapé do
+    commit, um "Generated with" no corpo do pull request, um link de sessão. Em projeto pessoal isso
+    polui o histórico, aparece no <code>git log</code> de quem clonar e credita como coautor algo que
+    não é autor de nada. A R18 corta em duas camadas, porque uma só não segura.
+  </p>
+
+  <div class="mt-6 grid gap-5 lg:grid-cols-2">
+    <div class="cartao"><h3>Na configuração da ferramenta</h3>
+      <p>A opção que insere o rodapé automaticamente fica desligada, para o trailer nunca chegar a ser
+         escrito. É a camada que resolve o caso comum, e vale igual para pull request: título e corpo
+         descrevem a mudança, não quem ajudou a digitá-la.</p>
+      <div class="cartao-nota">Configuração se perde ao trocar de máquina, ao reinstalar, ao clonar em
+        outro lugar. Por isso ela sozinha não basta.</div></div>
+    <div class="cartao"><h3>No hook do repositório</h3>
+      <p>O <code>commit-msg</code> recusa o commit quando a mensagem traz atribuição de IA em qualquer
+         das formas conhecidas, e mostra a linha ofensora. O hook viaja com o projeto, então protege
+         também a máquina onde ninguém lembrou de mexer na configuração.</p>
+      <div class="cartao-nota">Para o histórico que já existe, a referência traz o comando de auditoria
+        e o de reescrita, com o aviso de que reescrever histórico já publicado quebra o clone alheio.</div></div>
+  </div>
+
+  <p class="destaque prosa">
+    Isto não é sobre esconder que houve IA no processo. É sobre onde esse fato fica registrado. Contar
+    na spec como o projeto foi construído é informação útil para quem vier depois. Carimbar uma
+    ferramenta como coautora em cada commit é ruído permanente no histórico, e no seu repositório o
+    autor é você.
+  </p>
+</section>
+
 <section id="seguranca" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">R7</p>
   <h2 class="titulo-secao">Segurança proporcional, mas nunca abaixo do piso</h2>
@@ -677,8 +782,11 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
         <div class="painel-codigo mt-3">
 <pre class="bloco"><span class="p">bash</span> .../scan-secrets.sh
 <span class="p">bash</span> .../scan-sql-injection.sh
-<span class="p">bash</span> .../scan-linguagem.sh</pre>
-        </div></div>
+<span class="p">bash</span> .../scan-linguagem.sh
+<span class="p">bash</span> .../scan-doc-sync.sh</pre>
+        </div>
+        <div class="cartao-nota">O <code>pre-commit</code> e o <code>commit-msg</code> do pacote de
+          templates chamam os quatro sozinhos, a cada commit.</div></div>
     </div>
   </div>
 </section>
@@ -686,11 +794,11 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 <section id="estrutura" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">Conteúdo</p>
   <h2 class="titulo-secao">O que vem na caixa</h2>
-  <p class="texto-secao prosa">Um <code>SKILL.md</code>, dezessete referências carregadas sob demanda, dezenove
-    templates e dois scanners, e nenhuma cópia da documentação de terceiros.</p>
+  <p class="texto-secao prosa">Um <code>SKILL.md</code>, dezoito referências carregadas sob demanda, vinte
+    templates e quatro scanners, e nenhuma cópia da documentação de terceiros.</p>
   <div class="painel-codigo mt-10">
     <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>skills/development-pattern-for-web-apps/</div>
-<pre class="bloco">├── <span class="k">SKILL.md</span>                          <span class="c"># 17 regras, 8 fases, 3 portões, roteamento</span>
+<pre class="bloco">├── <span class="k">SKILL.md</span>                          <span class="c"># 18 regras, 8 fases, 3 portões, roteamento</span>
 ├── references/
 │   ├── segredos-e-configuracao.md    <span class="c"># R1: .env, config fora do webroot, Vercel, rotação</span>
 │   ├── git-e-publicacao.md           <span class="c"># R2: privado por padrão, commits, publicação</span>
@@ -705,15 +813,16 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 │   ├── pacotes-de-atualizacao.md     <span class="c"># R10: manifesto, zip slip, migrações, rollback</span>
 │   ├── roteiro-de-testes-cowork.md   <span class="c"># R11: as seis suítes, payloads, rastreabilidade</span>
 │   ├── checklist-de-revisao.md       <span class="c"># R12: checklist + 7 perguntas adversariais</span>
+│   ├── documentacao-do-projeto.md    <span class="c"># R13: inventário e matriz mudança → documento</span>
 │   ├── release-e-deploy.md           <span class="c"># R13, R14. SemVer, CHANGELOG, deploy, rollback</span>
 │   ├── rotas-e-urls.md               <span class="c"># R15: convenções, roteador, 301, 404, tradução</span>
 │   ├── vercel-build-e-correcao.md    <span class="c"># R16: conectar, ler log, reproduzir, corrigir</span>
 │   └── linguagem-e-texto-da-interface.md <span class="c"># R17: domínio, travessão, microcopy, tipografia</span>
 └── assets/
     ├── templates/                    <span class="c"># wizard, updater, Database.php, db.ts, schema,</span>
-    │                                 <span class="c">#   migração, manifesto, .htaccess, spec, roteiro…</span>
+    │                                 <span class="c">#   migração, manifesto, .htaccess, hooks, spec…</span>
     └── scripts/                      <span class="c"># scan-secrets.sh · scan-sql-injection.sh</span>
-                                      <span class="c">#   · scan-linguagem.sh</span></pre>
+                                      <span class="c">#   · scan-linguagem.sh · scan-doc-sync.sh</span></pre>
   </div>
 </section>
 

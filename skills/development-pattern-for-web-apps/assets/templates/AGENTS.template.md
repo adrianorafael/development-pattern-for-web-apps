@@ -10,7 +10,7 @@ Este projeto é construído sob o
 Carregue essa skill antes de escrever, revisar, testar, publicar ou implantar qualquer
 código aqui.
 
-As dezessete regras inegociáveis valem para toda mudança neste repositório, inclusive as
+As dezoito regras inegociáveis valem para toda mudança neste repositório, inclusive as
 "minúsculas":
 
 1. **R1**: Nenhum segredo no repositório. Credencial, chave de API, `.env`, dump: nunca.
@@ -30,6 +30,7 @@ As dezessete regras inegociáveis valem para toda mudança neste repositório, i
 15. **R15**: A URL é interface: rota semântica em português, nunca caminho de arquivo.
 16. **R16**: Build quebrado: log na mão, correção provada localmente, teto de três voltas.
 17. **R17**: Texto na língua de quem usa. Travessão proibido. Corpo justificado.
+18. **R18**: Nenhuma atribuição de IA em commit, pull request, README ou código.
 
 ## Este projeto especificamente
 
@@ -45,7 +46,7 @@ As dezessete regras inegociáveis valem para toda mudança neste repositório, i
 | **Prefixo de tabelas** | `<vazio ou app_>` |
 | **Projeto Vercel** | `<nome>`, token em `.env`, nunca versionado |
 | **Domínio e público (R17)** | `<banco / ITSM / saúde / interno>`, lendo `<quem>` |
-| **Atribuição de IA em commits** | `<sim, com Co-Authored-By \| não>`, seja consistente |
+| **Atribuição de IA (R18)** | Nenhuma. Hook `commit-msg` instalado |
 
 ## Convenções deste repositório
 
@@ -84,6 +85,7 @@ npm audit --omit=dev
 bash skills/development-pattern-for-web-apps/assets/scripts/scan-secrets.sh
 bash skills/development-pattern-for-web-apps/assets/scripts/scan-sql-injection.sh
 bash skills/development-pattern-for-web-apps/assets/scripts/scan-linguagem.sh
+bash skills/development-pattern-for-web-apps/assets/scripts/scan-doc-sync.sh
 ```
 
 ## O que NUNCA fazer aqui
@@ -93,3 +95,5 @@ bash skills/development-pattern-for-web-apps/assets/scripts/scan-linguagem.sh
 - Rodar migração em produção sem backup verificado.
 - Publicar com defeito de severidade 🔴 em aberto no roteiro de QA.
 - Tornar o repositório público sem varrer o histórico completo.
+- Deixar `Co-Authored-By`, "Generated with" ou link de sessão entrar no histórico (R18).
+- Commitar mudança de comportamento sem a documentação que a matriz pede (R13).

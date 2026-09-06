@@ -14,13 +14,13 @@ a fonte da verdade, do mesmo jeito que `app/version.php` ou `package.json` é pa
 
 ## [Não publicado]
 
-## [1.0.0] - 2026-09-05
+## [1.0.0] - 2026-09-06
 
 Primeira versão.
 
 ### Adicionado
 
-- **`SKILL.md`** com as dezessete regras inegociáveis e o pipeline de oito fases com três
+- **`SKILL.md`** com as dezoito regras inegociáveis e o pipeline de oito fases com três
   portões de aprovação (spec, push, deploy), mais o bootstrap de seis perguntas.
 - **Duas trilhas de stack:** HTML5 + PHP 8 + MySQL na Hostinger, e Next.js (App Router) +
   Tailwind na Vercel: cada uma com layout de projeto, convenções e armadilhas verificadas.
@@ -64,6 +64,19 @@ Primeira versão.
   padrões de botão, mensagem de erro, estado vazio e confirmação destrutiva, e as regras de
   justificação com hifenização. Acompanha o `scan-linguagem.sh`, que em Markdown ignora o
   que está entre crases, onde o caractere está sendo citado e não usado.
+- **R13: documentação viva, no mesmo commit da mudança.** Referência dedicada com o
+  inventário do que um projeto deste padrão documenta (README, CHANGELOG, `AGENTS.md`,
+  specs, roteiro e dados de teste, `.env.example`, schema e migrações, manifesto do pacote,
+  arquivo de versão, página) e uma matriz de mudança → documento que decide o que cada tipo
+  de alteração obriga a atualizar, com a linha "refatoração sem mudança visível" existindo
+  de propósito para respaldar o "esta não precisa". Acompanha o `scan-doc-sync.sh`, que lê o
+  staging e separa o que a matriz pede (`[PEDE]`) do que depende de julgamento (`[OLHE]`).
+- **R18: nenhuma atribuição de IA nos artefatos do projeto.** Nada de `Co-Authored-By`,
+  "Generated with", link de sessão ou "Assisted-By" em commit, pull request, README, página
+  ou comentário de código, em duas camadas: desligar a inserção automática na configuração
+  da ferramenta e o hook `commit-msg`, que recusa a mensagem e mostra a linha ofensora. A
+  referência traz os comandos de auditoria do histórico existente e o de reescrita, com o
+  aviso de que reescrever histórico já publicado quebra o clone de quem já baixou.
 - **R11: roteiro de testes para o Claude Cowork** em toda entrega: seis suítes (fumaça,
   funcional, integração, segurança, interface, regressão), matriz de rastreabilidade
   requisito × caso, registro de execução, catálogo de payloads de SQL injection, XSS, IDOR,
@@ -72,10 +85,10 @@ Primeira versão.
   projeto, e quatro níveis (N1 vitrine → N4 pagamento) que só acrescentam, nunca removem.
 - **R2: repositório privado por padrão**, com a lista de verificação do histórico completo
   antes de tornar qualquer repositório público.
-- **19 templates** prontos para copiar, entre eles `Database.php`, `db.ts`, o Wizard, o
+- **20 templates** prontos para copiar, entre eles `Database.php`, `db.ts`, o Wizard, o
   instalador de pacotes, `schema.sql`, `migration.sql`, `manifest.json`, `.htaccess`
-  endurecido, o roteiro de testes, o registro de correção de build, a spec e o
-  `AGENTS.md` de projeto.
+  endurecido, os hooks `pre-commit` e `commit-msg`, o roteiro de testes, o registro de
+  correção de build, a spec e o `AGENTS.md` de projeto.
 - Página do projeto em `docs/`, publicada no GitHub Pages pelo CI: **Tailwind compilado**
   (não CDN), com **modo claro como padrão e modo escuro opcional** por classe, persistido em
   `localStorage` e aplicado antes da primeira pintura. A linguagem visual segue o site do
