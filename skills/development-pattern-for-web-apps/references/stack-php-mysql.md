@@ -3,7 +3,7 @@
 > Regra **R8** (metade PHP): front controller e partials. Zero cabeçalho copiado e colado,
 > zero HTML montado por concatenação de string.
 
-Hospedagem compartilhada impõe restrições reais — sem root, sem systemd, muitas vezes sem
+Hospedagem compartilhada impõe restrições reais, sem root, sem systemd, muitas vezes sem
 Composer no servidor, PHP definido pelo painel. O projeto é desenhado **para** essas
 restrições, não apesar delas.
 
@@ -16,16 +16,16 @@ O ideal, quando há acesso acima do `public_html`:
 ```
 /home/usuario/
 ├── config/
-│   └── app.config.php          # credenciais — FORA do webroot, gerado pelo Wizard
+│   └── app.config.php          # credenciais. FORA do webroot, gerado pelo Wizard
 ├── storage/
-│   ├── uploads/                # arquivos enviados — fora do webroot
+│   ├── uploads/                # arquivos enviados: fora do webroot
 │   ├── backups/                # dumps antes de atualizar
 │   └── logs/
 └── public_html/                # ← a raiz do domínio
-    ├── index.php               # front controller — o ÚNICO ponto de entrada
+    ├── index.php               # front controller: o ÚNICO ponto de entrada
     ├── .htaccess               # rewrite + cabeçalhos + bloqueios
     ├── assets/{css,js,img}/
-    ├── install/                # Wizard (R9) — removido/trancado após instalar
+    ├── install/                # Wizard (R9): removido/trancado após instalar
     ├── admin/                  # painel administrativo (R10)
     └── app/
         ├── bootstrap.php       # carrega config, sessão, autoload, conexão
@@ -41,7 +41,7 @@ O ideal, quando há acesso acima do `public_html`:
 
 Quando **não** houver acesso acima do `public_html` (planos mais simples), tudo fica dentro,
 e a proteção passa a ser o `.htaccess`: `config/`, `storage/` e `app/` com
-`Require all denied`. Teste no navegador que respondem 403 — a suposição não basta.
+`Require all denied`. Teste no navegador que respondem 403: a suposição não basta.
 
 ```
 projeto/
@@ -76,7 +76,7 @@ Options -Indexes
 ```
 
 ```php
-// public_html/index.php — o único ponto de entrada
+// public_html/index.php: o único ponto de entrada
 declare(strict_types=1);
 require __DIR__ . '/app/bootstrap.php';
 
@@ -97,7 +97,7 @@ $rotas = [
 (new Router($rotas))->despachar($_SERVER['REQUEST_METHOD'], parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 ```
 
-**As rotas são um mapa escrito por você.** Nunca `include $_GET['pagina'] . '.php'` — isso é
+**As rotas são um mapa escrito por você.** Nunca `include $_GET['pagina'] . '.php'`, isso é
 inclusão remota de arquivo com outro nome.
 
 O roteador completo (com `{id}`, canonicalização, 301 de rotas antigas e 404 de verdade), as
@@ -106,7 +106,7 @@ convenções de nomenclatura e a tabela de tradução de URLs antigas estão em
 
 ---
 
-## 3. Views e partials — a metade PHP de R8
+## 3. Views e partials: a metade PHP de R8
 
 Nada de HTML dentro de controller. Nada de `echo '<div class="' . $x . '">'`.
 
@@ -147,7 +147,7 @@ final class View {
 Componentes reutilizáveis viram partials com parâmetros:
 
 ```php
-// app/Views/partials/campo-texto.php  — espera $nome, $rotulo, $valor, $erro
+// app/Views/partials/campo-texto.php , espera $nome, $rotulo, $valor, $erro
 <div class="campo <?= $erro ? 'campo--erro' : '' ?>">
   <label for="<?= e($nome) ?>"><?= e($rotulo) ?></label>
   <input type="text" id="<?= e($nome) ?>" name="<?= e($nome) ?>"
@@ -211,7 +211,7 @@ $pdo = Database::conectar($config['db']);   // ver Database.php.template
 
 Com Composer, troque o autoload manual por PSR-4 e `require vendor/autoload.php`. Se o
 servidor não tiver Composer, rode `composer install --no-dev --optimize-autoloader`
-localmente e **envie o `vendor/`** no pacote de deploy — mas nunca no repositório.
+localmente e **envie o `vendor/`** no pacote de deploy, mas nunca no repositório.
 
 ---
 
@@ -221,9 +221,9 @@ Verifique cada uma antes de projetar em cima (R4):
 
 | Item | Como verificar | Efeito no projeto |
 | --- | --- | --- |
-| Versão do PHP que serve o site | `<?php echo PHP_VERSION;` numa página real | Define a sintaxe disponível — o SSH pode reportar outra |
+| Versão do PHP que serve o site | `<?php echo PHP_VERSION;` numa página real | Define a sintaxe disponível: o SSH pode reportar outra |
 | Extensões | `<?php print_r(get_loaded_extensions());` | `zip` é requisito do updater (R10); `intl`, `gd`, `curl` conforme uso |
-| `disable_functions` | `php -i \| grep disable_functions` | `exec`, `shell_exec`, `proc_open` costumam estar bloqueados — não dependa deles para backup |
+| `disable_functions` | `php -i \| grep disable_functions` | `exec`, `shell_exec`, `proc_open` costumam estar bloqueados, não dependa deles para backup |
 | Limites de upload | `upload_max_filesize`, `post_max_size` | Teto real do pacote ZIP de atualização |
 | `max_execution_time` | `php -i` | Migração longa precisa rodar em lotes |
 | Escrita no disco | teste real de `file_put_contents` | O Wizard precisa gravar `config/` e o updater precisa gravar arquivos |
@@ -232,7 +232,7 @@ Verifique cada uma antes de projetar em cima (R4):
 | Acesso acima do `public_html` | `ls ..` no gerenciador de arquivos | Decide onde ficam config e storage |
 | Versão do MySQL/MariaDB | `SELECT VERSION();` | Define CTE, funções de janela, `utf8mb4` padrão |
 
-O Wizard de instalação (R9) checa isso automaticamente e mostra o resultado ao usuário —
+O Wizard de instalação (R9) checa isso automaticamente e mostra o resultado ao usuário:
 essa é justamente a razão de ele existir. → [wizard-de-instalacao.md](wizard-de-instalacao.md)
 
 ---
@@ -241,7 +241,7 @@ essa é justamente a razão de ele existir. → [wizard-de-instalacao.md](wizard
 
 | Forma | Quando usar | Cuidado |
 | --- | --- | --- |
-| **Git na Hostinger** (hPanel → Git) | Melhor opção: versionado e reversível | O repositório é privado — configure a chave de deploy |
+| **Git na Hostinger** (hPanel → Git) | Melhor opção: versionado e reversível | O repositório é privado: configure a chave de deploy |
 | **FTP/SFTP** | Sem Git no plano | Nunca versione `.ftpconfig`/`sftp.json` (R1) |
 | **Upload de ZIP pelo gerenciador** | Envio pontual | Fácil esquecer arquivo; use só para o primeiro envio |
 | **Painel de atualização do próprio app** (R10) | Atualizações rotineiras | O caminho preferido depois da primeira instalação |
@@ -261,7 +261,7 @@ tests/
 ```
 
 ```php
-// PHPUnit — cada teste em transação, revertida no final: a base fica limpa
+// PHPUnit: cada teste em transação, revertida no final: a base fica limpa
 protected function setUp(): void    { self::$pdo->beginTransaction(); }
 protected function tearDown(): void { self::$pdo->rollBack(); }
 ```
@@ -276,7 +276,7 @@ resto.
 
 - [ ] Um único ponto de entrada (`index.php`); rotas em mapa escrito à mão
 - [ ] URLs semânticas em português, sem `.php` e sem estrutura de pastas (R15)
-- [ ] `config/` e `storage/` fora do `public_html` — ou negados por `.htaccess` e testados
+- [ ] `config/` e `storage/` fora do `public_html`, ou negados por `.htaccess` e testados
 - [ ] `Database::conectar()` única, com `EMULATE_PREPARES => false` (R5)
 - [ ] Nenhum HTML em controller; partials para tudo que repete (R8)
 - [ ] `e()` em todo eco (R6)

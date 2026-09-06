@@ -1,11 +1,11 @@
-# Pacotes de atualização — o painel que instala um ZIP
+# Pacotes de atualização: o painel que instala um ZIP
 
 > Regra **R10**. Todo app PHP entrega um painel administrativo capaz de receber um pacote
 > ZIP de atualização contendo **arquivos a publicar** e **scripts SQL que ajustam o banco**,
 > aplicá-los na ordem certa, e voltar atrás quando algo der errado.
 
 Atualizar por FTP é onde os projetos pessoais morrem: um arquivo esquecido, um SQL que
-ninguém rodou, e o app fica meio atualizado — o pior estado possível. O painel torna a
+ninguém rodou, e o app fica meio atualizado: o pior estado possível. O painel torna a
 atualização uma operação única, verificável e reversível.
 
 ---
@@ -14,7 +14,7 @@ atualização uma operação única, verificável e reversível.
 
 ```
 meu-app-1.3.0.zip
-├── manifest.json           # obrigatório — a identidade e o plano da atualização
+├── manifest.json           # obrigatório: a identidade e o plano da atualização
 ├── files/                  # árvore espelhando a raiz do app
 │   ├── app/Controllers/ChamadoController.php
 │   ├── app/Views/chamados/lista.php
@@ -22,8 +22,8 @@ meu-app-1.3.0.zip
 ├── migrations/             # SQL, ordenado por nome
 │   ├── 0007_adiciona_anexos.sql
 │   └── 0008_indice_status_data.sql
-├── remove.txt              # opcional — um caminho por linha, arquivos a apagar
-└── CHANGELOG.md            # opcional — exibido ao usuário antes de confirmar
+├── remove.txt              # opcional: um caminho por linha, arquivos a apagar
+└── CHANGELOG.md            # opcional: exibido ao usuário antes de confirmar
 ```
 
 ### `manifest.json`
@@ -50,13 +50,13 @@ meu-app-1.3.0.zip
   o painel recusa e diz qual pacote instalar antes.
 - **`sha256` por arquivo** é a integridade: um ZIP truncado no upload é detectado antes de
   qualquer arquivo ser escrito.
-- **`extensoes`/`php_minimo`** são revalidados no destino — o servidor pode ter mudado.
+- **`extensoes`/`php_minimo`** são revalidados no destino: o servidor pode ter mudado.
 
 Modelo: [`../assets/templates/update-manifest.json.template`](../assets/templates/update-manifest.json.template).
 
 ---
 
-## 2. O fluxo de instalação — nove etapas
+## 2. O fluxo de instalação: nove etapas
 
 ```
 1 UPLOAD       recebe o ZIP (autenticado, papel admin, CSRF, limite de tamanho)
@@ -75,14 +75,14 @@ Falha em qualquer etapa a partir da 6 dispara **rollback** (§5).
 
 ---
 
-## 3. Validação — antes de escrever qualquer byte
+## 3. Validação: antes de escrever qualquer byte
 
 ```php
 $zip = new ZipArchive();
 if ($zip->open($caminhoTemp) !== true) { erro('Arquivo ZIP inválido ou corrompido.'); }
 
 $manifestoBruto = $zip->getFromName('manifest.json');
-if ($manifestoBruto === false) { erro('Pacote sem manifest.json — não é um pacote de atualização.'); }
+if ($manifestoBruto === false) { erro('Pacote sem manifest.json, não é um pacote de atualização.'); }
 
 $m = json_decode($manifestoBruto, true, 512, JSON_THROW_ON_ERROR);
 
@@ -109,7 +109,7 @@ foreach ($m['arquivos'] as $arq) {
 }
 ```
 
-### O caminho de cada arquivo é validado — sempre
+### O caminho de cada arquivo é validado, sempre
 
 O ataque clássico contra instaladores de ZIP é o *zip slip*: uma entrada chamada
 `../../../../home/usuario/.ssh/authorized_keys`. A validação é obrigatória e tem quatro
@@ -124,13 +124,13 @@ function caminhoDestinoSeguro(string $relativo, string $raiz): string {
         throw new RuntimeException("Caminho inválido no pacote: {$relativo}");
     }
 
-    // 2. Extensão em allowlist — um .htaccess ou .sh no pacote é recusado
+    // 2. Extensão em allowlist: um .htaccess ou .sh no pacote é recusado
     $ext = strtolower(pathinfo($relativo, PATHINFO_EXTENSION));
     if (!in_array($ext, ['php','html','css','js','svg','png','jpg','webp','json','md'], true)) {
         throw new RuntimeException("Extensão não permitida: {$relativo}");
     }
 
-    // 3. Primeiro segmento em allowlist — o pacote não escreve onde quiser
+    // 3. Primeiro segmento em allowlist: o pacote não escreve onde quiser
     $primeiro = explode('/', $relativo)[0];
     if (!in_array($primeiro, ['app','assets','admin','install'], true)) {
         throw new RuntimeException("Destino fora das pastas permitidas: {$relativo}");
@@ -150,7 +150,7 @@ function caminhoDestinoSeguro(string $relativo, string $raiz): string {
 estiver lá, inclusive `../`. Extraia entrada por entrada, validando cada uma.
 
 O pacote **nunca** pode escrever em `config/`, `storage/` ou na raiz. Essas pastas não estão
-na allowlist do primeiro segmento — e é assim que uma atualização não sobrescreve a
+na allowlist do primeiro segmento, e é assim que uma atualização não sobrescreve a
 configuração do usuário.
 
 ---
@@ -206,7 +206,7 @@ PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 4. **Migração de dados separada da de estrutura.** Duas migrações são mais fáceis de
    diagnosticar que uma que faz as duas coisas.
 5. **DDL não é transacional no MySQL.** Um `ALTER` no meio do arquivo não volta com
-   `ROLLBACK` — por isso o backup da etapa 4 é obrigatório, e por isso cada migração é
+   `ROLLBACK`, por isso o backup da etapa 4 é obrigatório, e por isso cada migração é
    registrada assim que termina.
 
 ```php
@@ -240,20 +240,20 @@ storage/backups/2026-09-05-142031-v1.2.0/
 ```
 
 Sem `mysqldump` disponível (comum em shared hosting), gere o dump em PHP: `SHOW TABLES`,
-`SHOW CREATE TABLE`, e os `INSERT` em lotes, com `mysqli_real_escape` **de valores** —
+`SHOW CREATE TABLE`, e os `INSERT` em lotes, com `mysqli_real_escape` **de valores**:
 aqui é geração de dump, não consulta, e a saída é um arquivo, não uma query executada.
 
 O rollback automático cobre o que é reversível:
 
 | Etapa que falhou | Ação automática |
 | --- | --- |
-| Validação (1–3) | Nada foi tocado. Descarta o ZIP temporário. |
+| Validação (1 a 3) | Nada foi tocado. Descarta o ZIP temporário. |
 | Arquivos (6) | Restaura `arquivos.zip` sobre o destino; desliga manutenção. |
 | Migrações (7) | Restaura arquivos **e** `banco.sql`; desliga manutenção. |
 
 E o que não é automático é dito com todas as letras: *"o banco foi restaurado a partir de
 `storage/backups/2026-09-05-142031-v1.2.0/banco.sql`; se houve escrita de usuários entre o
-backup e a falha, ela se perdeu — por isso o modo manutenção é ligado antes."*
+backup e a falha, ela se perdeu, por isso o modo manutenção é ligado antes."*
 
 Guarde os últimos N backups (3 é um bom padrão) e apague os mais antigos, senão a cota do
 plano estoura em silêncio.
@@ -292,9 +292,9 @@ um botão "Sair do modo manutenção" no painel.
 Este é o recurso mais perigoso do app: ele grava arquivos PHP no servidor. Um invasor com
 acesso aqui tem execução remota de código.
 
-- [ ] Rota exige autenticação **e** papel `admin` — verificado no servidor, em toda requisição
+- [ ] Rota exige autenticação **e** papel `admin`, verificado no servidor, em toda requisição
 - [ ] Token CSRF no formulário de upload e na confirmação
-- [ ] Reautenticação (pedir a senha novamente) antes de aplicar — como um `sudo`
+- [ ] Reautenticação (pedir a senha novamente) antes de aplicar, como um `sudo`
 - [ ] Limite de tamanho do ZIP, conferido no PHP e no servidor
 - [ ] `manifest.json` obrigatório; pacote sem ele é recusado
 - [ ] `sha256` conferido para todo arquivo antes de qualquer escrita

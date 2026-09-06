@@ -1,5 +1,5 @@
 /*
- * tailwind.input.css — fonte do CSS da página do projeto (docs/index.html).
+ * tailwind.input.css: fonte do CSS da página do projeto (docs/index.html).
  *
  * Recompile depois de qualquer mudança no HTML:
  *   npm install && npm run build:css
@@ -132,7 +132,7 @@
      na viewport e eles criariam rolagem horizontal na página inteira.
      O recorte vai NESTE wrapper, não no <body>: overflow no body é propagado para
      o viewport em vez de recortar o próprio box, então lá não teria efeito.
-     `clip` (e não `hidden`) porque `hidden` viraria contêiner de rolagem — o que
+     `clip` (e não `hidden`) porque `hidden` viraria contêiner de rolagem: o que
      quebraria o cabeçalho sticky e a rolagem interna dos blocos de código. */
   .recorte-lateral {
     overflow-x: clip;
@@ -149,7 +149,25 @@
            dark:text-white;
   }
   .texto-secao {
-    @apply mt-4 max-w-3xl text-lg/7 text-pretty text-gray-600 dark:text-gray-400;
+    @apply mt-4 max-w-3xl text-lg/7 text-gray-600 dark:text-gray-400;
+  }
+
+  /*
+   * Corpo de texto justificado (R17). A hifenização é OBRIGATÓRIA junto: sem ela o
+   * navegador estica os espaços entre palavras e abre corredores brancos verticais
+   * no meio do parágrafo. Depende de lang="pt-BR" no <html> para o navegador saber
+   * qual dicionário usar.
+   *
+   * Abaixo de 480px a linha não chega a 40 caracteres, e aí o justificado piora em
+   * vez de melhorar: volta para alinhamento à esquerda, como a própria regra manda.
+   */
+  .prosa {
+    text-align: justify;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+  }
+  @media (max-width: 480px) {
+    .prosa { text-align: left; }
   }
 
   /* ── Cartões ───────────────────────────────────────────────────────────── */

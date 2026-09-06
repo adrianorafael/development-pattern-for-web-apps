@@ -1,4 +1,4 @@
-# Protocolo de verificação — provar, não lembrar
+# Protocolo de verificação: provar, não lembrar
 
 > Regra **R4**. Uma função, prop, classe ou opção só entra no código depois de verificada
 > contra o que está realmente instalado ou contra a documentação oficial lida nesta sessão.
@@ -20,7 +20,7 @@ Do mais confiável para o menos. **Sempre desça o mínimo possível.**
 | 2 | O runtime local: `php -v`, `php -m`, `node -v`, `composer show`, `npm ls` | Para saber o que existe no ambiente, não o que deveria existir |
 | 3 | Documentação oficial da versão instalada | Quando o pacote não está instalado, ou para semântica que o `.d.ts` não expressa |
 | 4 | Changelog / notas de migração do projeto upstream | Quando a dúvida é "mudou entre versões?" |
-| 5 | Memória do modelo | **Nunca sozinha.** Serve para levantar a hipótese que os níveis 1–4 confirmam. |
+| 5 | Memória do modelo | **Nunca sozinha.** Serve para levantar a hipótese que os níveis 1 a 4 confirmam. |
 
 ---
 
@@ -29,7 +29,7 @@ Do mais confiável para o menos. **Sempre desça o mínimo possível.**
 ### PHP
 
 ```bash
-php -v                                  # versão real — decide o que é sintaxe válida
+php -v                                  # versão real: decide o que é sintaxe válida
 php -m                                  # extensões: pdo_mysql, mbstring, zip, gd, intl…
 php -i | grep -i 'upload_max\|post_max\|memory_limit\|max_execution'
 php -r 'var_dump(function_exists("str_contains"));'    # a função existe AQUI?
@@ -97,7 +97,7 @@ quando o comportamento surpreende.
 
 Quando o pacote não está instalado e a documentação está inacessível, a saída correta é:
 
-> Não consigo verificar se `ZipArchive::setPassword()` está disponível neste ambiente —
+> Não consigo verificar se `ZipArchive::setPassword()` está disponível neste ambiente:
 > a extensão `zip` não aparece em `php -m` e não tenho acesso à doc agora.
 > Duas formas de destravar: rodar `php -m | grep zip` no servidor da Hostinger, ou me
 > confirmar a versão do PHP configurada no hPanel. Enquanto isso, o instalador de pacotes
@@ -118,7 +118,7 @@ Isso é mais útil que uma chamada plausível que falha em produção às duas d
 | "`$_SERVER['HTTP_X_FORWARDED_FOR']` é o IP do cliente" | É cabeçalho, o cliente controla. Só confie atrás de proxy que você configurou. |
 | "`htmlspecialchars()` cobre todos os contextos" | Cobre HTML. Atributo sem aspas, JS e URL precisam de tratamento próprio. |
 | "Server Components podem usar `useState`" | Não. Precisa de `'use client'`. |
-| "`process.env.X` funciona no navegador" | Só com prefixo `NEXT_PUBLIC_` — e aí é público. |
+| "`process.env.X` funciona no navegador" | Só com prefixo `NEXT_PUBLIC_`, e aí é público. |
 | "Server Action é privada porque não aparece no bundle" | É um endpoint HTTP público. Valide entrada e autorização dentro dela. |
 | "Tailwind aceita classe montada em runtime" | Não: `text-${cor}-500` não é gerado. Use mapa de classes completas. |
 | "`revalidatePath` atualiza na hora em qualquer caso" | Depende de cache, runtime e rota. Verifique na doc da sua versão. |
@@ -134,6 +134,6 @@ escolha:
 
 ```
 Considerei `readonly` em propriedade promovida (PHP 8.1+). `composer.json` declara
-"php": "^8.0", e o SSH da Hostinger reporta 8.0.30 — então uso propriedade privada
+"php": "^8.0", e o SSH da Hostinger reporta 8.0.30: então uso propriedade privada
 com getter. Se a versão subir para 8.2 no hPanel, esta escolha pode ser revista.
 ```

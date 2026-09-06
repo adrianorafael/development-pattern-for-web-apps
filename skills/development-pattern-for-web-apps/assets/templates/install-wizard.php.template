@@ -1,8 +1,8 @@
 <?php
 /**
- * install/index.php — Wizard de instalação
+ * install/index.php. Wizard de instalação
  *
- * Parte de "Development Pattern for Web Apps" — regra R9.
+ * Parte de "Development Pattern for Web Apps": regra R9.
  * Esqueleto funcional em arquivo único. Adapte APP_SLUG, TABELAS_DO_APP,
  * o schema em database/schema.sql e os requisitos em requisitos().
  *
@@ -24,7 +24,7 @@ const PHP_MINIMO  = '8.1.0';
 /** Só estas tabelas podem ser removidas em "limpar e recriar". Allowlist (R5). */
 const TABELAS_DO_APP = ['schema_migrations', 'usuarios', 'chamados', 'anexos', 'configuracoes'];
 
-/** Migrações já contempladas pelo schema base — registradas para o updater (R10/R13). */
+/** Migrações já contempladas pelo schema base: registradas para o updater (R10/R13). */
 const MIGRACOES_BASE = ['0001_estrutura_inicial.sql'];
 
 define('RAIZ',         dirname(__DIR__));
@@ -67,7 +67,7 @@ function traduzirErroPdo(PDOException $e): string {
         str_contains($m, '1045') => 'Usuário ou senha incorretos. Confira em hPanel → Bancos de dados MySQL.',
         str_contains($m, '2002'), str_contains($m, '2005')
             => 'Não foi possível alcançar o servidor. Na Hostinger o host costuma ser "localhost".',
-        str_contains($m, '1049') => 'O banco informado não existe. Crie-o no hPanel — o instalador cria as tabelas, não a base.',
+        str_contains($m, '1049') => 'O banco informado não existe. Crie-o no hPanel: o instalador cria as tabelas, não a base.',
         str_contains($m, '1044') => 'O usuário não tem permissão neste banco. Associe o usuário ao banco no hPanel.',
         default                  => 'Não foi possível conectar ao banco de dados. Confira os dados informados.',
     };
@@ -80,7 +80,7 @@ function conectar(array $d): PDO {
         $d['senha'],
         [
             PDO::ATTR_ERRMODE          => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_EMULATE_PREPARES => false,      // R5 — o item crítico
+            PDO::ATTR_EMULATE_PREPARES => false,      // R5: o item crítico
             PDO::ATTR_TIMEOUT          => 5,
         ]
     );
@@ -109,7 +109,7 @@ function requisitos(): array {
         'gd'        => ['Manipulação de imagens', false],
         'intl'      => ['Formatação regional', false],
     ] as $ext => [$para, $obrig]) {
-        $add("Extensão {$ext} — {$para}", extension_loaded($ext),
+        $add("Extensão {$ext}: {$para}", extension_loaded($ext),
              extension_loaded($ext) ? 'presente' : 'ausente', 'presente',
              "hPanel → Configuração PHP → marque a extensão {$ext}.", $obrig);
     }
@@ -117,7 +117,7 @@ function requisitos(): array {
     foreach (['config' => 'gravar a configuração', 'storage' => 'uploads, logs e backups'] as $dir => $para) {
         $caminho = RAIZ . '/' . $dir;
         if (!is_dir($caminho)) { @mkdir($caminho, 0755, true); }
-        $add("Escrita em {$dir}/ — {$para}", is_dir($caminho) && is_writable($caminho),
+        $add("Escrita em {$dir}/: {$para}", is_dir($caminho) && is_writable($caminho),
              is_dir($caminho) ? (is_writable($caminho) ? 'gravável' : 'somente leitura') : 'não existe',
              'gravável',
              "Crie a pasta {$dir}/ no gerenciador de arquivos e aplique permissão 755.");
@@ -142,7 +142,7 @@ $w      = &$_SESSION['wizard'];
 $erros  = [];
 $aviso  = null;
 
-// Passo 2 — testar a conexão
+// Passo 2: testar a conexão
 if ($passo === 2 && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $dados = [
         'host'    => trim((string)($_POST['host']    ?? 'localhost')),
@@ -186,7 +186,7 @@ if ($passo === 2 && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Passo 3 — estratégia
+// Passo 3: estratégia
 if ($passo === 3 && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $estrategia = (string)($_POST['estrategia'] ?? '');
     if (!in_array($estrategia, ['criar', 'manter', 'recriar'], true)) {
@@ -199,7 +199,7 @@ if ($passo === 3 && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Passo 4 — administrador
+// Passo 4: administrador
 if ($passo === 4 && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome  = trim((string)($_POST['nome'] ?? ''));
     $email = filter_var(trim((string)($_POST['email'] ?? '')), FILTER_VALIDATE_EMAIL);
@@ -219,7 +219,7 @@ if ($passo === 4 && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Passo 5 — executar
+// Passo 5: executar
 $relatorio = [];
 if ($passo === 5 && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'instalar') {
     try {
@@ -227,14 +227,14 @@ if ($passo === 5 && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? 
         $pdo     = conectar($w['db']);
         $prefixo = $w['db']['prefixo'] ?? '';
 
-        // 5.1 — limpar, quando pedido. Só tabelas da allowlist. Nunca DROP DATABASE.
+        // 5.1: limpar, quando pedido. Só tabelas da allowlist. Nunca DROP DATABASE.
         if (($w['estrategia'] ?? '') === 'recriar') {
             $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
             try {
                 foreach (TABELAS_DO_APP as $t) {
                     $nomeTabela = str_replace('`', '``', $prefixo . $t);
                     // $nomeTabela sai de TABELAS_DO_APP (allowlist) com as crases escapadas,
-                    // scan-sql:allow — e $prefixo foi sanitizado com preg_replace no passo 2.
+                    // scan-sql:allow, e $prefixo foi sanitizado com preg_replace no passo 2.
                     $pdo->exec("DROP TABLE IF EXISTS `{$nomeTabela}`");
                     $relatorio[] = "Removida: {$prefixo}{$t}";
                 }
@@ -243,7 +243,7 @@ if ($passo === 5 && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? 
             }
         }
 
-        // 5.2 — criar o schema (idempotente: CREATE TABLE IF NOT EXISTS)
+        // 5.2: criar o schema (idempotente: CREATE TABLE IF NOT EXISTS)
         if (($w['estrategia'] ?? '') !== 'manter') {
             if (!is_file(CAMINHO_SCHEMA)) { throw new RuntimeException('Arquivo database/schema.sql não encontrado.'); }
             $sql = (string)file_get_contents(CAMINHO_SCHEMA);
@@ -253,16 +253,16 @@ if ($passo === 5 && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? 
             $relatorio[] = 'Estrutura criada a partir de database/schema.sql';
         }
 
-        // 5.3 — registrar as migrações já contempladas (R13)
-        // scan-sql:allow — $prefixo é sanitizado com preg_replace no passo 2; o dado vai em :v
+        // 5.3: registrar as migrações já contempladas (R13)
+        // scan-sql:allow: $prefixo é sanitizado com preg_replace no passo 2; o dado vai em :v
         $ins = $pdo->prepare("INSERT IGNORE INTO `{$prefixo}schema_migrations` (versao) VALUES (:v)");
         foreach (MIGRACOES_BASE as $m) { $ins->execute([':v' => $m]); }
         $relatorio[] = 'Versão do schema registrada: ' . implode(', ', MIGRACOES_BASE);
 
-        // 5.4 — administrador
+        // 5.4: administrador
         if (!empty($w['admin'])) {
             $stmt = $pdo->prepare(
-                // scan-sql:allow — $prefixo sanitizado no passo 2; nome, e-mail e hash vão vinculados
+                // scan-sql:allow: $prefixo sanitizado no passo 2; nome, e-mail e hash vão vinculados
                 "INSERT INTO `{$prefixo}usuarios` (nome, email, senha_hash, papel, ativo, criado_em)
                  VALUES (:n, :e, :h, 'admin', 1, NOW())
                  ON DUPLICATE KEY UPDATE senha_hash = VALUES(senha_hash), papel = 'admin', ativo = 1"
@@ -271,7 +271,7 @@ if ($passo === 5 && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? 
             $relatorio[] = 'Administrador criado: ' . $w['admin']['email'];
         }
 
-        // 5.5 — gravar a configuração fora do webroot
+        // 5.5: gravar a configuração fora do webroot
         $config = [
             'app' => [
                 'nome'     => APP_NOME,
@@ -293,14 +293,14 @@ if ($passo === 5 && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? 
         @chmod(CAMINHO_CONFIG, 0640);
         $relatorio[] = 'Configuração gravada em config/app.config.php (0640)';
 
-        // 5.6 — se config/ estiver dentro do webroot, negar acesso e TESTAR
+        // 5.6: se config/ estiver dentro do webroot, negar acesso e TESTAR
         $htaccess = RAIZ . '/config/.htaccess';
         if (!is_file($htaccess)) {
             @file_put_contents($htaccess, "Require all denied\n");
             $relatorio[] = 'config/.htaccess criado (nega acesso pelo navegador)';
         }
 
-        // 5.7 — trancar o instalador
+        // 5.7: trancar o instalador
         file_put_contents(CAMINHO_LOCK, date('c') . ' v' . APP_VERSAO . PHP_EOL, LOCK_EX);
         $relatorio[] = 'Instalador trancado (config/instalado.lock)';
 
@@ -319,7 +319,7 @@ $csrf       = $_SESSION['csrf'];
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Instalação — <?= e(APP_NOME) ?></title>
+<title>Instalação: <?= e(APP_NOME) ?></title>
 <style>
   :root { --ok:#15803d; --erro:#b91c1c; --aviso:#b45309; --borda:#e2e8f0; --texto:#0f172a; --fraco:#64748b; }
   * { box-sizing:border-box; }
@@ -359,7 +359,7 @@ $csrf       = $_SESSION['csrf'];
 </head>
 <body>
 <div class="caixa">
-  <h1>Instalação — <?= e(APP_NOME) ?></h1>
+  <h1>Instalação: <?= e(APP_NOME) ?></h1>
   <p class="sub">Versão <?= e(APP_VERSAO) ?></p>
 
   <div class="passos">
@@ -414,7 +414,7 @@ $csrf       = $_SESSION['csrf'];
      <strong>hPanel → Bancos de dados → MySQL</strong>.</p>
   <div class="alerta aviso">
     O instalador cria as <strong>tabelas</strong> dentro de uma base que já existe.
-    Crie a base no hPanel antes de continuar — o usuário do plano compartilhado
+    Crie a base no hPanel antes de continuar: o usuário do plano compartilhado
     normalmente não tem permissão para <code>CREATE DATABASE</code>.
   </div>
   <form method="post">
@@ -476,7 +476,7 @@ $csrf       = $_SESSION['csrf'];
   </form>
 
 <?php elseif ($passo === 4): ?>
-  <p>Crie o primeiro administrador. Não existe usuário padrão — contas como
+  <p>Crie o primeiro administrador. Não existe usuário padrão: contas como
      <code>admin/admin</code> são o primeiro alvo de varreduras automáticas.</p>
   <form method="post">
     <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
@@ -503,22 +503,22 @@ $csrf       = $_SESSION['csrf'];
     <strong>Faça isto agora:</strong> apague a pasta <code>install/</code> do servidor.
     Enquanto ela existir, o painel administrativo exibirá um alerta permanente.
   </div>
-  <p>Administrador: <strong><?= e($w['admin_email'] ?? '—') ?></strong></p>
+  <p>Administrador: <strong><?= e($w['admin_email'] ?? 'não informado') ?></strong></p>
   <p><a href="../">Ir para o aplicativo →</a></p>
   <?php session_destroy(); ?>
 
 <?php elseif ($passo === 5): ?>
   <p>Revise antes de aplicar. Até aqui <strong>nada foi gravado</strong>.</p>
   <table>
-    <tr><th>Servidor</th><td><?= e($w['db']['host'] ?? '—') ?>:<?= e((string)($w['db']['porta'] ?? '')) ?></td></tr>
-    <tr><th>Banco</th><td><?= e($w['db']['banco'] ?? '—') ?></td></tr>
-    <tr><th>Usuário</th><td><?= e($w['db']['usuario'] ?? '—') ?></td></tr>
+    <tr><th>Servidor</th><td><?= e($w['db']['host'] ?? 'não informado') ?>:<?= e((string)($w['db']['porta'] ?? '')) ?></td></tr>
+    <tr><th>Banco</th><td><?= e($w['db']['banco'] ?? 'não informado') ?></td></tr>
+    <tr><th>Usuário</th><td><?= e($w['db']['usuario'] ?? 'não informado') ?></td></tr>
     <tr><th>Prefixo</th><td><?= e(($w['db']['prefixo'] ?? '') ?: '(nenhum)') ?></td></tr>
     <tr><th>Estratégia</th><td><?= e(match ($w['estrategia'] ?? '') {
         'criar'   => 'Criar a estrutura',
         'manter'  => 'Manter os dados existentes',
         'recriar' => 'LIMPAR E RECRIAR (apaga dados)',
-        default   => '—',
+        default   => 'não definida',
     }) ?></td></tr>
     <tr><th>Administrador</th><td><?= e($w['admin']['email'] ?? '(mantido)') ?></td></tr>
   </table>

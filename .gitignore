@@ -9,7 +9,7 @@
 .env.*
 !.env.example
 
-# Dados reais — nunca aqui
+# Dados reais, nunca aqui
 *.sql
 !skills/**/*.sql.template
 *.sql.gz

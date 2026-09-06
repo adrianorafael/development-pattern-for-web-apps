@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scan-secrets.sh — varredura de segredos e dados sensíveis.
+# scan-secrets.sh: varredura de segredos e dados sensíveis.
 #
 # Parte de "Development Pattern for Web Apps".
 # Impõe a regra R1: nada sensível chega ao repositório.
@@ -11,7 +11,7 @@
 #
 # SAÍDA
 #   0  limpo
-#   1  achados — NÃO FAÇA COMMIT
+#   1  achados, NÃO FAÇA COMMIT
 #
 # FALSO POSITIVO
 #   Acrescente o marcador  scan-secrets:allow  como comentário na linha ou na linha
@@ -144,7 +144,7 @@ if git rev-parse --git-dir >/dev/null 2>&1; then
   if [ -n "$rastreados" ]; then
     echo "${RED}[ALTA]${NC} Arquivos sensíveis RASTREADOS pelo git:"
     printf '      %s\n' $rastreados
-    echo "      Corrija: git rm --cached <arquivo>  — e ROTACIONE toda credencial que ele continha."
+    echo "      Corrija: git rm --cached <arquivo> , e ROTACIONE toda credencial que ele continha."
     echo
     ACHADOS=$((ACHADOS + 1))
   fi
@@ -176,7 +176,7 @@ fi
 
 # ── Veredito ────────────────────────────────────────────────────────────────────
 if [ "$ACHADOS" -eq 0 ]; then
-  echo "${GRN}✅ Limpo — nenhum segredo ou dado sensível detectado.${NC}"
+  echo "${GRN}✅ Limpo: nenhum segredo ou dado sensível detectado.${NC}"
   echo "${DIM}   Varredura limpa é necessária, não suficiente. Leia o seu próprio diff.${NC}"
   exit 0
 fi

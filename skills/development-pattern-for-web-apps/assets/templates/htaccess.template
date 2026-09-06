@@ -1,6 +1,6 @@
 # ─────────────────────────────────────────────────────────────
-# public_html/.htaccess — app PHP na Hostinger (Apache)
-# Parte de "Development Pattern for Web Apps" — regras R7 e R8.
+# public_html/.htaccess: app PHP na Hostinger (Apache)
+# Parte de "Development Pattern for Web Apps": regras R7 e R8.
 #
 # Depois de enviar, CONFIRME o resultado real:
 #   curl -sI https://seu-dominio.com.br | grep -iE 'content-security|x-frame|strict-transport'

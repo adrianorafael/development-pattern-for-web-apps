@@ -1,7 +1,7 @@
-# Correção de build — `<projeto>` `<AAAA-MM-DD>`
+# Correção de build, `<projeto>` `<AAAA-MM-DD>`
 
 > Modelo de `qa/correcoes-de-build/<AAAA-MM-DD>-<slug>.md`.
-> Parte de "Development Pattern for Web Apps" — regra R16.
+> Parte de "Development Pattern for Web Apps": regra R16.
 > Um arquivo por incidente. Uma seção "Volta" por tentativa, no máximo três.
 
 | | |
@@ -23,7 +23,7 @@
 Cite o **trecho exato**, sanitizado. Nunca parafraseie, nunca cole o log inteiro (R1).
 
 ```
-<as 10–20 linhas que importam, geralmente logo acima de
+<as 10 a 20 linhas que importam, geralmente logo acima de
  "Error: Command \"npm run build\" exited with 1">
 ```
 
@@ -104,7 +104,7 @@ fixada sem justificativa, commit vazio para reprocessar.
 ## Volta 2
 
 *(mesma estrutura. Se a mensagem do log for a MESMA da Volta 1, a correção anterior errou a
-causa — reabra o passo 4 em vez de tentar outra coisa.)*
+causa: reabra o passo 4 em vez de tentar outra coisa.)*
 
 ---
 
@@ -123,7 +123,7 @@ causa — reabra o passo 4 em vez de tentar outra coisa.)*
 
 **Minha hipótese:** <a leitura mais provável, dita como hipótese>
 
-**O que eu preciso de você:** <um pedido concreto e verificável — não "dá uma olhada">
+**O que eu preciso de você:** <um pedido concreto e verificável, não "dá uma olhada">
 
 > Exemplo: confirmar se `DATABASE_URL` existe no ambiente **Preview** em
 > Vercel → Settings → Environment Variables. Ela existe em Production; o log da Volta 1
@@ -143,5 +143,5 @@ causa — reabra o passo 4 em vez de tentar outra coisa.)*
 | **CHANGELOG** | entrada adicionada? ⬜ |
 | **Regressão criada** | `CT-REG-<nnn>` ⬜ · não se aplica ⬜ |
 
-**Como evitar a repetição:** <a mudança de processo, se houver — um passo novo na validação
+**Como evitar a repetição:** <a mudança de processo, se houver: um passo novo na validação
 local, um caso de teste, uma linha no AGENTS.md do projeto.>

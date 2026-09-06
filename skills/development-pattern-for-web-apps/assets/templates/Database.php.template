@@ -5,7 +5,7 @@
  * Fábrica única de conexão PDO + auxiliares que tornam o caminho seguro
  * também o caminho mais curto.
  *
- * Parte de "Development Pattern for Web Apps" — regra R5.
+ * Parte de "Development Pattern for Web Apps": regra R5.
  * Nenhum dado de usuário entra no TEXTO de uma query. Nunca.
  */
 
@@ -124,7 +124,7 @@ final class Database
     // ─────────────────────────────────────────────────────────────
 
     /**
-     * Gera os placeholders de um IN (...) — nunca os valores.
+     * Gera os placeholders de um IN (...), nunca os valores.
      *
      *   [$sql, $params] = Database::listaIn('SELECT * FROM p WHERE id IN (%s)', $ids);
      *   $linhas = Database::todos($sql, $params);
@@ -145,7 +145,7 @@ final class Database
 
     /**
      * Escapa os curingas do LIKE DENTRO DO VALOR. O valor continua sendo
-     * vinculado como parâmetro — isto não substitui o prepared statement.
+     * vinculado como parâmetro: isto não substitui o prepared statement.
      *
      *   $stmt->execute([':t' => '%' . Database::escaparLike($busca) . '%']);
      */
@@ -169,7 +169,7 @@ final class Database
         return $permitidos[$chave] ?? $padrao;
     }
 
-    /** Inteiro com faixa — para LIMIT, OFFSET e paginação. */
+    /** Inteiro com faixa, para LIMIT, OFFSET e paginação. */
     public static function inteiro(mixed $valor, int $min, int $max, int $padrao): int
     {
         $n = filter_var($valor, FILTER_VALIDATE_INT);
@@ -181,7 +181,7 @@ final class Database
 }
 
 /* ─────────────────────────────────────────────────────────────
-   EXEMPLOS — o jeito certo de cada caso que costuma escorregar
+   EXEMPLOS: o jeito certo de cada caso que costuma escorregar
    ─────────────────────────────────────────────────────────────
 
    // Consulta simples
@@ -212,7 +212,7 @@ final class Database
    $lim    = Database::inteiro($_GET['por_pagina'] ?? null, 1, 100, 20);
    $off    = Database::inteiro($_GET['offset'] ?? null, 0, 1000000, 0);
 
-   // scan-sql:allow — $coluna e $dir saem de Database::identificador(), não da entrada
+   // scan-sql:allow: $coluna e $dir saem de Database::identificador(), não da entrada
    $stmt = $pdo->prepare("SELECT * FROM pedidos p ORDER BY $coluna $dir LIMIT :l OFFSET :o");
    $stmt->bindValue(':l', $lim, PDO::PARAM_INT);
    $stmt->bindValue(':o', $off, PDO::PARAM_INT);

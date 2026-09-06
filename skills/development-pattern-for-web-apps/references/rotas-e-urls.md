@@ -1,4 +1,4 @@
-# Rotas e URLs — a URL é interface, não caminho de arquivo
+# Rotas e URLs: a URL é interface, não caminho de arquivo
 
 > Regra **R15**. Toda URL descreve a ação ou o recurso em linguagem humana. Nunca revela a
 > estrutura de pastas do servidor, nunca carrega extensão de arquivo, nunca depende de query
@@ -14,7 +14,7 @@
 
 A URL é a parte da aplicação que **sai dela**: vai para o histórico do navegador, para os
 favoritos, para o WhatsApp de quem compartilha, para o índice do Google, para o log do
-servidor. Ela é a única parte da interface que sobrevive a uma reescrita do front-end — e
+servidor. Ela é a única parte da interface que sobrevive a uma reescrita do front-end: e
 por isso é a única que não pode ser um detalhe de implementação.
 
 `/usuarios/cadastro.php` entrega três coisas de graça: a linguagem do servidor, a árvore de
@@ -28,7 +28,7 @@ arquivo, todo link publicado quebra.
 | # | Convenção | Sim | Não |
 | --- | --- | --- | --- |
 | 1 | **Português, minúsculas, kebab-case** | `/redefinir-senha` | `/redefinirSenha`, `/redefinir_senha`, `/ResetPassword` |
-| 2 | **Sem acento e sem cedilha** — o percent-encoding torna a URL ilegível ao ser copiada | `/manutencao` | `/manutenção` → `/manuten%C3%A7%C3%A3o` |
+| 2 | **Sem acento e sem cedilha**: o percent-encoding torna a URL ilegível ao ser copiada | `/manutencao` | `/manutenção` → `/manuten%C3%A7%C3%A3o` |
 | 3 | **Sem extensão de arquivo** | `/contato` | `/contato.php`, `/contato.html` |
 | 4 | **Sem estrutura de pastas do servidor** | `/chamados` | `/app/views/chamados/lista.php` |
 | 5 | **Ação = verbo no infinitivo** | `/cadastrar-novo-usuario`, `/recuperar-acesso` | `/user-new`, `/form2` |
@@ -37,7 +37,7 @@ arquivo, todo link publicado quebra.
 
 ### O que a query string pode fazer
 
-Ela não some — ela muda de papel. Serve para **estado da visualização**, não para
+Ela não some: ela muda de papel. Serve para **estado da visualização**, não para
 roteamento:
 
 ```
@@ -47,7 +47,7 @@ roteamento:
 ❌ /index.php?acao=excluir&id=8                         roteamento E efeito colateral
 ```
 
-A vantagem é concreta: `/chamados?status=fechado` é compartilhável e favoritável — o
+A vantagem é concreta: `/chamados?status=fechado` é compartilhável e favoritável: o
 destinatário vê exatamente a mesma tela. Já `/index.php?p=...` não significa nada fora da
 sua sessão.
 
@@ -61,7 +61,7 @@ dividido. Escolha uma forma e responda **301** na outra. O mesmo vale para maiú
 `/Chamados` → 301 → `/chamados`.
 
 **`GET` nunca tem efeito colateral.** `/chamados/8/excluir` como link é um convite ao
-desastre — o pré-carregamento do navegador, o robô de indexação ou um antivírus corporativo
+desastre: o pré-carregamento do navegador, o robô de indexação ou um antivírus corporativo
 abrem links sozinhos. Excluir é `POST` (ou `DELETE`) com token CSRF.
 → [entrada-e-saida-seguras.md](entrada-e-saida-seguras.md)
 
@@ -70,7 +70,7 @@ quem os publicou. Ao renomear, mantenha a antiga respondendo **301** por pelo me
 versão maior, e registre no CHANGELOG. → [release-e-deploy.md](release-e-deploy.md)
 
 ```php
-// app/rotas-legadas.php — tabela de redirecionamentos permanentes
+// app/rotas-legadas.php: tabela de redirecionamentos permanentes
 const REDIRECIONAMENTOS = [
     '/usuarios/cadastro.php' => '/cadastrar-novo-usuario',
     '/novo-chamado'          => '/abrir-chamado',
@@ -78,14 +78,14 @@ const REDIRECIONAMENTOS = [
 ```
 
 **Cuidado com o ID sequencial exposto.** `/chamados/8` diz ao mundo que existem pelo menos 8
-chamados, e convida a testar `/chamados/9`. Isso não é uma falha por si só — a defesa contra
-IDOR é a autorização, sempre (R7) — mas em recurso público ou sensível prefira um slug ou um
+chamados, e convida a testar `/chamados/9`. Isso não é uma falha por si só: a defesa contra
+IDOR é a autorização, sempre (R7), mas em recurso público ou sensível prefira um slug ou um
 identificador não adivinhável:
 
 ```
-/chamados/8                                   interno, autorizado por dono — aceitável
+/chamados/8                                   interno, autorizado por dono: aceitável
 /chamados/8/impressora-nao-imprime            legível, e o slug não precisa bater
-/relatorios/a7f3c1e9-4b2d-4f8a-9c1e-...       público ou sensível — use UUID
+/relatorios/a7f3c1e9-4b2d-4f8a-9c1e-...       público ou sensível: use UUID
 ```
 
 O identificador continua sendo validado e a autorização continua entrando na cláusula
@@ -96,10 +96,10 @@ robô de indexação e o seu próprio roteiro de QA. Devolva o status certo.
 
 ---
 
-## 3. PHP — o mapa de rotas
+## 3. PHP: o mapa de rotas
 
 Um único ponto de entrada (`public_html/index.php`) e um mapa escrito à mão. O `.htaccess`
-já manda tudo que não é arquivo real para lá — ver
+já manda tudo que não é arquivo real para lá: ver
 [`../assets/templates/htaccess.template`](../assets/templates/htaccess.template).
 
 ```php
@@ -178,7 +178,7 @@ final class Router
 Dois pontos que o roteador **não** faz, de propósito:
 
 - **Não valida o `{id}`.** Ele entrega a string; quem valida é o controller, com
-  `filter_var(..., FILTER_VALIDATE_INT)` (R6) — e o dono entra na consulta (R7).
+  `filter_var(..., FILTER_VALIDATE_INT)` (R6), e o dono entra na consulta (R7).
 - **Não descobre a classe pela URL.** `new ($_GET['c'])()` é execução de código arbitrário.
   O mapa é literal.
 
@@ -220,11 +220,11 @@ function slugify(string $texto): string {
 ```
 
 O slug é **decorativo**: quem identifica o registro é o `{id}`. Assim, mudar o título não
-quebra o link antigo — ele apenas redireciona para o slug novo, se você quiser.
+quebra o link antigo: ele apenas redireciona para o slug novo, se você quiser.
 
 ---
 
-## 4. Next.js — a pasta é a URL
+## 4. Next.js: a pasta é a URL
 
 No App Router, o caminho da pasta **é** a rota. Isso significa que a convenção de nomes de
 pasta é a convenção de URLs, e não há um mapa separado para manter em sincronia.
@@ -245,7 +245,7 @@ app/
 ```
 
 - **Pastas em português, kebab-case.** `cadastrar-novo-usuario`, nunca `signup` ou `NewUser`.
-- **Grupos de rota `(painel)` não aparecem na URL** — use-os para compartilhar layout e
+- **Grupos de rota `(painel)` não aparecem na URL**: use-os para compartilhar layout e
   verificação de sessão sem poluir o caminho.
 - **`[id]` é dinâmico**; `[...slug]` captura o resto. No Next 15, `params` é uma `Promise`:
   `const { id } = await params;`
@@ -326,7 +326,7 @@ em query string.
 - [ ] URLs geradas por helper/`rota()`, nunca escritas à mão duas vezes
 - [ ] O `{id}` é validado no controller, e o dono entra na cláusula `WHERE` (R6, R7)
 - [ ] Nenhuma classe, arquivo ou caminho é resolvido a partir da URL
-- [ ] `mod_rewrite` confirmado no servidor (o Wizard verifica — R9)
+- [ ] `mod_rewrite` confirmado no servidor (o Wizard verifica. R9)
 - [ ] Casos de rota no roteiro de QA (R11), incluindo os 301 e o 404
 
 ---
@@ -335,7 +335,7 @@ em query string.
 
 | Caso | Resultado esperado |
 | --- | --- |
-| Cada rota do mapa, acessada diretamente pela barra de endereço | 200 e a tela correta — nada depende de ter vindo de outra página |
+| Cada rota do mapa, acessada diretamente pela barra de endereço | 200 e a tela correta: nada depende de ter vindo de outra página |
 | Recarregar (F5) em qualquer rota interna | A mesma tela, sem perder estado nem reenviar formulário |
 | Botão Voltar depois de navegar por três telas | Volta na ordem certa |
 | URL com barra final (`/chamados/`) | 301 para `/chamados` |
@@ -344,7 +344,7 @@ em query string.
 | URL inexistente (`/pagina-que-nao-existe`) | **404** com a página de erro do app |
 | `/chamados/abc` (id não numérico) | 404, sem erro 500 e sem mensagem do banco |
 | `/chamados/999999` (id inexistente) | 404 |
-| `/chamados/{id de outro usuário}` | 404 — não 403 (R7) |
+| `/chamados/{id de outro usuário}` | 404, não 403 (R7) |
 | Compartilhar `/chamados?status=fechado&pagina=2` em outra sessão | A mesma visualização filtrada |
 | Qualquer URL da aplicação | Não contém `.php`, `.html` nem nome de pasta interna |
 | `/app/`, `/config/`, `/storage/`, `/vendor/` | 403 ou 404, nunca listagem ou conteúdo |

@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────
--- database/schema.sql — estrutura base, executada pelo Wizard (R9)
+-- database/schema.sql: estrutura base, executada pelo Wizard (R9)
 -- Parte de "Development Pattern for Web Apps".
 --
 -- REGRAS DESTE ARQUIVO
@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS `{{prefixo}}auditoria` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ─────────────────────────────────────────────────────────────
--- TABELAS DO SEU DOMÍNIO — substitua o exemplo abaixo
+-- TABELAS DO SEU DOMÍNIO: substitua o exemplo abaixo
 -- ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS `{{prefixo}}chamados` (
   `id`            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,

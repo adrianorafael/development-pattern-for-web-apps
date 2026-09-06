@@ -3,7 +3,7 @@
  * app/Core/AtualizadorDePacote.php
  *
  * Instalador de pacotes ZIP de atualização, usado pelo painel administrativo.
- * Parte de "Development Pattern for Web Apps" — regra R10.
+ * Parte de "Development Pattern for Web Apps": regra R10.
  *
  * Este é o código mais perigoso do aplicativo: ele grava arquivos PHP no
  * servidor. Toda validação aqui é obrigatória, e nenhuma é "paranoia".
@@ -45,7 +45,7 @@ final class AtualizadorDePacote
     ) {}
 
     // ─────────────────────────────────────────────────────────────────────
-    // Etapas 1–3: validar e montar a prévia. NADA é escrito aqui.
+    // Etapas 1 a 3: validar e montar a prévia. NADA é escrito aqui.
     // ─────────────────────────────────────────────────────────────────────
 
     /** @return array{manifesto:array,novos:string[],alterados:string[],removidos:string[],migracoes:string[],destrutivas:string[]} */
@@ -93,7 +93,7 @@ final class AtualizadorDePacote
     {
         $bruto = $zip->getFromName('manifest.json');
         if ($bruto === false) {
-            throw new FalhaNaAtualizacao('Pacote sem manifest.json — não é um pacote de atualização deste padrão.');
+            throw new FalhaNaAtualizacao('Pacote sem manifest.json, não é um pacote de atualização deste padrão.');
         }
         try {
             $m = json_decode($bruto, true, 32, JSON_THROW_ON_ERROR);
@@ -147,7 +147,7 @@ final class AtualizadorDePacote
             $this->caminhoDestinoSeguro($arq['caminho']);   // lança se o caminho for inválido
         }
 
-        // Nenhuma entrada fora do que o manifesto declara — um ZIP com carga extra é recusado.
+        // Nenhuma entrada fora do que o manifesto declara: um ZIP com carga extra é recusado.
         $declarados = array_map(static fn($a) => 'files/' . $a['caminho'], $m['arquivos']);
         $permitidos = array_merge($declarados, ['manifest.json', 'remove.txt', 'CHANGELOG.md']);
         for ($i = 0; $i < $zip->numFiles; $i++) {
@@ -205,7 +205,7 @@ final class AtualizadorDePacote
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    // Etapas 4–9: aplicar, com backup e rollback
+    // Etapas 4 a 9: aplicar, com backup e rollback
     // ─────────────────────────────────────────────────────────────────────
 
     /** @return array{versao:string,log:string[],backup:string} */
@@ -220,7 +220,7 @@ final class AtualizadorDePacote
         if ($zip->open($caminhoZip) !== true) { throw new FalhaNaAtualizacao('ZIP inválido.'); }
 
         try {
-            // Etapa 6 — arquivos
+            // Etapa 6: arquivos
             foreach ($m['arquivos'] as $arq) {
                 $destino  = $this->caminhoDestinoSeguro($arq['caminho']);
                 $conteudo = $zip->getFromName('files/' . $arq['caminho']);
@@ -243,14 +243,14 @@ final class AtualizadorDePacote
                 if (is_file($alvo)) { @unlink($alvo); $this->log[] = "removido: {$relativo}"; }
             }
 
-            // Etapa 7 — migrações
+            // Etapa 7: migrações
             foreach ($previa['migracoes'] as $arquivo) {
                 $sql = $zip->getFromName('migrations/' . $arquivo);
                 if ($sql === false) { throw new FalhaNaAtualizacao("Migração ausente no ZIP: {$arquivo}"); }
                 $this->executarMigracao($arquivo, $sql);
             }
 
-            // Etapa 8 — finalização
+            // Etapa 8: finalização
             $this->registrarVersao($m['versao']);
             $this->registrarAuditoria('atualizacao_aplicada', $m['versao'], 'sucesso');
             $this->desligarManutencao();
@@ -283,7 +283,7 @@ final class AtualizadorDePacote
             throw new FalhaNaAtualizacao("A migração {$arquivo} falhou: " . $e->getMessage(), 0, $e);
         }
         $stmt = $this->pdo->prepare(
-            // scan-sql:allow — o prefixo vem da configuração gravada pelo instalador, já sanitizada
+            // scan-sql:allow: o prefixo vem da configuração gravada pelo instalador, já sanitizada
             "INSERT INTO `{$this->prefixoTabelas}schema_migrations` (versao, duracao_ms) VALUES (:v, :d)"
         );
         $stmt->execute([':v' => $arquivo, ':d' => (int)((microtime(true) - $inicio) * 1000)]);
@@ -293,7 +293,7 @@ final class AtualizadorDePacote
     /** @param string[] $doPacote @return string[] */
     private function migracoesPendentes(array $doPacote): array
     {
-        // scan-sql:allow — só o prefixo da configuração participa do texto; não há dado de usuário
+        // scan-sql:allow, só o prefixo da configuração participa do texto; não há dado de usuário
         $stmt = $this->pdo->query("SELECT versao FROM `{$this->prefixoTabelas}schema_migrations`");
         $aplicadas = $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
         $pendentes = array_values(array_diff($doPacote, $aplicadas));
@@ -345,14 +345,14 @@ final class AtualizadorDePacote
     }
 
     /**
-     * Dump em PHP puro — `mysqldump` costuma estar indisponível em hospedagem
+     * Dump em PHP puro: `mysqldump` costuma estar indisponível em hospedagem
      * compartilhada (`disable_functions`). Aqui o resultado é um ARQUIVO, não
      * uma consulta executada: o quote de valores é geração de texto, não SQL
      * dinâmico. Consultas continuam parametrizadas em todo o resto do sistema.
      */
     private function gerarDump(): string
     {
-        $saida  = "-- Backup automático — " . date('c') . "\n";
+        $saida  = "-- Backup automático: " . date('c') . "\n";
         $saida .= "SET FOREIGN_KEY_CHECKS = 0;\nSET NAMES utf8mb4;\n\n";
 
         foreach ($this->pdo->query('SHOW TABLES', PDO::FETCH_COLUMN) as $tabela) {
@@ -360,7 +360,7 @@ final class AtualizadorDePacote
             $cria   = $this->pdo->query('SHOW CREATE TABLE `' . str_replace('`', '``', $tabela) . '`')
                                 ->fetch(PDO::FETCH_NUM);
             // Geração de DUMP: $tabela vem de SHOW TABLES do próprio banco e as crases são
-            // escapadas. scan-sql:allow — o resultado é um ARQUIVO, não uma consulta executada.
+            // escapadas. scan-sql:allow: o resultado é um ARQUIVO, não uma consulta executada.
             $saida .= "DROP TABLE IF EXISTS `{$tabela}`;\n" . ($cria[1] ?? '') . ";\n\n";
 
             $linhas = $this->pdo->query('SELECT * FROM `' . str_replace('`', '``', $tabela) . '`');
@@ -372,18 +372,18 @@ final class AtualizadorDePacote
                 );
                 $lote[] = '(' . implode(',', $valores) . ')';
                 if (count($lote) >= 200) {
-                    // scan-sql:allow — geração de dump (ver acima)
+                    // scan-sql:allow: geração de dump (ver acima)
                     $saida .= "INSERT INTO `{$tabela}` VALUES\n" . implode(",\n", $lote) . ";\n";
                     $lote = [];
                 }
             }
             if ($lote !== []) {
-                // scan-sql:allow — geração de dump (ver acima)
+                // scan-sql:allow: geração de dump (ver acima)
                 $saida .= "INSERT INTO `{$tabela}` VALUES\n" . implode(",\n", $lote) . ";\n";
             }
             $saida .= "\n";
         }
-        // scan-sql:allow — literal fixo concatenado ao texto do dump; nenhuma variável no SQL
+        // scan-sql:allow: literal fixo concatenado ao texto do dump; nenhuma variável no SQL
         return $saida . "SET FOREIGN_KEY_CHECKS = 1;\n";
     }
 
@@ -446,7 +446,7 @@ final class AtualizadorDePacote
     private function registrarVersao(string $versao): void
     {
         $stmt = $this->pdo->prepare(
-            // scan-sql:allow — só o prefixo da configuração; a versão vai vinculada em :v
+            // scan-sql:allow, só o prefixo da configuração; a versão vai vinculada em :v
             "INSERT INTO `{$this->prefixoTabelas}configuracoes` (chave, valor)
              VALUES ('versao_app', :v)
              ON DUPLICATE KEY UPDATE valor = VALUES(valor)"
@@ -459,7 +459,7 @@ final class AtualizadorDePacote
     {
         try {
             $stmt = $this->pdo->prepare(
-                // scan-sql:allow — só o prefixo da configuração; todos os campos vão vinculados
+                // scan-sql:allow, só o prefixo da configuração; todos os campos vão vinculados
                 "INSERT INTO `{$this->prefixoTabelas}auditoria` (usuario_id, acao, alvo, resultado, ip, criado_em)
                  VALUES (:u, :a, :alvo, :r, :ip, NOW())"
             );

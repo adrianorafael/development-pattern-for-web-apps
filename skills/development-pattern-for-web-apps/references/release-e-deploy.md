@@ -1,4 +1,4 @@
-# Release e deploy — versão, documentação e caminho de volta
+# Release e deploy: versão, documentação e caminho de volta
 
 > Regra **R13**: versão, documentação e schema andam juntos, no mesmo commit.
 > Regra **R14**: nenhum deploy sem alvo nomeado, sem backup e sem caminho de volta.
@@ -7,7 +7,7 @@
 
 ## 1. Versionamento semântico, em termos de app
 
-`MAJOR.MINOR.PATCH` — e o significado é **para quem usa o app**, não para quem o escreve.
+`MAJOR.MINOR.PATCH`, e o significado é **para quem usa o app**, não para quem o escreve.
 
 | Nível | Quando | Exemplos |
 | --- | --- | --- |
@@ -28,12 +28,12 @@ Duas decisões que quase todo mundo erra:
 | --- | --- |
 | PHP | `app/version.php` → `const APP_VERSAO = '1.3.0';` (ou `composer.json` → `version`) |
 | Next.js | `package.json` → `version` |
-| Banco | tabela `schema_migrations` — a última linha diz até onde o banco está |
+| Banco | tabela `schema_migrations`, a última linha diz até onde o banco está |
 
 Um arquivo de configuração é a fonte da verdade, não uma tag do Git. A tag é opcional; a
 versão exibida no rodapé e no painel administrativo sai do arquivo.
 
-**Exiba a versão na aplicação** — rodapé, ou tela "Sobre" do painel. Sem isso, ninguém sabe
+**Exiba a versão na aplicação**: rodapé, ou tela "Sobre" do painel. Sem isso, ninguém sabe
 o que está rodando naquele servidor.
 
 ---
@@ -58,7 +58,7 @@ este padrão, um **commit incompleto**.
 ## 3. CHANGELOG
 
 Formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), escrito para quem usa
-o app — não para quem leu o diff.
+o app, não para quem leu o diff.
 
 ```markdown
 ## [1.3.0] - 2026-09-05
@@ -68,12 +68,12 @@ o app — não para quem leu o diff.
 
 ### Corrigido
 - Busca com apóstrofo (`O'Brien`) deixava a listagem em branco.
-- Download de anexo não verificava o dono do chamado — qualquer usuário autenticado
+- Download de anexo não verificava o dono do chamado: qualquer usuário autenticado
   conseguia baixar anexos de outros. **Atualize assim que possível.**
 
 ### Migrações
-- `0007_adiciona_anexos.sql` — cria a tabela `anexos`. Aditiva, sem perda de dados.
-- `0008_indice_status_data.sql` — índice composto em `chamados`. Pode levar alguns
+- `0007_adiciona_anexos.sql`, cria a tabela `anexos`. Aditiva, sem perda de dados.
+- `0008_indice_status_data.sql`, índice composto em `chamados`. Pode levar alguns
   segundos em bases grandes.
 
 ### Requisitos
@@ -110,7 +110,7 @@ composer audit || npm audit --omit=dev
 # 5. Revisão (R12) contra o diff real
 git diff --cached
 
-# 6. ⛔ APROVAÇÃO — nomeando a versão e o que muda
+# 6. ⛔ APROVAÇÃO: nomeando a versão e o que muda
 
 git commit -m "feat(anexos): permitir anexar arquivos ao chamado
 
@@ -124,7 +124,7 @@ git push -u origin feat/anexos-em-chamados
 
 ---
 
-## 5. Deploy — Hostinger
+## 5. Deploy. Hostinger
 
 ⛔ **Portão.** Nomeie o alvo e espere o sim:
 
@@ -134,13 +134,13 @@ git push -u origin feat/anexos-em-chamados
 
 Sequência:
 
-1. **Backup do banco** — pelo hPanel, ou `mysqldump`, ou o backup automático do próprio
+1. **Backup do banco**: pelo hPanel, ou `mysqldump`, ou o backup automático do próprio
    painel de atualização (R10).
 2. **Backup dos arquivos** que serão substituídos.
 3. **Modo manutenção** ligado, se a atualização passa de alguns segundos.
 4. **Enviar os arquivos.** Nunca `.git/`, `.env`, `config/app.config.php`, `node_modules/`,
    `tests/`, `specs/`, `qa/`.
-5. **Rodar as migrações** — pelo painel de atualização, na ordem numérica, registrando em
+5. **Rodar as migrações**: pelo painel de atualização, na ordem numérica, registrando em
    `schema_migrations`.
 6. **Modo manutenção** desligado.
 7. **Fumaça em produção:** a home carrega; o login entra; a tela do módulo alterado
@@ -157,14 +157,14 @@ Escreva isso **antes** de precisar dele, no README:
 ```
 1. Ligar o modo manutenção.
 2. Restaurar os arquivos do backup (storage/backups/<data>-v<anterior>/arquivos.zip).
-3. Restaurar o banco (banco.sql) — pelo phpMyAdmin ou pelo painel.
+3. Restaurar o banco (banco.sql): pelo phpMyAdmin ou pelo painel.
 4. Conferir se schema_migrations voltou à versão anterior.
 5. Desligar o modo manutenção. Fumaça.
 ```
 
 ---
 
-## 6. Deploy — Vercel
+## 6. Deploy. Vercel
 
 ⛔ **Portão** também aqui. "É só um push" ainda é uma publicação.
 
@@ -186,7 +186,7 @@ Cuidados específicos:
 - **Migração de banco não acompanha o deploy da Vercel.** O código novo pode subir antes da
   migração rodar. Faça migrações **aditivas** e implante em duas etapas: primeiro a migração
   compatível com o código antigo, depois o código que a usa.
-- **Variável de ambiente nova precisa existir no painel antes do deploy** que a usa —
+- **Variável de ambiente nova precisa existir no painel antes do deploy** que a usa:
   incluindo o ambiente de Preview.
 - **Build falhou?** Não empurre outra tentativa às cegas: o ciclo é log → reprodução com
   `vercel build` → correção da causa raiz → prova local → um push, com teto de três voltas.
@@ -197,7 +197,7 @@ Cuidados específicos:
 
 ---
 
-## 7. Migrações destrutivas — o padrão de três fases
+## 7. Migrações destrutivas: o padrão de três fases
 
 Remover uma coluna sem derrubar o app leva **três releases**, não uma:
 
@@ -221,7 +221,7 @@ restaurando dump.
 - [ ] README atualizado se instalação, configuração ou uso mudaram
 - [ ] Roteiro de QA e spec atualizados no mesmo commit
 - [ ] Migrações numeradas, idempotentes e testadas em base limpa **e** em base com dados
-- [ ] Backup verificado — restaurado ao menos uma vez em ambiente de teste
+- [ ] Backup verificado: restaurado ao menos uma vez em ambiente de teste
 - [ ] Rollback documentado no README
 - [ ] Varreduras limpas; `composer audit`/`npm audit` sem crítico
 - [ ] ⛔ Aprovação para o push, com a versão nomeada

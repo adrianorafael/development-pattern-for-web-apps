@@ -1,8 +1,8 @@
-# Linha de base de segurança — o piso não negocia, o teto sim
+# Linha de base de segurança: o piso não negocia, o teto sim
 
 > Regra **R7**. Existe um conjunto de defesas que vale para **todo** projeto, inclusive o
 > de fim de semana com três usuários. O que varia com o porte é o que se **acrescenta**
-> acima desse piso — nunca o que se remove dele.
+> acima desse piso, nunca o que se remove dele.
 
 "É só um projeto pessoal" é o raciocínio que precede a maioria dos vazamentos de projeto
 pessoal. O invasor não sabe que é pessoal: ele varre faixas inteiras de IP procurando
@@ -11,7 +11,7 @@ não tê-lo é o dado de outras pessoas.
 
 ---
 
-## 1. O piso — obrigatório em qualquer projeto
+## 1. O piso: obrigatório em qualquer projeto
 
 | # | Defesa | Verificação |
 | --- | --- | --- |
@@ -28,33 +28,33 @@ não tê-lo é o dado de outras pessoas.
 | **P11** | Upload restrito e sem execução | Regras de [entrada-e-saida-seguras.md](entrada-e-saida-seguras.md) §5 |
 | **P12** | Dependências auditadas antes de publicar | `composer audit` / `npm audit` sem crítico |
 
-Doze itens. Se algum não puder ser cumprido, **diga qual e por quê** — não entregue como se
+Doze itens. Se algum não puder ser cumprido, **diga qual e por quê**, não entregue como se
 estivesse.
 
 ---
 
-## 2. Acima do piso — proporcional ao porte
+## 2. Acima do piso: proporcional ao porte
 
 Determine o nível na Fase 0, pelas respostas sobre dados e usuários, e registre-o na spec.
 
 | Nível | Quando | Acrescenta ao piso |
 | --- | --- | --- |
-| **N1 — Vitrine** | Site estático, formulário de contato, sem login, sem dado pessoal | reCAPTCHA/honeypot no formulário; rate limit simples; e-mail sem injeção de cabeçalho |
-| **N2 — App com login** | Área logada, dados dos próprios usuários | Bloqueio progressivo por tentativas; recuperação de senha com token de uso único e expiração; log de auditoria de ações sensíveis; sessão regenerada no login; expiração por inatividade |
-| **N3 — Dados de terceiros / LGPD** | Cadastro de clientes, CPF, endereço, saúde, financeiro | Tudo de N2 + criptografia de campos sensíveis em repouso; política de retenção e exclusão; exportação de dados do titular; backup criptografado e testado; registro de acesso a dado pessoal; segunda pessoa revisa mudanças na autenticação |
-| **N4 — Pagamento / dinheiro** | Checkout, assinatura, saldo | Tudo de N3 + nenhum dado de cartão tocando seu servidor (redirect/iframe do provedor); webhooks com assinatura verificada; idempotência em toda operação financeira; conciliação; MFA no painel administrativo |
+| **N1. Vitrine** | Site estático, formulário de contato, sem login, sem dado pessoal | reCAPTCHA/honeypot no formulário; rate limit simples; e-mail sem injeção de cabeçalho |
+| **N2. App com login** | Área logada, dados dos próprios usuários | Bloqueio progressivo por tentativas; recuperação de senha com token de uso único e expiração; log de auditoria de ações sensíveis; sessão regenerada no login; expiração por inatividade |
+| **N3. Dados de terceiros / LGPD** | Cadastro de clientes, CPF, endereço, saúde, financeiro | Tudo de N2 + criptografia de campos sensíveis em repouso; política de retenção e exclusão; exportação de dados do titular; backup criptografado e testado; registro de acesso a dado pessoal; segunda pessoa revisa mudanças na autenticação |
+| **N4. Pagamento / dinheiro** | Checkout, assinatura, saldo | Tudo de N3 + nenhum dado de cartão tocando seu servidor (redirect/iframe do provedor); webhooks com assinatura verificada; idempotência em toda operação financeira; conciliação; MFA no painel administrativo |
 
 Regra de escada: **você pode subir de nível, nunca descer.** Um app que começou N2 e passou
 a guardar CPF virou N3 no mesmo commit em que a coluna foi criada.
 
 ---
 
-## 3. Autenticação — as formas corretas
+## 3. Autenticação: as formas corretas
 
 ### Senha
 
 ```php
-// Cadastro / troca — o custo padrão é reavaliado a cada versão do PHP; não fixe um valor baixo
+// Cadastro / troca: o custo padrão é reavaliado a cada versão do PHP; não fixe um valor baixo
 $hash = password_hash($senha, PASSWORD_DEFAULT);
 
 // Login
@@ -68,7 +68,7 @@ $ok = password_verify($senha, $hashRef) && $u && $u['ativo'];
 
 if (!$ok) {
     registrarTentativa($email, $ip);
-    dormirAleatorio();                       // 100–300 ms
+    dormirAleatorio();                       // 100 a 300 ms
     erro('E-mail ou senha inválidos.');      // MESMA mensagem para os dois casos
 }
 
@@ -99,7 +99,7 @@ session_set_cookie_params([
 session_name('APPSESS');       // não anuncie "PHPSESSID"
 session_start();
 
-// No login bem-sucedido — impede fixação de sessão
+// No login bem-sucedido: impede fixação de sessão
 session_regenerate_id(true);
 $_SESSION['usuario_id'] = $u['id'];
 $_SESSION['criada_em']  = time();
@@ -114,8 +114,8 @@ $_SESSION['ultimo_acesso'] = time();
 ### Recuperação de senha
 
 Token aleatório de 32 bytes, **guardado com hash** (o banco não guarda o token em claro),
-uso único, expiração de 30–60 minutos, invalidação de todas as sessões ao trocar a senha.
-A resposta ao pedido é sempre a mesma — "se o e-mail existir, enviamos o link" — para não
+uso único, expiração de 30 a 60 minutos, invalidação de todas as sessões ao trocar a senha.
+A resposta ao pedido é sempre a mesma: "se o e-mail existir, enviamos o link", para não
 enumerar usuários.
 
 ### Bloqueio progressivo
@@ -139,7 +139,7 @@ permite *password spraying*; só por IP, botnet.
 
 ---
 
-## 4. Autorização — o erro mais comum de todos
+## 4. Autorização: o erro mais comum de todos
 
 Autenticação responde "quem é você". Autorização responde "você pode ver **este** registro".
 Confundir as duas é o defeito mais frequente em app pessoal:
@@ -169,7 +169,7 @@ function exigirPapel(string ...$papeis): void {
 ```
 
 No Next.js, a verificação vive **dentro** de cada Server Action e Route Handler. Middleware
-é conveniência de roteamento, não fronteira de segurança — ele pode ser contornado por
+é conveniência de roteamento, não fronteira de segurança: ele pode ser contornado por
 chamada direta ao endpoint da action.
 
 ---
@@ -177,7 +177,7 @@ chamada direta ao endpoint da action.
 ## 5. Cabeçalhos de segurança
 
 ```apache
-# .htaccess — Hostinger/Apache
+# .htaccess para Hostinger/Apache
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
   Header always set X-Frame-Options "SAMEORIGIN"
@@ -202,7 +202,7 @@ export default { async headers() { return [{ source: '/:path*', headers }]; } };
 
 **CSP quebra as coisas antes de proteger.** Suba primeiro em `Content-Security-Policy-Report-Only`,
 veja o que reclama no console, ajuste, e só então torne obrigatória. `'unsafe-inline'` em
-`script-src` anula a maior parte do benefício — se o projeto precisa dele, registre isso na
+`script-src` anula a maior parte do benefício: se o projeto precisa dele, registre isso na
 spec como dívida consciente.
 
 Confira o resultado real, não a intenção:
@@ -235,7 +235,7 @@ function permitir(PDO $pdo, string $chave, int $max, int $janelaSeg): bool {
 }
 ```
 
-Limpe a tabela por cron. Na Vercel, use o rate limit do provedor ou um KV — o modelo
+Limpe a tabela por cron. Na Vercel, use o rate limit do provedor ou um KV: o modelo
 serverless não guarda estado entre invocações.
 
 ---
@@ -266,14 +266,14 @@ dado pessoal.
 
 Em produção: `display_errors=Off`, `log_errors=On`, `error_log` fora do webroot. Uma página
 de erro 500 que mostra stack trace entrega caminho de arquivo, versão de framework e às
-vezes a query — reconhecimento gratuito.
+vezes a query: reconhecimento gratuito.
 
 ---
 
 ## 9. Checklist de segurança antes de publicar
 
 - [ ] Os doze itens do piso, verificados um a um
-- [ ] Nível (N1–N4) declarado na spec e os itens dele implementados
+- [ ] Nível (N1 a N4) declarado na spec e os itens dele implementados
 - [ ] `composer audit` / `npm audit` sem vulnerabilidade crítica
 - [ ] Cabeçalhos conferidos com `curl -I` no ambiente real
 - [ ] HTTPS forçado; certificado válido

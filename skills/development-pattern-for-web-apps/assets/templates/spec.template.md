@@ -1,7 +1,7 @@
-# Spec — <Nome da funcionalidade>
+# Spec: <Nome da funcionalidade>
 
 > Modelo de `specs/<nnnn>-<slug>.md`.
-> Parte de "Development Pattern for Web Apps" — regra R3.
+> Parte de "Development Pattern for Web Apps": regra R3.
 > Uma a três páginas. Se estiver ficando maior, quebre em duas specs.
 > Escreva ANTES de qualquer linha de implementação, e **pare para aprovação**.
 
@@ -13,7 +13,7 @@
 | **Data** | 2026-09-05 |
 | **Versão alvo** | 1.3.0 |
 | **Trilha** | PHP + MySQL (Hostinger) · Next.js (Vercel) |
-| **Nível de segurança** | N1 · **N2** · N3 · N4 — ver R7 |
+| **Nível de segurança** | N1 · **N2** · N3 · N4: ver R7 |
 
 ---
 
@@ -71,7 +71,7 @@ CREATE TABLE anexos (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
-- **Migração:** `0007_adiciona_anexos.sql` — aditiva, sem perda de dados.
+- **Migração:** `0007_adiciona_anexos.sql`, aditiva, sem perda de dados.
 - **Armazenamento:** `storage/uploads/`, fora do webroot. O nome em disco é gerado
   (`bin2hex(random_bytes(16))`), nunca o nome enviado pelo usuário.
 
@@ -82,19 +82,19 @@ URLs conforme R15: português, kebab-case, sem extensão, sem estrutura de pasta
 | Rota | O que faz | Componentes |
 | --- | --- | --- |
 | `GET /chamados/{id}` | Exibe o chamado e a lista de anexos | `ListaAnexos`, `FormUploadAnexo` |
-| `POST /chamados/{id}/anexos` | Recebe o upload | — |
-| `GET /anexos/{id}` | Entrega o arquivo, após verificar o dono | — |
-| `POST /anexos/{id}/remover` | Remove o anexo | — |
+| `POST /chamados/{id}/anexos` | Recebe o upload | não se aplica |
+| `GET /anexos/{id}` | Entrega o arquivo, após verificar o dono | não se aplica |
+| `POST /anexos/{id}/remover` | Remove o anexo | não se aplica |
 
 **Rotas renomeadas nesta versão:** nenhuma.
 *(Quando houver: `/antiga` → 301 → `/nova`, e a entrada correspondente no CHANGELOG.)*
 
-**Estados de cada tela** — os quatro, sempre:
+**Estados de cada tela**: os quatro, sempre:
 
 | Tela | Carregando | Vazio | Erro | Sucesso |
 | --- | --- | --- | --- | --- |
 | Lista de anexos | esqueleto de 2 linhas | "Nenhum anexo ainda" + botão | mensagem + tentar de novo | a lista |
-| Upload | barra de progresso, botão desabilitado | — | mensagem por arquivo | anexo aparece na lista |
+| Upload | barra de progresso, botão desabilitado | não se aplica | mensagem por arquivo | anexo aparece na lista |
 
 ## 7. Regras de negócio
 
@@ -102,6 +102,18 @@ URLs conforme R15: português, kebab-case, sem extensão, sem estrutura de pasta
 - Só o autor do chamado e administradores enxergam e baixam os anexos.
 - Remover um anexo apaga o registro **e** o arquivo em disco.
 - Fechar o chamado bloqueia novos envios; o download continua permitido.
+
+## 7b. Linguagem (R17)
+
+| | |
+| --- | --- |
+| **Quem lê** | `<cliente final / colaborador interno / técnico / gestor>` |
+| **Domínio** | `<banco / ITSM / saúde / e-commerce / governo / interno>` |
+| **Tom** | `<formal / neutro / próximo>` |
+| **Vocabulário canônico** | `<os termos do setor que serão usados, e os que não serão>` |
+| **Fontes consultadas** | `<3 a 5 produtos reais do domínio, com o que foi observado>` |
+
+Sem travessão em nenhum texto de interface. Corpo de texto justificado com hifenização.
 
 ## 8. Segurança
 
@@ -115,7 +127,7 @@ URLs conforme R15: português, kebab-case, sem extensão, sem estrutura de pasta
 | **Entrega** | Sempre por script que confere autorização; nunca link direto |
 | **Limites** | 5 MB por arquivo na aplicação e no servidor |
 | **Novos segredos** | Nenhum |
-| **Dado pessoal novo** | O conteúdo dos anexos pode conter — política de retenção: 2 anos |
+| **Dado pessoal novo** | O conteúdo dos anexos pode conter: política de retenção: 2 anos |
 
 ## 9. Critérios de aceite
 
@@ -156,7 +168,7 @@ Alimentam `qa/roteiro-de-testes.md` (R11).
 
 ## 11. Impacto na documentação e no release
 
-- [ ] Versão: **1.3.0** (MINOR — funcionalidade nova, compatível)
+- [ ] Versão: **1.3.0** (MINOR: funcionalidade nova, compatível)
 - [ ] CHANGELOG: entrada em "Adicionado" + a migração
 - [ ] README: pré-requisito `fileinfo`; `storage/uploads/` gravável
 - [ ] Roteiro de QA: 11 casos novos, 5 deles de segurança
@@ -175,7 +187,7 @@ Alimentam `qa/roteiro-de-testes.md` (R11).
 ## 13. Questões em aberto
 
 1. Anexos devem ser mantidos quando o chamado é excluído, ou apagados junto?
-   *(proposta: apagados — `ON DELETE CASCADE` + remoção do arquivo)*
+   *(proposta: apagados, `ON DELETE CASCADE` + remoção do arquivo)*
 2. O administrador pode remover anexo de outro usuário?
    *(proposta: sim, com registro em auditoria)*
 

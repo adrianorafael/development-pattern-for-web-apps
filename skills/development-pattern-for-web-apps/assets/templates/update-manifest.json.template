@@ -1,6 +1,6 @@
 {
   "_comentario": [
-    "manifest.json — pacote de atualização. Parte de 'Development Pattern for Web Apps' (R10).",
+    "manifest.json: pacote de atualização. Parte de 'Development Pattern for Web Apps' (R10).",
     "Gere os sha256 com: cd files && find . -type f -print0 | xargs -0 sha256sum",
     "O painel recusa o pacote se qualquer sha256 divergir, se houver entrada não declarada,",
     "ou se algum caminho sair das pastas permitidas (app, assets, admin, install).",

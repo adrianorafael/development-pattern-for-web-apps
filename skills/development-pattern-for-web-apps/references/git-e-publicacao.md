@@ -1,7 +1,7 @@
-# Git e publicação — privado por padrão
+# Git e publicação: privado por padrão
 
 > Regra **R2**. Todo projeto nasce privado. Tornar público é uma decisão consciente,
-> tomada projeto a projeto, e só depois de varrer **o histórico inteiro** — não apenas o
+> tomada projeto a projeto, e só depois de varrer **o histórico inteiro**, não apenas o
 > estado atual dos arquivos.
 
 ---
@@ -14,7 +14,7 @@ gh repo create meu-projeto --private --source=. --remote=origin
 
 Sem `gh` disponível, crie pelo site com a opção **Private** marcada antes do primeiro push.
 
-**Sempre confirme depois de criar** — não confie na intenção:
+**Sempre confirme depois de criar**, não confie na intenção:
 
 ```bash
 gh repo view --json name,visibility,isPrivate
@@ -41,7 +41,7 @@ gh repo create meu-projeto --private --source=. --remote=origin --push
 
 ---
 
-## 2. De privado para público — a lista curta
+## 2. De privado para público: a lista curta
 
 Antes de mudar a visibilidade de qualquer repositório:
 
@@ -63,7 +63,7 @@ Antes de mudar a visibilidade de qualquer repositório:
 
 3. **Se houver qualquer achado: rotacione a credencial primeiro**, depois decida entre
    limpar o histórico ou começar um repositório novo (`git checkout --orphan`).
-4. **Reveja README, issues e capturas de tela** — nome de cliente, domínio interno,
+4. **Reveja README, issues e capturas de tela**: nome de cliente, domínio interno,
    e-mail real, URL com token.
 5. **Confirme com o usuário, explicitamente**, que ele quer aquele repositório específico
    público. Nunca por inferência.
@@ -86,7 +86,7 @@ refactor(db): extrair a fábrica de conexão PDO para src/Database.php
 test(qa): adicionar casos de regressão CT-REG-004 a CT-REG-007
 ```
 
-O corpo responde **por quê**, não *o quê* — o diff já mostra o quê:
+O corpo responde **por quê**, não *o quê*: o diff já mostra o quê:
 
 ```
 fix(sql): parametrizar filtro de busca da listagem de pedidos
@@ -103,7 +103,7 @@ Casos CT-SEC-011 e CT-SEC-012 cobrem o cenário no roteiro de QA.
 
 ### Atribuição de IA
 
-Decisão sua, por projeto — não há regra neste padrão. O importante é **ser consistente**:
+Decisão sua, por projeto, não há regra neste padrão. O importante é **ser consistente**:
 ou todo commit assistido traz o trailer `Co-Authored-By:`, ou nenhum traz. Registre a
 escolha no `AGENTS.md` do projeto para que a próxima sessão siga a mesma convenção.
 
@@ -114,7 +114,7 @@ escolha no `AGENTS.md` do projeto para que a próxima sessão siga a mesma conve
 Projeto pessoal não precisa de GitFlow. Precisa de uma linha estável.
 
 ```
-main            sempre implantável — o que está (ou pode estar) em produção
+main            sempre implantável, o que está (ou pode estar) em produção
 feat/<slug>     uma funcionalidade, aberta a partir de main
 fix/<slug>      uma correção
 ```
@@ -149,7 +149,7 @@ instalação reproduzível e o que permite auditar dependências.
 
 ## 6. Checklist antes de todo push
 
-- [ ] `git status --short` lido, linha por linha — nada inesperado no staging
+- [ ] `git status --short` lido, linha por linha: nada inesperado no staging
 - [ ] `git diff --cached` lido pelo agente, não só rodado
 - [ ] `scan-secrets.sh --stdin` limpo sobre o conteúdo staged
 - [ ] `scan-sql-injection.sh` limpo

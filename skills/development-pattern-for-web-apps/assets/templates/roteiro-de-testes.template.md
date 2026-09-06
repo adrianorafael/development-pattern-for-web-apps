@@ -1,7 +1,7 @@
-# Roteiro de testes — <Nome do App> v<versão>
+# Roteiro de testes: <Nome do App> v<versão>
 
 > Modelo de `qa/roteiro-de-testes.md`.
-> Parte de "Development Pattern for Web Apps" — regra R11.
+> Parte de "Development Pattern for Web Apps": regra R11.
 > Escrito para ser **executado** por outro agente (Claude Cowork) ou por uma pessoa que
 > não participou do desenvolvimento e não pode fazer perguntas.
 
@@ -21,8 +21,8 @@
 | | |
 | --- | --- |
 | **URL** | `https://<url-do-ambiente-de-teste>` |
-| **⚠️ Isto é** | **AMBIENTE DE TESTE** — não é produção. Dados podem ser apagados. |
-| **Versão testada** | `<1.3.0>` — confira no rodapé antes de começar |
+| **⚠️ Isto é** | **AMBIENTE DE TESTE**, não é produção. Dados podem ser apagados. |
+| **Versão testada** | `<1.3.0>`, confira no rodapé antes de começar |
 | **Navegador** | Chromium atual, 1440×900 (e 375×812 na suíte de interface) |
 | **Console** | Mantenha aberto. Erro em vermelho é resultado de teste. |
 | **Rede** | Mantenha aberta. Resposta 4xx/5xx inesperada é resultado de teste. |
@@ -44,14 +44,14 @@ Sempre os mesmos registros, os mesmos IDs, as mesmas datas.
 | Entidade | Quantidade | Detalhe |
 | --- | --- | --- |
 | Usuários | 3 | A (id 1), B (id 2), admin (id 3) |
-| Chamados do usuário A | 5 | ids 1–5: três `aberto`, dois `fechado` |
-| Chamados do usuário B | 2 | ids 6–7, ambos `aberto` |
+| Chamados do usuário A | 5 | ids 1 a 5: três `aberto`, dois `fechado` |
+| Chamados do usuário B | 2 | ids 6 a 7, ambos `aberto` |
 | Anexos | 1 | id 1, pertencente ao chamado 6 (do usuário B) |
 
-**Como restaurar:** `<comando ou passo — ex.: aplicar qa/seed.sql, ou usar "limpar e recriar" do Wizard>`
+**Como restaurar:** `<comando ou passo. Ex.: aplicar qa/seed.sql, ou usar "limpar e recriar" do Wizard>`
 Restaure **antes de cada suíte**.
 
-### Regras de execução — leia antes de começar
+### Regras de execução: leia antes de começar
 
 1. **Não conserte a aplicação durante o teste.** Encontrou defeito? Registre na seção 9 e siga.
 2. **Não pule passo**, mesmo que pareça óbvio. É onde a regressão se esconde.
@@ -74,18 +74,18 @@ Restaure **antes de cada suíte**.
 | RF-002 Login | CT-SMK-002, CT-004…CT-007, CT-SEC-002 | Fumaça, Segurança | ✅ |
 | RF-003 Criar chamado | CT-010…CT-013, CT-SEC-005 | Funcional, Segurança | ✅ |
 | RF-004 Filtrar chamados | CT-014, CT-015, CT-016, CT-SEC-009 | Funcional, Segurança | ✅ |
-| RF-00n <...> | — | — | ⚠️ **sem cobertura — motivo:** `<...>` |
+| RF-00n <...> | nenhum | nenhuma | ⚠️ **sem cobertura. Motivo:** `<...>` |
 
 > Requisito sem cobertura é **declarado**, nunca omitido.
 
 ---
 
-## 2. Suíte de fumaça — `CT-SMK-nnn`
+## 2. Suíte de fumaça, `CT-SMK-nnn`
 
 Roda primeiro. Se qualquer caso aqui falhar, **pare**: o ambiente ou o build estão errados,
 e o resto do roteiro produziria ruído.
 
-### CT-SMK-001 — A aplicação carrega
+### CT-SMK-001: A aplicação carrega
 
 | **Pré-condição** | Nenhuma. Navegador sem sessão. |
 
@@ -97,21 +97,21 @@ e o resto do roteiro produziria ruído.
 - O rodapé exibe a versão `<1.3.0>`.
 - Nenhum erro no console.
 
-**Falha se** — 4xx/5xx, página em branco, ou versão diferente da esperada.
+**Falha se**: 4xx/5xx, página em branco, ou versão diferente da esperada.
 
-### CT-SMK-002 — Login com credencial válida
-### CT-SMK-003 — Login com credencial inválida é recusado
-### CT-SMK-004 — Cada módulo abre sem erro no console
-### CT-SMK-005 — Criar, listar e abrir um registro
-### CT-SMK-006 — Logout encerra a sessão; o botão Voltar não reexibe a área logada
+### CT-SMK-002: Login com credencial válida
+### CT-SMK-003: Login com credencial inválida é recusado
+### CT-SMK-004: Cada módulo abre sem erro no console
+### CT-SMK-005: Criar, listar e abrir um registro
+### CT-SMK-006: Logout encerra a sessão; o botão Voltar não reexibe a área logada
 
 ---
 
-## 3. Suíte funcional — `CT-nnn`
+## 3. Suíte funcional, `CT-nnn`
 
 Um caso por critério de aceite da spec, mais os limites.
 
-### CT-014 — Filtrar chamados por status
+### CT-014: Filtrar chamados por status
 
 | | |
 | --- | --- |
@@ -132,9 +132,9 @@ Um caso por critério de aceite da spec, mais os limites.
 - A URL passa a conter `?status=fechado`.
 - Nenhum erro no console.
 
-**Evidência** — `CT-014-resultado.png`
+**Evidência**, `CT-014-resultado.png`
 
-**Falha se** — a contagem diverge, aparece chamado com outro status, o contador não
+**Falha se**: a contagem diverge, aparece chamado com outro status, o contador não
 atualiza, ou a página recarrega perdendo o filtro.
 
 ### Casos a cobrir em cada módulo
@@ -144,26 +144,26 @@ atualiza, ou a página recarrega perdendo o filtro.
 | Caminho feliz | O fluxo que o requisito descreve |
 | Validação | Campo vazio · muito longo · formato errado · fora da faixa · acento · emoji |
 | Fronteira | Zero registros · um · o máximo permitido · o máximo + 1 |
-| Estados | Carregando · vazio · erro · sucesso — os quatro, em cada tela que busca dado |
+| Estados | Carregando · vazio · erro · sucesso: os quatro, em cada tela que busca dado |
 | Persistência | Recarregar mantém o resultado · Voltar não duplica o envio |
 | Concorrência | Duas abas no mesmo registro · duplo clique no botão de envio |
 | Formato | Data · moeda · maiúsculas · número grande · valor negativo |
 
 ---
 
-## 4. Suíte de integração — `CT-INT-nnn`
+## 4. Suíte de integração, `CT-INT-nnn`
 
-### CT-INT-001 — O que o formulário grava é o que o banco tem
+### CT-INT-001, O que o formulário grava é o que o banco tem
 
 **Passos**
 1. Criar um chamado com título `Teste ÇÃO "aspas" <tag> 'apóstrofo'`.
 2. Consultar no banco: `SELECT titulo FROM chamados ORDER BY id DESC LIMIT 1`.
 
 **Resultado esperado**
-- O valor no banco é **exatamente** o digitado — sem `&amp;lt;`, sem barras, sem truncar.
+- O valor no banco é **exatamente** o digitado, sem `&amp;lt;`, sem barras, sem truncar.
 - A tela exibe o mesmo texto, sem tag interpretada.
 
-**Falha se** — o texto foi escapado na gravação (erro clássico: escapar na entrada em vez
+**Falha se**: o texto foi escapado na gravação (erro clássico: escapar na entrada em vez
 da saída), truncado, ou interpretado como HTML na exibição.
 
 ### Demais casos
@@ -171,16 +171,16 @@ da saída), truncado, ou interpretado como HTML na exibição.
 - Ação que dispara e-mail (com captura em ambiente de teste; **nunca envio real**).
 - Webhook: assinatura válida aceita · inválida recusada · entrega duplicada não duplica efeito.
 - Tarefa agendada produz o efeito esperado.
-- **Wizard de instalação** (R9) — a tabela de casos da referência `wizard-de-instalacao.md`.
-- **Painel de atualização** (R10) — a tabela de casos da referência `pacotes-de-atualizacao.md`.
+- **Wizard de instalação** (R9): a tabela de casos da referência `wizard-de-instalacao.md`.
+- **Painel de atualização** (R10): a tabela de casos da referência `pacotes-de-atualizacao.md`.
 
 ---
 
-## 5. Suíte de segurança — `CT-SEC-nnn`
+## 5. Suíte de segurança, `CT-SEC-nnn`
 
 > Obrigatória, nunca "se der tempo". Executada **apenas contra o ambiente de teste**.
 
-### 5.1 SQL injection — em todo campo que chega ao banco (R5)
+### 5.1 SQL injection: em todo campo que chega ao banco (R5)
 
 Para **cada** campo de entrada da aplicação, executar a tabela abaixo. Liste os campos aqui:
 
@@ -215,11 +215,11 @@ Para cada campo cujo valor é exibido em alguma tela:
 | d | `<svg onload=alert(1)>` | Sanitizado |
 | e | Salvo por A, aberto por B ou pelo admin | Nenhuma execução (XSS armazenado) |
 
-### 5.3 Autorização e IDOR (R7) — os que mais pegam defeito real
+### 5.3 Autorização e IDOR (R7): os que mais pegam defeito real
 
 | Caso | Aprovado quando |
 | --- | --- |
-| CT-SEC-009 · Logado como A, acessar `/chamados/6` (do B) | **404** — não 403: não confirme que existe |
+| CT-SEC-009 · Logado como A, acessar `/chamados/6` (do B) | **404**, não 403: não confirme que existe |
 | CT-SEC-010 · Logado como A, acessar `/anexos/1` (do B) | 404; nenhum byte entregue |
 | CT-SEC-011 · Usuário comum acessa `/admin` | 403 ou redirecionamento; nunca a tela |
 | CT-SEC-012 · `POST` direto em rota administrativa, sem passar pela interface | 403 |
@@ -254,7 +254,7 @@ Para cada campo cujo valor é exibido em alguma tela:
 
 ---
 
-## 6. Suíte de interface, responsividade e acessibilidade — `CT-UI-nnn`
+## 6. Suíte de interface, responsividade e acessibilidade, `CT-UI-nnn`
 
 | Caso | Aprovado quando |
 | --- | --- |
@@ -275,7 +275,7 @@ Para cada campo cujo valor é exibido em alguma tela:
 
 | Caso | Aprovado quando |
 | --- | --- |
-| CT-UI-020 · Cada rota do mapa, colada direto na barra de endereço | 200 e a tela correta — nada depende de ter vindo de outra página |
+| CT-UI-020 · Cada rota do mapa, colada direto na barra de endereço | 200 e a tela correta: nada depende de ter vindo de outra página |
 | CT-UI-021 · F5 em qualquer rota interna | A mesma tela, sem perder estado nem reenviar formulário |
 | CT-UI-022 · Botão Voltar depois de três telas | Volta na ordem certa |
 | CT-UI-023 · `/chamados/` (barra final) e `/Chamados` (maiúscula) | 301 para a forma canônica |
@@ -287,12 +287,12 @@ Para cada campo cujo valor é exibido em alguma tela:
 
 ---
 
-## 7. Suíte de regressão — `CT-REG-nnn`
+## 7. Suíte de regressão, `CT-REG-nnn`
 
 > **Todo defeito corrigido vira um caso aqui.** Esta suíte roda inteira antes de todo release.
 > É a memória do projeto.
 
-### CT-REG-001 — Busca com aspa simples não quebra a listagem
+### CT-REG-001: Busca com aspa simples não quebra a listagem
 
 | | |
 | --- | --- |
@@ -308,7 +308,7 @@ Para cada campo cujo valor é exibido em alguma tela:
 - Nenhuma mensagem de erro de SQL na tela.
 - Nenhum 500 na aba de rede.
 
-**Falha se** — qualquer 500, mensagem do MySQL, ou tela em branco.
+**Falha se**: qualquer 500, mensagem do MySQL, ou tela em branco.
 
 ---
 
@@ -333,7 +333,7 @@ Para cada campo cujo valor é exibido em alguma tela:
 | Regressão | | | | |
 | **Total** | | | | |
 
-**Veredito:** `✅ liberado` · `❌ não liberado — <motivo>`
+**Veredito:** `✅ liberado` · `❌ não liberado: <motivo>`
 
 > Qualquer defeito 🔴 em aberto bloqueia o release.
 
@@ -342,20 +342,20 @@ Para cada campo cujo valor é exibido em alguma tela:
 | Caso | Resultado | Observação / defeito |
 | --- | --- | --- |
 | CT-SMK-001 | ✅ | |
-| CT-014 | ❌ | DEF-013 — contador exibiu `5 chamados` |
-| CT-SEC-009 | ❌ | DEF-014 — 🔴 crítico |
+| CT-014 | ❌ | DEF-013: contador exibiu `5 chamados` |
+| CT-SEC-009 | ❌ | DEF-014: 🔴 crítico |
 | CT-INT-004 | ⛔ bloqueado | serviço de e-mail de teste indisponível |
 
 ---
 
 ## 9. Defeitos encontrados
 
-### DEF-014 — Usuário comum acessa chamado de outro usuário
+### DEF-014: Usuário comum acessa chamado de outro usuário
 
 | | |
 | --- | --- |
 | **Caso** | CT-SEC-009 |
-| **Severidade** | 🔴 Crítica — vazamento de dados entre contas |
+| **Severidade** | 🔴 Crítica: vazamento de dados entre contas |
 | **Requisito** | RF-004 |
 | **Versão** | 1.3.0 |
 

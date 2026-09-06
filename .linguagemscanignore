@@ -1,0 +1,7 @@
+# Caminhos ignorados por scan-linguagem.sh (comparação por substring).
+#
+# O próprio scanner precisa conter os caracteres que procura, e a referência da R17
+# precisa citá-los para poder proibi-los. Nos dois casos o travessão está sendo
+# CITADO, nunca usado em texto de interface.
+assets/scripts/scan-linguagem.sh
+.linguagemscanignore

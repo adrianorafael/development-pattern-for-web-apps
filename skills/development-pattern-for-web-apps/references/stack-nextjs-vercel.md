@@ -41,7 +41,7 @@ components/
 └── chamados/                 # componentes do domínio: ListaChamados, FormChamado, StatusBadge
 
 lib/
-├── db.ts                     # acesso a dados — 'server-only'
+├── db.ts                     # acesso a dados: 'server-only'
 ├── auth.ts                   # sessão, exigirSessao()
 ├── validacoes.ts             # esquemas Zod compartilhados
 └── utils.ts                  # cn(), formatarData()
@@ -56,7 +56,7 @@ types/
 **`components/ui/` não conhece o domínio.** `Botao` não sabe o que é um chamado. Isso é o que
 torna o componente reutilizável entre projetos.
 
-**O nome da pasta é a URL pública.** Por isso ele segue as convenções de R15 — português,
+**O nome da pasta é a URL pública.** Por isso ele segue as convenções de R15: português,
 kebab-case, sem acento, ação como verbo no infinitivo. `cadastrar-novo-usuario/`, nunca
 `signup/` nem `NewUser/`. Grupos entre parênteses, `(painel)`, compartilham layout e
 verificação de sessão sem entrar no caminho. → [rotas-e-urls.md](rotas-e-urls.md)
@@ -69,7 +69,7 @@ verificação de sessão sem entrar no caminho. → [rotas-e-urls.md](rotas-e-ur
 `useEffect`, `onClick`, `onChange`, API do navegador, biblioteca que exige cliente.
 
 ```tsx
-// app/(painel)/chamados/page.tsx — Server Component: busca direto, sem endpoint intermediário
+// app/(painel)/chamados/page.tsx. Server Component: busca direto, sem endpoint intermediário
 import { listarChamadosDoUsuario } from '@/lib/db';
 import { exigirSessao } from '@/lib/auth';
 import { ListaChamados } from '@/components/chamados/lista-chamados';
@@ -95,7 +95,7 @@ export function FiltroStatus({ valor }: { valor?: string }) { /* … */ }
 
 ---
 
-## 3. Acesso a dados — só no servidor
+## 3. Acesso a dados, só no servidor
 
 ```ts
 // lib/db.ts
@@ -119,14 +119,14 @@ export async function listarChamadosDoUsuario(usuarioId: number, status?: string
 }
 ```
 
-`usuario_id` entra na consulta a partir da **sessão**, nunca de `searchParams` — é a
+`usuario_id` entra na consulta a partir da **sessão**, nunca de `searchParams`, é a
 diferença entre autorização e uma URL editável (R7).
 
 Detalhes e as armadilhas de `unsafe`/`raw`: [sql-e-acesso-a-dados.md](sql-e-acesso-a-dados.md).
 
 ---
 
-## 4. Server Actions — endpoints públicos com aparência de função
+## 4. Server Actions: endpoints públicos com aparência de função
 
 ```ts
 // actions/chamados.ts
@@ -163,12 +163,12 @@ Server Action sem `exigirSessao()` é uma rota pública, mesmo que só apareça 
 
 ---
 
-## 5. Tailwind — componentes, não classes soltas
+## 5. Tailwind: componentes, não classes soltas
 
 **Tokens no tema, não hex no JSX.** Cor definida uma vez; usada por nome.
 
 ```css
-/* app/globals.css — Tailwind v4 */
+/* app/globals.css. Tailwind v4 */
 @import "tailwindcss";
 
 @theme {
@@ -181,7 +181,7 @@ Server Action sem `exigirSessao()` é uma rota pública, mesmo que só apareça 
 ```
 
 ```js
-// tailwind.config.ts — Tailwind v3
+// tailwind.config.ts. Tailwind v3
 export default {
   content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
   theme: { extend: { colors: { marca: { 50:'#eff6ff', 500:'#2563eb', 700:'#1d4ed8' } } } },
@@ -234,11 +234,11 @@ const CORES = { azul: 'text-blue-500', vermelho: 'text-red-500' } as const;
 ```
 
 O Tailwind faz varredura estática do código-fonte. Classe que só existe depois de concatenar
-nunca chega ao CSS — e some da tela sem erro.
+nunca chega ao CSS, e some da tela sem erro.
 
 ### Acessibilidade não é opcional
 
-- Todo `<input>` tem `<label htmlFor>` — `placeholder` não é rótulo.
+- Todo `<input>` tem `<label htmlFor>`, `placeholder` não é rótulo.
 - Foco visível: nunca `outline-none` sem `focus-visible:ring`.
 - Contraste mínimo AA (4.5:1 em texto normal).
 - Ícone sozinho em botão exige `aria-label`.
@@ -249,15 +249,15 @@ O roteiro de QA (R11) tem uma suíte para isso.
 
 ---
 
-## 6. Estados de tela — os quatro, sempre
+## 6. Estados de tela: os quatro, sempre
 
 Toda tela que busca dado tem quatro estados, e todos aparecem na spec:
 
 | Estado | Onde vive |
 | --- | --- |
 | Carregando | `loading.tsx` da rota, ou `<Suspense fallback>` |
-| Vazio | Componente com mensagem e ação sugerida — nunca uma tabela em branco |
-| Erro | `error.tsx` (client component com `reset`) — mensagem genérica, detalhe no log |
+| Vazio | Componente com mensagem e ação sugerida, nunca uma tabela em branco |
+| Erro | `error.tsx` (client component com `reset`): mensagem genérica, detalhe no log |
 | Sucesso | O conteúdo |
 
 "Esqueci o estado vazio" é o defeito mais comum encontrado no QA de interface.
@@ -272,7 +272,7 @@ Variáveis:  Project → Settings → Environment Variables, por ambiente
 Segredos:   NUNCA com prefixo NEXT_PUBLIC_ (R1)
 ```
 
-- Cada push num ramo gera um **preview deploy** com URL própria — é o ambiente ideal para o
+- Cada push num ramo gera um **preview deploy** com URL própria: é o ambiente ideal para o
   Cowork executar o roteiro de QA antes do merge.
 - **Preview é público por padrão** enquanto a URL for conhecida. Se o app trata dado real,
   ligue *Deployment Protection* ou use dados de seed sintéticos.
@@ -282,7 +282,7 @@ Segredos:   NUNCA com prefixo NEXT_PUBLIC_ (R1)
   requisição.
 - Confira o build de produção localmente antes de publicar: `npm run build && npm start`.
 - Melhor ainda: **`vercel build`** reproduz o build da Vercel, com a configuração e as
-  variáveis do ambiente escolhido — é o que pega a falha que só aparece no deploy.
+  variáveis do ambiente escolhido: é o que pega a falha que só aparece no deploy.
   Quando um build falha, o ciclo de diagnóstico e correção é a R16.
   → [vercel-build-e-correcao.md](vercel-build-e-correcao.md)
 
@@ -320,6 +320,6 @@ enxerga.
 - [ ] Os quatro estados de tela implementados
 - [ ] Nada sensível em variável `NEXT_PUBLIC_` (R1)
 - [ ] Cabeçalhos de segurança em `next.config.ts` (R7)
-- [ ] `npm run build` — e, quando houver acesso à conta, `vercel build` — passa antes do push
+- [ ] `npm run build` passa antes do push; com acesso à conta, `vercel build` também
 - [ ] `.vercel/` no `.gitignore`; `VERCEL_TOKEN` só em `.env` (R1, R16)
 - [ ] `qa/roteiro-de-testes.md` gerado, executável na URL de preview (R11)

@@ -1,4 +1,4 @@
-# Vercel — diagnosticar build quebrado e fechar o ciclo até o verde
+# Vercel: diagnosticar build quebrado e fechar o ciclo até o verde
 
 > Regra **R16**. Build quebrado se conserta com **o log na mão** e a correção **provada
 > localmente** antes do push. Nunca às cegas, nunca com `ignoreBuildErrors`, nunca em ciclo
@@ -18,13 +18,13 @@ um push → confirmar o deploy.** Uma volta, não cinco.
 
 Três caminhos, nesta ordem de preferência. **Detecte antes de perguntar.**
 
-### a) Servidor MCP da Vercel — preferido quando disponível
+### a) Servidor MCP da Vercel: preferido quando disponível
 
 Se a sessão tiver um servidor MCP da Vercel conectado, use-o: a autenticação já está
 resolvida e as ferramentas são tipadas. Detecte listando as ferramentas disponíveis antes de
 propor qualquer outro caminho.
 
-### b) Vercel CLI com token — o caminho padrão
+### b) Vercel CLI com token: o caminho padrão
 
 ```bash
 npm i -g vercel            # ou use npx vercel, sem instalar
@@ -34,7 +34,7 @@ vercel link                # associa esta pasta a um projeto da conta
 O token vai por variável de ambiente, **nunca em arquivo versionado** (R1):
 
 ```bash
-# .env — gitignored. Crie o token em Vercel → Settings → Tokens.
+# .env: gitignored. Crie o token em Vercel → Settings → Tokens.
 VERCEL_TOKEN="SEU-TOKEN-DA-VERCEL"
 VERCEL_ORG_ID="SEU-ORG-ID"          # aparece em .vercel/project.json após o link
 VERCEL_PROJECT_ID="SEU-PROJECT-ID"
@@ -45,14 +45,14 @@ export VERCEL_TOKEN="$(grep -m1 '^VERCEL_TOKEN=' .env | cut -d= -f2- | tr -d '"'
 vercel ls --token "$VERCEL_TOKEN"
 ```
 
-`.vercel/` entra no `.gitignore` — ele guarda o vínculo com o projeto e, dependendo da
+`.vercel/` entra no `.gitignore`, ele guarda o vínculo com o projeto e, dependendo da
 versão, credenciais em cache.
 
 **Escopo mínimo:** crie o token com acesso apenas ao projeto (ou ao time) em questão, nunca
 um token de conta inteira para diagnosticar um build. Revogue quando terminar, se foi criado
 só para isso.
 
-### c) API REST — quando o CLI não está disponível
+### c) API REST: quando o CLI não está disponível
 
 ```bash
 curl -sS -H "Authorization: Bearer $VERCEL_TOKEN" \
@@ -69,7 +69,7 @@ curl -sS -H "Authorization: Bearer $VERCEL_TOKEN" \
 ## 2. O comando que mais importa: `vercel build`
 
 Antes de qualquer teoria sobre a falha, saiba disto: **`vercel build` reproduz o build da
-Vercel na sua máquina.** Ele não é o mesmo que `npm run build` — ele aplica a configuração do
+Vercel na sua máquina.** Ele não é o mesmo que `npm run build`, ele aplica a configuração do
 projeto, o mesmo runtime e a mesma sequência que o servidor usa.
 
 ```bash
@@ -78,7 +78,7 @@ vercel build                        # reproduz o build exatamente como a Vercel 
 ```
 
 `vercel pull` é o que resolve a categoria de falha mais comum: **a variável de ambiente que
-existe na sua máquina e não existe no ambiente da Vercel** — ou o contrário.
+existe na sua máquina e não existe no ambiente da Vercel**, ou o contrário.
 
 Se `vercel build` passa e o deploy falha, a diferença está no ambiente, não no código: vá
 para a seção 5.
@@ -89,17 +89,17 @@ para a seção 5.
 
 ```
 1 OBTER      identificar o deploy que falhou e baixar o LOG COMPLETO
-2 LER        classificar a falha pela taxonomia (§4) — nunca adivinhar pelo título
+2 LER        classificar a falha pela taxonomia (§4), nunca adivinhar pelo título
 3 REPRODUZIR vercel pull && vercel build   → a MESMA mensagem tem que aparecer
 4 CORRIGIR   a menor mudança que resolve a causa raiz
 5 PROVAR     vercel build limpo + tsc + lint + testes + os dois scanners
 6 EMPURRAR   UM push, no ramo de trabalho → deploy de preview
 7 CONFIRMAR  o preview ficou verde? Se não, volte ao passo 1 com o NOVO log
-8 PORTÃO     ⛔ merge em main (produção) só com aprovação — R14
+8 PORTÃO     ⛔ merge em main (produção) só com aprovação. R14
 ```
 
 **O passo 3 não é opcional.** Uma falha que você não conseguiu reproduzir localmente é uma
-falha que você não entendeu — e a correção é um chute. Se não reproduzir, diga isso e
+falha que você não entendeu, e a correção é um chute. Se não reproduzir, diga isso e
 investigue a diferença de ambiente antes de tocar no código.
 
 ### Teto de tentativas
@@ -108,7 +108,7 @@ investigue a diferença de ambiente antes de tocar no código.
 
 > Três tentativas no build do preview `<url>`, ainda falhando.
 > O log agora aponta `<mensagem>`, diferente das anteriores.
-> Minha leitura é `<hipótese>`, mas não consigo reproduzir localmente — `vercel build`
+> Minha leitura é `<hipótese>`, mas não consigo reproduzir localmente, `vercel build`
 > passa limpo aqui. Isso sugere diferença de ambiente, não de código.
 > O que eu preciso de você: confirmar se `DATABASE_URL` existe no ambiente **Preview**
 > (ela existe no Production), em Vercel → Settings → Environment Variables.
@@ -139,13 +139,13 @@ O log da Vercel é longo; a linha que importa quase sempre está **no fim, antes
 | `The Edge Function "..." size exceeded` | API do Node ou dependência pesada num runtime edge | Mover para runtime Node, ou enxugar a dependência |
 | Build excedeu memória ou tempo | Geração estática grande demais, ou import em cascata | Reduzir `generateStaticParams`, revisar imports do topo da árvore |
 
-### Falhas de ambiente — o agente **não** conserta sozinho
+### Falhas de ambiente: o agente **não** conserta sozinho
 
 | No log | Causa raiz | O que fazer |
 | --- | --- | --- |
-| `Environment variable "X" is not defined` | A variável existe em Production e **não em Preview** — são ambientes separados | **Nomear a variável e o ambiente e parar.** É segredo; quem cria é o dono da conta (R1) |
+| `Environment variable "X" is not defined` | A variável existe em Production e **não em Preview**: são ambientes separados | **Nomear a variável e o ambiente e parar.** É segredo; quem cria é o dono da conta (R1) |
 | Erro de conexão com o banco no build | Provedor bloqueando o IP do build, ou `sslmode` ausente | Diagnosticar e reportar; a correção costuma ser no painel do provedor |
-| `Node.js version "18.x" is deprecated` | Versão fixada no projeto ou em `engines` | Propor a subida de versão — é mudança de ambiente, vai com aviso |
+| `Node.js version "18.x" is deprecated` | Versão fixada no projeto ou em `engines` | Propor a subida de versão: é mudança de ambiente, vai com aviso |
 | Domínio, integração ou billing | Nada a ver com o código | Reportar com o texto exato do log |
 
 **Esta separação é o coração da regra.** Um agente que "corrige" uma variável de ambiente
@@ -169,7 +169,7 @@ vercel inspect <url-do-deploy> --logs --token "$VERCEL_TOKEN"
 > Confirme com `vercel inspect --help` antes de concluir que "não há log".
 
 Guarde o log num arquivo e **cite no relatório o trecho exato** que fundamentou o
-diagnóstico — não parafraseie:
+diagnóstico, não parafraseie:
 
 ```bash
 vercel inspect <url> --logs --token "$VERCEL_TOKEN" > /tmp/build.log 2>&1
@@ -177,17 +177,17 @@ tail -60 /tmp/build.log
 ```
 
 O log de build pode conter valores de variáveis, nomes internos e caminhos. **Não cole o log
-inteiro em lugar nenhum** — nem em commit, nem em issue, nem em README (R1). Cite as linhas
+inteiro em lugar nenhum**: nem em commit, nem em issue, nem em README (R1). Cite as linhas
 relevantes, sanitizadas.
 
 ---
 
-## 6. O que nunca fazer — a "amputação"
+## 6. O que nunca fazer: a "amputação"
 
 Ficar verde apagando o que reclama não é corrigir; é esconder.
 
 ```ts
-// ❌ next.config.ts — todas proibidas por esta regra
+// ❌ next.config.ts: todas proibidas por esta regra
 export default {
   typescript: { ignoreBuildErrors: true },      // o erro de tipo continua lá, agora invisível
   eslint:     { ignoreDuringBuilds: true },     // idem
@@ -215,8 +215,8 @@ agente: apresente o trade-off, proponha a alternativa correta, e espere.
 | **Preview** | cada push num ramo de trabalho | Onde o ciclo de correção acontece, livremente |
 | **Production** | merge em `main` | ⛔ Portão: só depois do preview verde e da aprovação (R14) |
 
-O ciclo dos passos 1–7 roda **sozinho no preview**. A promoção para produção é o único ponto
-que exige um "sim" — é o que separa "consertar" de "publicar".
+O ciclo dos passos 1 a 7 roda **sozinho no preview**. A promoção para produção é o único ponto
+que exige um "sim": é o que separa "consertar" de "publicar".
 
 ```bash
 vercel promote <url-do-deploy>    # promove um deploy existente a produção
@@ -231,11 +231,11 @@ uma migração destrutiva, o caminho de volta é o backup, não o `rollback`.
 
 ## 8. Relatar o resultado
 
-Cada volta do ciclo é registrada — use
+Cada volta do ciclo é registrada: use
 [`../assets/templates/correcao-de-build.template.md`](../assets/templates/correcao-de-build.template.md).
 O relatório ao usuário nomeia o que foi lido, não o que foi suposto:
 
-> **Build do preview `dpfwa-git-fix-anexos.vercel.app` — corrigido na primeira volta.**
+> **Build do preview `dpfwa-git-fix-anexos.vercel.app`, corrigido na primeira volta.**
 >
 > **O log dizia:** `Type error: Property 'usuarioId' does not exist on type 'Sessao'`
 > em `actions/chamados.ts:24`.
@@ -266,7 +266,7 @@ Nunca "corrigi o build". Diga qual linha do log, qual causa, e o que provou a co
 - [ ] Falha classificada como **de código** ou **de ambiente**
 - [ ] Falha de ambiente: variável e ambiente nomeados, e o agente **parou** ali
 - [ ] Falha reproduzida com `vercel build` antes de qualquer correção
-- [ ] Correção é a menor que resolve a causa raiz — nada de escopo carona
+- [ ] Correção é a menor que resolve a causa raiz: nada de escopo carona
 - [ ] Nenhum `ignoreBuildErrors`, `ignoreDuringBuilds`, `@ts-ignore` ou teste apagado
 - [ ] `tsc --noEmit`, lint, testes e os dois scanners limpos antes do push
 - [ ] **Um** push por volta do ciclo
@@ -281,7 +281,7 @@ Nunca "corrigi o build". Diga qual linha do log, qual causa, e o que provou a co
 
 A Hostinger não tem build nem CI/CD: o equivalente é o **painel de atualização** (R10), que
 valida o pacote antes de escrever, aplica migrações em ordem e faz rollback automático. O
-ciclo desta regra — log, reprodução, correção mínima, teto de tentativas — vale igual para
+ciclo desta regra (log, reprodução, correção mínima, teto de tentativas) vale igual para
 diagnosticar uma atualização que falhou: o log está em `storage/logs/php-error.log` e no
 relatório que o próprio painel gera.
 → [pacotes-de-atualizacao.md](pacotes-de-atualizacao.md)

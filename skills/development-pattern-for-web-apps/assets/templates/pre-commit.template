@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Hook de pre-commit — "Development Pattern for Web Apps", regras R1 e R5.
+# Hook de pre-commit: "Development Pattern for Web Apps", regras R1 e R5.
 #
 # Instalar:
 #   cp skills/development-pattern-for-web-apps/assets/templates/pre-commit.template .git/hooks/pre-commit
 #   chmod +x .git/hooks/pre-commit
 #
-# Ignorar (só quando você tem certeza — e você quase nunca tem):
+# Ignorar (só quando você tem certeza, e você quase nunca tem):
 #   git commit --no-verify
 
 set -uo pipefail
@@ -16,7 +16,18 @@ if [ -f "$BASE/scan-secrets.sh" ]; then
   echo "🔒 pre-commit: procurando segredos no conteúdo staged…"
   git diff --cached | bash "$BASE/scan-secrets.sh" --stdin || FALHOU=1
 else
-  echo "⚠️  scan-secrets.sh não encontrado em $BASE — varredura de segredos pulada."
+  echo "⚠️  scan-secrets.sh não encontrado em $BASE: varredura de segredos pulada."
+fi
+
+if [ -f "$BASE/scan-linguagem.sh" ]; then
+  echo "✍️  pre-commit: procurando travessões e muletas nos arquivos staged…"
+  TEXTOS=$(git diff --cached --name-only --diff-filter=ACM | grep -Ei '\.(md|html|php|js|jsx|ts|tsx|txt|template)$' || true)
+  if [ -n "$TEXTOS" ]; then
+    # shellcheck disable=SC2086
+    bash "$BASE/scan-linguagem.sh" $TEXTOS || FALHOU=1
+  fi
+else
+  echo "⚠️  scan-linguagem.sh não encontrado em $BASE, varredura de linguagem pulada."
 fi
 
 if [ -f "$BASE/scan-sql-injection.sh" ]; then
@@ -27,7 +38,7 @@ if [ -f "$BASE/scan-sql-injection.sh" ]; then
     bash "$BASE/scan-sql-injection.sh" $ARQUIVOS || FALHOU=1
   fi
 else
-  echo "⚠️  scan-sql-injection.sh não encontrado em $BASE — varredura de SQL pulada."
+  echo "⚠️  scan-sql-injection.sh não encontrado em $BASE: varredura de SQL pulada."
 fi
 
 # Sintaxe dos arquivos PHP staged

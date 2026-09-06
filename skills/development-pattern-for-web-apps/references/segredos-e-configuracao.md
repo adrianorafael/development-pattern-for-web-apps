@@ -1,9 +1,9 @@
-# Segredos e configuração — nada sensível chega ao repositório
+# Segredos e configuração: nada sensível chega ao repositório
 
 > Regra **R1**. É a única falha que um commit posterior não desfaz.
 > Segredo publicado é segredo vazado: o histórico do Git, os forks, a API de eventos do
 > GitHub e os caches de busca de código guardam. **Rotacionar é o único remédio; prevenir
-> é a única estratégia.** Isso vale mesmo em repositório privado — privado hoje pode virar
+> é a única estratégia.** Isso vale mesmo em repositório privado: privado hoje pode virar
 > público amanhã, e o histórico vai junto.
 
 ---
@@ -17,7 +17,7 @@
 | **Segredos de sessão e token** | `APP_KEY`, `JWT_SECRET`, `NEXTAUTH_SECRET`, chave de assinatura de cookie | Falsificação de sessão de qualquer usuário |
 | **Arquivos de ambiente** | `.env`, `.env.local`, `.env.production`, `config.local.php` | Quase sempre contêm os três acima |
 | **Acesso à hospedagem** | senha de FTP, chave SSH, `VERCEL_TOKEN`, `.ftpconfig`, `sftp.json` do VS Code | Controle do servidor e da conta de deploy |
-| **Pessoas** | e-mails reais, telefones, CPF, endereços em fixtures e dumps | Dado pessoal — LGPD, mesmo em projeto pessoal |
+| **Pessoas** | e-mails reais, telefones, CPF, endereços em fixtures e dumps | Dado pessoal. LGPD, mesmo em projeto pessoal |
 | **Dumps e backups** | `backup.sql`, `dump.sql`, `*.sql.gz` com dados reais | O vazamento mais comum e mais completo |
 | **Capturas de tela** | print do painel com nome de cliente real | Vaza contexto e às vezes token na URL |
 
@@ -29,8 +29,8 @@ apoio. Se precisar de dados para desenvolver, gere um *seed* sintético.
 ## 2. O par obrigatório: valor real fora, chaves dentro
 
 ```
-.env            # IGNORADO — os valores reais vivem aqui, e só aqui
-.env.example    # VERSIONADO — as mesmas chaves, valores placeholder, um comentário por chave
+.env            # IGNORADO: os valores reais vivem aqui, e só aqui
+.env.example    # VERSIONADO: as mesmas chaves, valores placeholder, um comentário por chave
 ```
 
 `.env.example` não é opcional: é como você (ou outra pessoa) clona o repositório meses
@@ -42,7 +42,7 @@ commit.
 Shared hosting não tem variáveis de ambiente de verdade. As duas formas aceitas, nesta
 ordem de preferência:
 
-**a) Arquivo de configuração fora do webroot** — o mais seguro em hospedagem compartilhada:
+**a) Arquivo de configuração fora do webroot**: o mais seguro em hospedagem compartilhada:
 
 ```
 /home/usuario/
@@ -58,7 +58,7 @@ ordem de preferência:
 $config = require dirname(__DIR__) . '/config/app.config.php';
 ```
 
-**b) Arquivo dentro do projeto, ignorado e protegido** — quando não há acesso acima do
+**b) Arquivo dentro do projeto, ignorado e protegido**: quando não há acesso acima do
 `public_html`:
 
 ```
@@ -66,7 +66,7 @@ config/config.local.php     ← no .gitignore, e protegido por .htaccess
 ```
 
 ```apache
-# config/.htaccess — se o arquivo for movido para dentro do webroot por engano,
+# config/.htaccess: se o arquivo for movido para dentro do webroot por engano,
 # o servidor ainda recusa servi-lo.
 <FilesMatch "\.(php|ini|env|sql|log)$">
   Require all denied
@@ -83,14 +83,14 @@ Variables), separadas por ambiente (Production / Preview / Development). Localme
 `.env.local` (ignorado por padrão pelo `create-next-app`).
 
 ```bash
-# .env.example — versionado, só placeholders
+# .env.example: versionado, só placeholders
 DATABASE_URL="postgres://SEU-USUARIO:SUA-SENHA@SEU-HOST/SEU-BANCO?sslmode=require"
 AUTH_SECRET="GERE-COM-openssl-rand-base64-32"
 RESEND_API_KEY="re_SUA-CHAVE-AQUI"
 NEXT_PUBLIC_SITE_URL="https://seu-dominio.com.br"
 
 # Diagnóstico de build (R16). Crie em Vercel → Settings → Tokens, com escopo
-# mínimo — só o projeto necessário. Revogue quando não precisar mais.
+# mínimo, só o projeto necessário. Revogue quando não precisar mais.
 VERCEL_TOKEN="SEU-TOKEN-DA-VERCEL"
 ```
 
@@ -135,7 +135,7 @@ Nunca com valor real, nunca com valor real "temporário".
 | seeds e fixtures | CPF/telefone | `000.000.000-00`, `(00) 00000-0000` |
 
 **O placeholder precisa ser obviamente falso e obviamente acionável.** `SUA-SENHA` diz ao
-leitor para substituir. `senha123` não diz nada — e passa despercebido na revisão.
+leitor para substituir. `senha123` não diz nada, e passa despercebido na revisão.
 
 Para cada placeholder, uma linha no README dizendo exatamente o que colocar e onde achar o
 valor ("copie do painel hPanel → Bancos de dados MySQL").
@@ -158,12 +158,12 @@ Se um arquivo sensível já está rastreado:
 
 ```bash
 git rm --cached config/config.local.php     # para de rastrear, mantém em disco
-# commit da remoção — e trate o valor como comprometido: ROTACIONE.
+# commit da remoção, e trate o valor como comprometido: ROTACIONE.
 ```
 
 ---
 
-## 5. Varredura antes de cada commit — obrigatória
+## 5. Varredura antes de cada commit: obrigatória
 
 ```bash
 bash skills/development-pattern-for-web-apps/assets/scripts/scan-secrets.sh
@@ -183,7 +183,7 @@ O que o scanner procura:
 | e-mails e CPFs em massa | Dado pessoal em fixture ou dump |
 
 **Qualquer achado: pare.** Substitua por placeholder, rode de novo, e diga ao usuário o que
-foi encontrado e o que foi trocado. O scan limpo é **necessário, não suficiente** — leia o
+foi encontrado e o que foi trocado. O scan limpo é **necessário, não suficiente**: leia o
 seu próprio diff.
 
 Automatize com o hook: [`../assets/templates/pre-commit.template`](../assets/templates/pre-commit.template).
@@ -196,7 +196,7 @@ Ofereça instalá-lo; nunca instale sem perguntar.
 Diga ao usuário imediatamente e com todas as letras. Depois, nesta ordem:
 
 1. **Rotacione primeiro.** Troque a senha do MySQL no hPanel, revogue a chave de API no
-   painel do provedor, gere um novo `AUTH_SECRET`. Faça isso **antes** de mexer no Git —
+   painel do provedor, gere um novo `AUTH_SECRET`. Faça isso **antes** de mexer no Git:
    reescrever histórico leva minutos, e a credencial fica exposta o tempo inteiro.
 2. **Depois limpe o histórico.** `git filter-repo --path config/config.local.php --invert-paths`,
    ou apague e recrie o repositório se ele é novo, sem forks e sem stars. Avise que forks e
@@ -212,7 +212,7 @@ Não conserte em silêncio. A rotação é uma decisão do dono do projeto e ele
 
 - [ ] `.gitignore` da trilha copiado **antes** do primeiro commit
 - [ ] `.env` criado localmente; `.env.example` versionado com as mesmas chaves
-- [ ] PHP: config fora do `public_html` — ou dentro, ignorada e com `.htaccess` negando
+- [ ] PHP: config fora do `public_html`, ou dentro, ignorada e com `.htaccess` negando
 - [ ] PHP: `https://.../config/...` testado no navegador e respondendo 403
 - [ ] Next.js: variáveis no painel da Vercel, por ambiente; nada sensível com `NEXT_PUBLIC_`
 - [ ] Next.js: `import 'server-only'` no módulo de acesso a dados

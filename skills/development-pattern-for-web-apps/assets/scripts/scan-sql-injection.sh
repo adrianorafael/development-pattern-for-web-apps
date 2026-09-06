@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scan-sql-injection.sh — procura SQL montado por concatenação.
+# scan-sql-injection.sh: procura SQL montado por concatenação.
 #
 # Parte de "Development Pattern for Web Apps".
 # Impõe a regra R5: dado de usuário nunca entra no TEXTO de um comando SQL.
@@ -10,7 +10,7 @@
 #
 # SAÍDA
 #   0  limpo
-#   1  achados — NÃO FAÇA COMMIT
+#   1  achados, NÃO FAÇA COMMIT
 #
 # FALSO POSITIVO
 #   Marcador  scan-sql:allow  como comentário NA LINHA ou NA LINHA IMEDIATAMENTE ACIMA
@@ -20,7 +20,7 @@
 #
 # LIMITE CONHECIDO
 #   A varredura é por linha. Uma consulta montada em várias linhas, ou por uma função
-#   auxiliar, pode escapar. Uma varredura limpa é necessária, não suficiente — leia o
+#   auxiliar, pode escapar. Uma varredura limpa é necessária, não suficiente: leia o
 #   seu próprio diff.
 
 set -uo pipefail
@@ -144,7 +144,7 @@ if ls ./*.php >/dev/null 2>&1 || [ -d app ] || [ -d src ]; then
 fi
 
 if [ "$ACHADOS" -eq 0 ]; then
-  echo "${GRN}✅ Limpo — nenhum SQL concatenado detectado.${NC}"
+  echo "${GRN}✅ Limpo: nenhum SQL concatenado detectado.${NC}"
   echo "${DIM}   A varredura é por linha: consulta montada em várias linhas pode escapar."
   echo "   Leia o seu próprio diff.${NC}"
   exit 0
@@ -156,7 +156,7 @@ echo "Como corrigir:"
 echo "  • Dado do usuário → parâmetro vinculado:  \$stmt = \$pdo->prepare('… = :x'); \$stmt->execute([':x' => \$v]);"
 echo "  • Nome de coluna/tabela/direção → allowlist (mapa no seu código), nunca a entrada crua."
 echo "    Identificador NÃO pode ser parametrizado: resolva por allowlist e declare a exceção"
-echo "    na própria linha com '${MARCADOR} — <nome da allowlist>'. Sem marcador, o commit para."
+echo "    na própria linha com '${MARCADOR}: <nome da allowlist>'. Sem marcador, o commit para."
 echo "  • LIMIT/OFFSET → (int) com teto, vinculados como PDO::PARAM_INT."
 echo "  • Em JS/TS → sql\`… \${v} …\` (template tag parametrizada), nunca sql(\`…\${v}…\`)."
 echo "  • Detalhes: references/sql-e-acesso-a-dados.md"

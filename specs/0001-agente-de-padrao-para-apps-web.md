@@ -1,7 +1,7 @@
-# Spec — Development Pattern for Web Apps (a própria skill)
+# Spec. Development Pattern for Web Apps (a própria skill)
 
 > A regra R3 exige especificação antes do código. Ela vale também para esta skill.
-> Este documento é a spec que a originou, mantida como registro do desenho — e como
+> Este documento é a spec que a originou, mantida como registro do desenho, e como
 > exemplo trabalhado do formato que `assets/templates/spec.template.md` define.
 
 | | |
@@ -10,14 +10,14 @@
 | **Status** | 🔵 implementada |
 | **Data** | 2026-09-05 |
 | **Versão alvo** | 1.0.0 |
-| **Trilha** | conteúdo (Markdown, templates, shell) — não é uma aplicação |
+| **Trilha** | conteúdo (Markdown, templates, shell), não é uma aplicação |
 
 ---
 
 ## 1. Objetivo
 
-Um agente de IA passa a construir os aplicativos web pessoais do autor — PHP+MySQL na
-Hostinger e Next.js+Tailwind na Vercel — sem que ele precise, a cada sessão, relembrar as
+Um agente de IA passa a construir os aplicativos web pessoais do autor. PHP+MySQL na
+Hostinger e Next.js+Tailwind na Vercel, sem que ele precise, a cada sessão, relembrar as
 mesmas exigências de segurança, instalação, atualização e teste.
 
 ## 2. Fora de escopo
@@ -46,10 +46,11 @@ mesmas exigências de segurança, instalação, atualização e teste.
 | RF-013 | Faz os apps expor URLs como rotas semânticas, nunca caminhos de arquivo. |
 | RF-014 | Publica uma página do projeto em Tailwind, com modo claro padrão e escuro opcional. |
 | RF-015 | Conecta-se à conta Vercel do autor para diagnosticar e corrigir build quebrado, em ciclo com teto. |
+| RF-016 | Faz o texto de interface seguir as convenções do domínio, sem travessão e com corpo justificado. |
 
 ## 4. Requisitos não funcionais
 
-- Formato aberto [Agent Skills](https://agentskills.io) — funciona em Claude Code, Cursor,
+- Formato aberto [Agent Skills](https://agentskills.io): funciona em Claude Code, Cursor,
   Copilot, OpenCode e outros.
 - `SKILL.md` legível de ponta a ponta em poucos minutos; profundidade nas referências,
   carregadas sob demanda.
@@ -60,10 +61,10 @@ mesmas exigências de segurança, instalação, atualização e teste.
 ## 5. Modelo de conteúdo
 
 ```
-SKILL.md            16 regras · 8 fases · 3 portões · roteamento de referências
-references/         16 documentos, um por área de risco
+SKILL.md            17 regras · 8 fases · 3 portões · roteamento de referências
+references/         17 documentos, um por área de risco
 assets/templates/   19 arquivos copiáveis
-assets/scripts/     2 scanners executáveis
+assets/scripts/     3 scanners executáveis
 docs/               página do projeto (Tailwind compilado, claro/escuro)
 ```
 
@@ -108,7 +109,7 @@ RF-003
 
   DADO os 18 templates deste repositório
   QUANDO scan-secrets.sh roda sobre eles
-  ENTÃO ele sai limpo — todos os placeholders são reconhecidos como tais
+  ENTÃO ele sai limpo: todos os placeholders são reconhecidos como tais
 
 RF-007
   DADO um app entregue
@@ -127,9 +128,12 @@ RF-007
 | CT-004 | RF-003 | Os 18 templates → limpo |
 | CT-005 | RF-008 | `php -l install-wizard.php.template` → sem erro de sintaxe |
 | CT-006 | RF-009 | `php -l updater.php.template` → sem erro de sintaxe |
-| CT-007 | — | `manifest.json.template` é JSON válido |
-| CT-008 | — | `pages.yml` é YAML válido |
-| CT-009 | — | Contagens (16 regras, 16 referências, 19 templates) batem entre SKILL, README e página |
+| CT-007 | não se aplica | `manifest.json.template` é JSON válido |
+| CT-008 | não se aplica | `pages.yml` é YAML válido |
+| CT-009 | não se aplica | Contagens (17 regras, 17 referências, 19 templates) batem entre SKILL, README e página |
+| CT-013 | RF-016 | `scan-linguagem.sh` acusa travessão e muleta em fixture ruim, e passa limpo no bom |
+| CT-014 | RF-016 | Repositório inteiro sem travessão fora das citações em crases |
+| CT-015 | RF-016 | Página justificada com hifenização em 1440 px, à esquerda em 375 px |
 | CT-010 | RF-014 | Página sem rolagem horizontal e sem erro de console em 1440 px e 375 px, nos dois temas |
 | CT-011 | RF-014 | Modo claro é o padrão; o botão alterna, persiste em `localStorage` e sobrevive ao reload |
 | CT-012 | RF-014 | Toda classe usada em `docs/index.html` existe em `docs/tailwind.css` |
@@ -149,7 +153,10 @@ RF-007
 | Item de grid tem `min-width: auto` e estica a coluna | medido no Chromium 141, 375 px | ✅ 2026-09-05 |
 | `overflow` no `<body>` é propagado para o viewport | medido no Chromium 141 | ✅ 2026-09-05 |
 | Empurrar `gh-pages` **não** habilita o Pages sozinho | 404 observado no repositório novo | ✅ 2026-09-05 |
-| Superfície do CLI e da API REST da Vercel | ⚠️ **não verificada** — vercel.com bloqueado pelo proxy desta sessão; a referência instrui o agente a confirmar com `vercel --help` e a doc | ⚠️ pendente |
+| Convenções de linguagem em produtos financeiros | uxschwarz e alexhobigomes no Medium, lidos nesta sessão | ✅ 2026-09-05 |
+| Vocabulário canônico de ITSM (incidente, requisição, problema) | ManageEngine, Qualitor, HDI Brasil, PenseemTI | ✅ 2026-09-05 |
+| Justificar sem hifenizar abre rios de espaço | medido no Chromium 141 a 375 px | ✅ 2026-09-05 |
+| Superfície do CLI e da API REST da Vercel | ⚠️ **não verificada**: vercel.com bloqueado pelo proxy desta sessão; a referência instrui o agente a confirmar com `vercel --help` e a doc | ⚠️ pendente |
 
 ## 11. Questões em aberto
 

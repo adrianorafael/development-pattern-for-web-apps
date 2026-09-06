@@ -1,4 +1,4 @@
-# Entrada e saída — validar na porta, escapar na pia
+# Entrada e saída: validar na porta, escapar na pia
 
 > Regra **R6**. Toda entrada é validada por allowlist na fronteira da aplicação.
 > Toda saída é escapada no contexto exato em que vai parar.
@@ -6,7 +6,7 @@
 Duas metades que resolvem problemas diferentes e não se substituem:
 
 - **Validar na entrada** decide se o dado *entra*. Protege regra de negócio e integridade.
-- **Escapar na saída** decide como o dado *sai*. Protege o interpretador do outro lado —
+- **Escapar na saída** decide como o dado *sai*. Protege o interpretador do outro lado:
   o navegador, o SQL, o shell, o cabeçalho HTTP.
 
 Escapar na entrada é um erro clássico: você grava `&amp;lt;` no banco, e o dado fica errado
@@ -19,12 +19,12 @@ para sempre. **Guarde o dado como o usuário digitou; escape na hora de renderiz
 | Fonte | Confiança |
 | --- | --- |
 | `$_GET`, `$_POST`, `$_COOKIE`, `$_FILES`, corpo JSON, `searchParams`, `formData` | Zero |
-| Cabeçalhos HTTP — `User-Agent`, `Referer`, `X-Forwarded-For`, `Accept-Language` | Zero |
-| Campo `hidden`, `select`, `radio`, `checkbox`, campo `disabled` | Zero — o DevTools edita tudo |
-| Valor que passou pela validação do JavaScript | Zero — o cliente pode não executar o JS |
+| Cabeçalhos HTTP, `User-Agent`, `Referer`, `X-Forwarded-For`, `Accept-Language` | Zero |
+| Campo `hidden`, `select`, `radio`, `checkbox`, campo `disabled` | Zero: o DevTools edita tudo |
+| Valor que passou pela validação do JavaScript | Zero: o cliente pode não executar o JS |
 | Parâmetro de rota (`/pedido/[id]`) | Zero |
 | Webhook de terceiro (Stripe, Mercado Pago) | Zero até a assinatura ser conferida |
-| Dado vindo do seu próprio banco | Baixa — alguém o inseriu antes; escape na saída mesmo assim |
+| Dado vindo do seu próprio banco | Baixa: alguém o inseriu antes; escape na saída mesmo assim |
 
 Validação no cliente é **usabilidade**: feedback rápido. Nunca é segurança. Toda regra
 validada no navegador é revalidada no servidor, sem exceção.
@@ -44,7 +44,7 @@ $id = filter_var($_GET['id'] ?? null, FILTER_VALIDATE_INT, [
 ]);
 if ($id === false || $id === null) { responder400('Identificador inválido.'); }
 
-// E-mail (formato — não prova existência)
+// E-mail (formato, não prova existência)
 $email = filter_var(trim($_POST['email'] ?? ''), FILTER_VALIDATE_EMAIL);
 if ($email === false) { $erros['email'] = 'E-mail inválido.'; }
 
@@ -70,7 +70,7 @@ Regra prática: **todo campo de texto tem tamanho máximo**, e ele bate com o `V
 coluna. Sem isso, o MySQL trunca em silêncio (ou explode, em modo estrito) e o dado fica
 errado sem ninguém perceber.
 
-### Next.js — validação em esquema, no servidor
+### Next.js: validação em esquema, no servidor
 
 ```ts
 'use server';
@@ -96,7 +96,7 @@ quiser. Validar a entrada e conferir a autorização **dentro** dela não é opc
 
 ---
 
-## 3. Escapar na saída — o contexto decide a função
+## 3. Escapar na saída: o contexto decide a função
 
 Não existe "escapar" genérico. Existe escapar *para* HTML, *para* atributo, *para* JS,
 *para* URL, *para* `LIKE`.
@@ -108,7 +108,7 @@ Não existe "escapar" genérico. Existe escapar *para* HTML, *para* atributo, *p
 ```
 
 `ENT_QUOTES` escapa aspas simples também (necessário em atributos com aspas simples);
-`ENT_SUBSTITUTE` troca bytes inválidos em vez de devolver string vazia — sem ele, um byte
+`ENT_SUBSTITUTE` troca bytes inválidos em vez de devolver string vazia, sem ele, um byte
 malformado faz o campo sumir da tela sem erro.
 
 Crie um atalho e use-o em **todo** eco:
@@ -125,7 +125,7 @@ function e(?string $v): string {
 <a href="/chamado?id=<?= urlencode((string)$id) ?>">abrir</a>   <!-- URL: urlencode -->
 ```
 
-### Atributo sem aspas — não faça
+### Atributo sem aspas, não faça
 
 ```php
 <div data-id=<?= e($id) ?>>      <!-- ❌ um espaço no valor injeta um atributo novo -->
@@ -146,7 +146,7 @@ Melhor ainda: não embuta. Coloque em `data-*` escapado e leia com `dataset`.
 
 ### React / Next.js
 
-JSX escapa por padrão — `{valor}` é seguro. O buraco tem nome:
+JSX escapa por padrão, `{valor}` é seguro. O buraco tem nome:
 
 ```tsx
 <div dangerouslySetInnerHTML={{ __html: conteudo }} />   // ❌ a menos que sanitizado
@@ -174,7 +174,7 @@ function urlSegura(u: string): string {
 
 ---
 
-## 4. CSRF — toda ação que muda estado
+## 4. CSRF: toda ação que muda estado
 
 Um `GET` nunca altera dados. Todo `POST`/`PUT`/`DELETE` carrega token, conferido no
 servidor com comparação de tempo constante.
@@ -194,7 +194,7 @@ if (!hash_equals($_SESSION['csrf'] ?? '', $_POST['_csrf'] ?? '')) {
 
 `hash_equals`, não `===`: comparação de tempo constante evita vazamento por temporização.
 
-Reforce com o cookie de sessão em `SameSite=Lax` (ou `Strict`) — defesa em profundidade,
+Reforce com o cookie de sessão em `SameSite=Lax` (ou `Strict`): defesa em profundidade,
 não substituição.
 
 No Next.js, Server Actions já trazem proteção contra CSRF por origem; ainda assim, a
@@ -203,12 +203,12 @@ precisam de token próprio.
 
 ---
 
-## 5. Upload de arquivo — a porta mais larga
+## 5. Upload de arquivo: a porta mais larga
 
 Um upload mal tratado é execução remota de código. As sete regras, todas obrigatórias:
 
 1. **Fora do webroot**, ou em diretório onde o PHP não executa.
-2. **Nome gerado por você** — nunca o nome enviado. `bin2hex(random_bytes(16)) . '.' . $ext`.
+2. **Nome gerado por você**, nunca o nome enviado. `bin2hex(random_bytes(16)) . '.' . $ext`.
 3. **Extensão por allowlist**, derivada do tipo real, não do nome.
 4. **Tipo real conferido** com `finfo`, não com `$_FILES['x']['type']` (que o cliente manda).
 5. **Tamanho limitado** na aplicação e no `php.ini`/servidor.
@@ -232,7 +232,7 @@ chmod($destino, 0644);
 ```
 
 ```apache
-# uploads/.htaccess — se o diretório acabar dentro do webroot mesmo assim
+# uploads/.htaccess: se o diretório acabar dentro do webroot mesmo assim
 php_flag engine off
 <FilesMatch "\.(php|phtml|phar|cgi|pl|py|sh|htaccess)$">
   Require all denied
@@ -244,7 +244,7 @@ php_flag engine off
 
 ---
 
-## 6. Path traversal — nunca monte caminho com entrada
+## 6. Path traversal, nunca monte caminho com entrada
 
 ```php
 // ❌ ?arquivo=../../../../etc/passwd
@@ -282,7 +282,7 @@ header('Location: ' . $destino);
 
 ---
 
-## 8. SSRF — quando o servidor busca uma URL do usuário
+## 8. SSRF: quando o servidor busca uma URL do usuário
 
 Ao consumir URL fornecida pelo usuário (importar imagem, webhook, preview de link):
 
@@ -292,7 +292,7 @@ Ao consumir URL fornecida pelo usuário (importar imagem, webhook, preview de li
 - Desligue o seguimento de redirecionamento, ou revalide o destino a cada salto.
 - Coloque timeout e limite de tamanho de resposta.
 
-`169.254.169.254` é o endpoint de metadados das nuvens — o alvo clássico de SSRF.
+`169.254.169.254` é o endpoint de metadados das nuvens: o alvo clássico de SSRF.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: development-pattern-for-web-apps
-description: "Padrão de desenvolvimento para apps web pessoais em dois stacks — HTML5 + PHP + MySQL hospedado na Hostinger, e Next.js + Tailwind publicado na Vercel. Carregue ANTES de escrever, revisar, testar, publicar ou implantar qualquer código destes projetos. Impõe: SQL sempre parametrizado (zero concatenação, prepared statements, allowlist de identificadores); segredos e credenciais de banco fora do repositório; repositório GitHub privado por padrão; desenvolvimento guiado por especificação com portão de aprovação; interface por componentes (Server Components + Tailwind no Next.js, front controller + partials no PHP); URLs como rotas semânticas em português (/cadastrar-novo-usuario, nunca /usuarios/cadastro.php); Wizard de instalação que verifica dependências e cria ou recria o banco em todo app PHP+MySQL; painel administrativo que instala pacotes ZIP de atualização com arquivos e migrações SQL; um roteiro de testes em Markdown para o Claude Cowork navegar e executar QA e regressão em toda aplicação entregue; revisão de segurança do código escrito por IA; e versão, CHANGELOG, README e schema movendo-se juntos. Dispare em: 'app PHP', 'PHP e MySQL', 'Hostinger', 'Next.js', 'Vercel', 'Tailwind', 'SQL injection', 'wizard de instalação', 'painel administrativo', 'roteiro de testes', 'Cowork', 'rotas amigáveis', 'URL amigável', 'projeto pessoal', 'vibecoding de app web'."
+description: "Padrão de desenvolvimento para apps web pessoais em dois stacks. HTML5 + PHP + MySQL hospedado na Hostinger, e Next.js + Tailwind publicado na Vercel. Carregue ANTES de escrever, revisar, testar, publicar ou implantar qualquer código destes projetos. Impõe: SQL sempre parametrizado (zero concatenação, prepared statements, allowlist de identificadores); segredos e credenciais de banco fora do repositório; repositório GitHub privado por padrão; desenvolvimento guiado por especificação com portão de aprovação; interface por componentes (Server Components + Tailwind no Next.js, front controller + partials no PHP); URLs como rotas semânticas em português (/cadastrar-novo-usuario, nunca /usuarios/cadastro.php); Wizard de instalação que verifica dependências e cria ou recria o banco em todo app PHP+MySQL; painel administrativo que instala pacotes ZIP de atualização com arquivos e migrações SQL; um roteiro de testes em Markdown para o Claude Cowork navegar e executar QA e regressão em toda aplicação entregue; revisão de segurança do código escrito por IA; e versão, CHANGELOG, README e schema movendo-se juntos. Dispare em: 'app PHP', 'PHP e MySQL', 'Hostinger', 'Next.js', 'Vercel', 'Tailwind', 'SQL injection', 'wizard de instalação', 'painel administrativo', 'roteiro de testes', 'Cowork', 'rotas amigáveis', 'URL amigável', 'projeto pessoal', 'vibecoding de app web'."
 license: MIT
 ---
 
@@ -15,7 +15,7 @@ Guarda-corpo para construir **aplicações web pessoais** com um agente de IA, e
 
 O trabalho dele não é te deixar mais rápido a chutar. É tornar o chute **estruturalmente
 difícil**: toda função, prop, classe, opção de configuração e comando que o agente emitir
-precisa ser rastreável a uma fonte que ele leu nesta sessão — e todo dado que chega ao banco
+precisa ser rastreável a uma fonte que ele leu nesta sessão, e todo dado que chega ao banco
 precisa passar por um parâmetro vinculado, nunca por uma string concatenada.
 
 ---
@@ -35,7 +35,7 @@ O formato é **rígido nas pontas, livre no meio**:
 | | O que acontece | Quem conduz |
 | --- | --- | --- |
 | **Início** | Seis perguntas de bootstrap → ler a documentação oficial **ao vivo** → escrever `specs/<slug>.md` com requisitos e casos de teste → ⛔ aprovação | **A skill.** Nenhuma linha de implementação existe ainda. |
-| **Meio** | Construir. Iterar, mudar de ideia, jogar trabalho fora. | **O desenvolvedor.** É aqui que o vibecoding acontece, e a skill sai da frente — ela só segura as invariantes: SQL parametrizado, nenhum segredo em arquivo versionado, nenhuma API inventada. |
+| **Meio** | Construir. Iterar, mudar de ideia, jogar trabalho fora. | **O desenvolvedor.** É aqui que o vibecoding acontece, e a skill sai da frente: ela só segura as invariantes: SQL parametrizado, nenhum segredo em arquivo versionado, nenhuma API inventada. |
 | **Fim** | Verificar o código que existe: lint, testes, varredura de segredos e de SQL injection, revisão de segurança, roteiro de testes gerado, Cowork executa o QA, versão e documentação atualizadas → ⛔ aprovação → push → ⛔ aprovação → deploy | **A skill.** Item por item, contra o código real. |
 
 Duas consequências disso, fáceis de errar:
@@ -48,7 +48,7 @@ Duas consequências disso, fáceis de errar:
 
 ---
 
-## R — As dezesseis regras inegociáveis
+## As dezessete regras inegociáveis
 
 Elas passam por cima de qualquer outro instinto, inclusive "mas essa mudança é minúscula".
 
@@ -56,7 +56,7 @@ Elas passam por cima de qualquer outro instinto, inclusive "mas essa mudança é
 | --- | --- | --- |
 | **R1** | **Nenhum segredo entra no repositório.** Credenciais de banco, chaves de API, tokens, `.env`, hostnames reais, e-mails e dados de cliente nunca chegam a um commit. Placeholder no arquivo versionado, valor real só em variável de ambiente ou arquivo ignorado. | [segredos-e-configuracao.md](references/segredos-e-configuracao.md) |
 | **R2** | **Repositório privado por padrão.** Todo projeto nasce `--private`. Torná-lo público é uma decisão explícita, projeto a projeto, e só depois de varrer **o histórico inteiro** em busca de segredos. | [git-e-publicacao.md](references/git-e-publicacao.md) |
-| **R3** | **Especificação antes do código.** Trabalho não trivial recebe `specs/<slug>.md` com requisitos funcionais numerados, critérios de aceite e casos de teste — e um portão de aprovação explícito. | [fluxo-spec-driven.md](references/fluxo-spec-driven.md) |
+| **R3** | **Especificação antes do código.** Trabalho não trivial recebe `specs/<slug>.md` com requisitos funcionais numerados, critérios de aceite e casos de teste, e um portão de aprovação explícito. | [fluxo-spec-driven.md](references/fluxo-spec-driven.md) |
 | **R4** | **Nunca invente uma API.** Função PHP, extensão, prop de componente, hook, classe do Tailwind, opção de configuração ou flag de CLI só entram no código depois de verificadas em `vendor/`, `node_modules/**/*.d.ts`, `composer.json`, `php.net` ou na documentação oficial lida nesta sessão. | [protocolo-de-verificacao.md](references/protocolo-de-verificacao.md) |
 | **R5** | **Todo SQL é parametrizado.** Zero interpolação de dado em SQL, em qualquer linguagem. PDO com `ERRMODE_EXCEPTION` e `ATTR_EMULATE_PREPARES => false`. Identificadores (tabela, coluna, direção de `ORDER BY`) vêm de allowlist, jamais da entrada, e a exceção é declarada com `scan-sql:allow` na linha ou logo acima dela. Uma query que "não dá para parametrizar" é uma query a reescrever. | [sql-e-acesso-a-dados.md](references/sql-e-acesso-a-dados.md) |
 | **R6** | **Validar na entrada, escapar na saída.** Toda entrada validada por allowlist na fronteira; toda saída escapada no contexto correto (HTML, atributo, JS, URL, `LIKE`, shell). Validação no cliente é usabilidade, nunca segurança. | [entrada-e-saida-seguras.md](references/entrada-e-saida-seguras.md) |
@@ -69,36 +69,37 @@ Elas passam por cima de qualquer outro instinto, inclusive "mas essa mudança é
 | **R13** | **Versão, documentação e schema andam juntos.** Toda publicação sobe a versão em SemVer, escreve entrada datada no `CHANGELOG.md`, atualiza o README **no mesmo commit** e registra a versão do schema dentro do próprio banco. | [release-e-deploy.md](references/release-e-deploy.md) |
 | **R14** | **Deploy é explícito, nomeado e reversível.** Nenhum envio para Hostinger ou Vercel sem alvo nomeado e um "sim". Migração em ordem conhecida, backup antes, caminho de volta documentado. | [release-e-deploy.md](references/release-e-deploy.md) |
 | **R15** | **A URL é interface, não caminho de arquivo.** Toda rota descreve a ação ou o recurso em português, em kebab-case, sem extensão e sem revelar a estrutura de pastas: `/cadastrar-novo-usuario`, nunca `/usuarios/cadastro.php`. Navegação jamais depende de query string. | [rotas-e-urls.md](references/rotas-e-urls.md) |
-| **R16** | **Build quebrado se conserta com o log na mão e a correção provada localmente.** Ler o log completo, classificar como falha de código ou de ambiente, reproduzir com `vercel build`, corrigir a causa raiz, provar, e **um** push por volta — com teto de três voltas. Nunca `ignoreBuildErrors`, nunca inventar valor para variável ausente. | [vercel-build-e-correcao.md](references/vercel-build-e-correcao.md) |
+| **R16** | **Build quebrado se conserta com o log na mão e a correção provada localmente.** Ler o log completo, classificar como falha de código ou de ambiente, reproduzir com `vercel build`, corrigir a causa raiz, provar, e **um** push por volta, com teto de três voltas. Nunca `ignoreBuildErrors`, nunca inventar valor para variável ausente. | [vercel-build-e-correcao.md](references/vercel-build-e-correcao.md) |
+| **R17** | **O texto é escrito na língua de quem usa, e nunca entrega que foi gerado.** Pesquisar as convenções do domínio (banco, ITSM, saúde, governo) antes da primeira frase de interface. **Travessão é proibido** em texto visível, junto das muletas que marcam texto de IA. Corpo de texto justificado, com `hyphens: auto`. | [linguagem-e-texto-da-interface.md](references/linguagem-e-texto-da-interface.md) |
 
 Se uma regra não puder ser cumprida, **pare e diga**. Não entregue silenciosamente uma versão
 degradada.
 
 ---
 
-## Fase 0 — Bootstrap da sessão (uma vez, antes de qualquer coisa)
+## Fase 0: Bootstrap da sessão (uma vez, antes de qualquer coisa)
 
 Não comece a codar sem estas respostas. Pergunte **em um único lote**, nunca uma por vez.
 São seis na trilha PHP e sete na trilha Next.js.
 
-1. **Trilha** — "PHP + MySQL na Hostinger, ou Next.js na Vercel?"
+1. **Trilha**: "PHP + MySQL na Hostinger, ou Next.js na Vercel?"
    → Define stack, layout de projeto, forma de deploy e quais regras específicas entram
    (R9 e R10 valem só para PHP).
-2. **Repositório** — "Existe repositório? URL, ou crio um novo?"
+2. **Repositório**: "Existe repositório? URL, ou crio um novo?"
    → Novo nasce **privado** (R2). Guarde a resposta: todo momento de "posso dar push?"
    depois se refere a ela.
-3. **Hospedagem e ambiente** — Hostinger: versão do PHP, se há acesso SSH, se o `public_html`
+3. **Hospedagem e ambiente**. Hostinger: versão do PHP, se há acesso SSH, se o `public_html`
    é a raiz do domínio. Vercel: nome do projeto, banco (Neon/Supabase/PlanetScale/outro).
    → Nada disso entra em arquivo versionado (R1).
-4. **Dados e usuários** — Há login? Há dado pessoal (LGPD)? Há pagamento? Há upload de
+4. **Dados e usuários**. Há login? Há dado pessoal (LGPD)? Há pagamento? Há upload de
    arquivo? Quantos usuários simultâneos, na ordem de grandeza?
    → Isso define o **nível de segurança** acima do piso (R7).
-5. **Identidade do app** — nome de exibição, slug do repositório, versão inicial
+5. **Identidade do app**: nome de exibição, slug do repositório, versão inicial
    (`0.1.0` para projeto novo).
-6. **Testes** — "Quem executa o QA: você, o Claude Cowork, ou os dois?"
+6. **Testes**: "Quem executa o QA: você, o Claude Cowork, ou os dois?"
    → O roteiro é gerado de qualquer forma (R11); a resposta define o nível de detalhe
    de navegação e as credenciais de teste necessárias.
-7. **Acesso à Vercel** (só na trilha Next.js) — "Posso me conectar à sua conta para
+7. **Acesso à Vercel** (só na trilha Next.js): "Posso me conectar à sua conta para
    diagnosticar build quebrado? Há servidor MCP da Vercel, ou uso o CLI com token?"
    → **Detecte primeiro, pergunte depois.** Sem isso, a R16 só funciona com o log que
    você colar manualmente. O token vive em `.env`, nunca versionado (R1).
@@ -113,7 +114,7 @@ Ainda na mesma fase, **antes do primeiro commit**:
 
 ---
 
-## Fases 1 → 7 — O pipeline
+## Fases 1 → 7. O pipeline
 
 ```
 0 BOOTSTRAP   trilha? repo? hospedagem? dados? identidade? QA?
@@ -130,7 +131,8 @@ Ainda na mesma fase, **antes do primeiro commit**:
               wizard e updater no PHP        → cada símbolo rastreado a uma fonte
 
 4 VALIDAÇÃO   lint + tipos + testes unitários + testes de integração
-              + scan-secrets.sh + scan-sql-injection.sh + checklist de revisão
+              + scan-secrets.sh + scan-sql-injection.sh + scan-linguagem.sh
+              + checklist de revisão
               → resultados reais, reportados honestamente
 
 5 QA/COWORK   gerar qa/roteiro-de-testes.md e executá-lo (ou entregá-lo ao Cowork)
@@ -166,6 +168,7 @@ Carregue a referência **antes** de fazer o trabalho, não depois que ele falhar
 | Criar a estrutura de um projeto Next.js, componente, Server Action, Tailwind | [stack-nextjs-vercel.md](references/stack-nextjs-vercel.md) |
 | Definir uma rota, nomear uma URL, renomear uma existente, tratar 404 e redirecionamento | [rotas-e-urls.md](references/rotas-e-urls.md) |
 | Investigar um build que falhou na Vercel, ler log de deploy, conectar-se à conta | [vercel-build-e-correcao.md](references/vercel-build-e-correcao.md) |
+| Escrever qualquer texto que o usuário vai ler: botão, erro, rótulo, estado vazio, e-mail | [linguagem-e-texto-da-interface.md](references/linguagem-e-texto-da-interface.md) |
 | Construir ou alterar o instalador do app PHP | [wizard-de-instalacao.md](references/wizard-de-instalacao.md) |
 | Construir o painel administrativo, o formato do pacote ZIP ou uma migração | [pacotes-de-atualizacao.md](references/pacotes-de-atualizacao.md) |
 | Escrever ou atualizar o roteiro de testes, ou preparar o app para o Cowork | [roteiro-de-testes-cowork.md](references/roteiro-de-testes-cowork.md) |
@@ -176,7 +179,7 @@ Carregue a referência **antes** de fazer o trabalho, não depois que ele falhar
 | Subir a versão, escrever o CHANGELOG, implantar, reverter | [release-e-deploy.md](references/release-e-deploy.md) |
 
 Modelos prontos para copiar: [`assets/templates/`](assets/templates/).
-Scanners: [`assets/scripts/`](assets/scripts/).
+Scanners: [`assets/scripts/`](assets/scripts/): segredos, SQL injection e linguagem.
 
 ---
 
@@ -203,7 +206,7 @@ $stmt->execute([':id' => $id]);
 $pedidos = $stmt->fetchAll();
 ```
 
-**O caso difícil**, e onde quase todo mundo escorrega: o que *não pode* ser parametrizado —
+**O caso difícil**, e onde quase todo mundo escorrega: o que *não pode* ser parametrizado:
 nome de tabela, nome de coluna, `ASC`/`DESC`, `LIMIT` em algumas versões. Para esses, a
 resposta nunca é "então concatena com cuidado". É **allowlist**:
 
@@ -216,13 +219,13 @@ $coluna = $colunas[$_GET['ordenar_por'] ?? 'data'] ?? 'p.criado_em';
 $ordem  = $ordens[strtolower($_GET['ordem'] ?? 'desc')] ?? 'DESC';
 
 // O marcador declara a exceção. O scanner exige que TODA interpolação em SQL seja
-// justificada por escrito — na própria linha ou na linha imediatamente acima — e o
+// justificada por escrito: na própria linha ou na linha imediatamente acima, e o
 // revisor lê a allowlist citada ao lado do código.
-$sql = "SELECT * FROM pedidos p ORDER BY {$coluna} {$ordem} LIMIT :limite";  // scan-sql:allow — $colunas/$ordens
+$sql = "SELECT * FROM pedidos p ORDER BY {$coluna} {$ordem} LIMIT :limite";  // scan-sql:allow: $colunas/$ordens
 ```
 
 Se um valor do usuário aparece dentro de aspas duplas em uma string SQL, o código está
-errado — mesmo que "funcione". Detalhes, casos de `LIKE`, `IN (...)`, transações, e o
+errado: mesmo que "funcione". Detalhes, casos de `LIKE`, `IN (...)`, transações, e o
 equivalente em Next.js: [sql-e-acesso-a-dados.md](references/sql-e-acesso-a-dados.md).
 
 Verificação mecânica, antes de cada push:
@@ -237,7 +240,7 @@ bash skills/development-pattern-for-web-apps/assets/scripts/scan-sql-injection.s
 
 **1. Verifique, não lembre.** Antes de escrever `str_contains()`, confirme a versão mínima
 de PHP do projeto. Antes de escrever uma classe do Tailwind, confirme que ela existe na
-versão instalada — Tailwind v3 e v4 diferem.
+versão instalada. Tailwind v3 e v4 diferem.
 
 ```bash
 php -v && php -m                                   # versão e extensões realmente disponíveis
@@ -247,7 +250,7 @@ composer show                                       # o que está de fato no ven
 ```
 
 **2. Diga "não sei" em voz alta.** Se a documentação está inacessível e o pacote não está
-instalado, a saída honesta é: *"não consigo verificar `X` — instale o pacote ou me passe a
+instalado, a saída honesta é: *"não consigo verificar `X`, instale o pacote ou me passe a
 página da doc, e eu verifico."* Uma prop inventada que falha em silêncio é pior que uma
 pergunta.
 
@@ -271,15 +274,18 @@ instalado prova, mesmo que a outra pareça mais elegante.
 | Usuário A abre `/pedido?id=8` e vê o pedido do usuário B | Sem verificação de autorização por registro | R7 |
 | Senhas em MD5, ou em texto plano | `password_hash` não usado | R7 |
 | Deploy na Hostinger quebra porque falta a extensão `intl` | Sem verificação de dependências na instalação | R9 |
-| Atualização subiu os arquivos mas não rodou o SQL — telas em branco | Migração fora do pacote, ou executada fora de ordem | R10 |
+| Atualização subiu os arquivos mas não rodou o SQL: telas em branco | Migração fora do pacote, ou executada fora de ordem | R10 |
 | Bug corrigido volta três versões depois | Sem suíte de regressão que cresce | R11 |
-| "Testei e está tudo funcionando" — e não estava | Teste manual sem roteiro, sem resultado esperado escrito | R11 |
+| "Testei e está tudo funcionando", e não estava | Teste manual sem roteiro, sem resultado esperado escrito | R11 |
 | Três deploys e todos reportando `1.0.0` | Versão não subiu por publicação | R13 |
 | Ninguém sabe qual migração já rodou naquele banco | Versão do schema não gravada na base | R13 |
 | Deploy derrubou o site e não há caminho de volta | Sem backup e sem rollback documentado | R14 |
 | Cinco commits de "tenta assim" até o build passar | Correção sem reprodução local | R16 |
 | Build verde com `ignoreBuildErrors`, e o erro de tipo estourando em produção | Amputação em vez de correção | R16 |
 | Funciona em produção e quebra no preview | Variável de ambiente que só existe num dos dois | R16 |
+| O texto da tela parece gerado por IA e o usuário desconfia do produto | Travessão e muletas genéricas | R17 |
+| App bancário dizendo "Ops, algo deu errado" depois de uma transferência | Linguagem sem pesquisa do domínio | R17 |
+| Formulário de ITSM chamando pedido de acesso de "problema" | Vocabulário canônico do setor ignorado | R17 |
 | A URL entrega a linguagem, a pasta e o nome do arquivo do servidor | Caminho de arquivo servido como rota | R15 |
 | Todo link publicado quebrou ao reorganizar as pastas | URL acoplada à estrutura em disco | R15 |
 | `Property 'xyz' does not exist` depois de "deveria funcionar" | Prop inventada de memória | R4 |
@@ -297,4 +303,4 @@ instalado prova, mesmo que a outra pareça mais elegante.
   cobre e quais requisitos ficaram sem cobertura.
 - Quando recusar um chute, ofereça o passo concreto que destravaria.
 - Resultados de teste são reportados como aconteceram. "12 passaram, 2 falharam, aqui estão"
-   — nunca "está tudo funcionando".
+  , nunca "está tudo funcionando".

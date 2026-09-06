@@ -1,13 +1,13 @@
 -- ─────────────────────────────────────────────────────────────
 -- database/migrations/NNNN_descricao_curta.sql
--- Parte de "Development Pattern for Web Apps" — regras R10 e R13.
+-- Parte de "Development Pattern for Web Apps": regras R10 e R13.
 --
 -- REGRAS
 --   1. Nome ordenável: 0007_adiciona_anexos.sql. A ordem do nome É a ordem
 --      de execução.
 --   2. Idempotente: rodar duas vezes não pode quebrar. O updater registra em
 --      schema_migrations, mas uma falha no meio pode deixar o arquivo pela
---      metade — e ele será reexecutado.
+--      metade, e ele será reexecutado.
 --   3. Uma migração faz UMA coisa. Estrutura e dados em arquivos separados.
 --   4. Qualquer DROP/DELETE/TRUNCATE aparece destacado na prévia do painel e
 --      exige backup. Prefira o padrão de três releases (release-e-deploy.md §7).
@@ -68,7 +68,7 @@ INSERT IGNORE INTO `configuracoes` (`chave`, `valor`) VALUES
   ('anexos_tamanho_max_mb', '5');
 
 -- ─────────────────────────────────────────────────────────────
--- ⚠️ REMOÇÃO DE COLUNA — só na terceira fase do padrão de três
+-- ⚠️ REMOÇÃO DE COLUNA, só na terceira fase do padrão de três
 -- releases, e nunca no mesmo pacote que introduz a substituta.
 --
 -- ALTER TABLE `chamados` DROP COLUMN `campo_antigo`;

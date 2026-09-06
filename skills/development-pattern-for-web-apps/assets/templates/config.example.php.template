@@ -2,12 +2,12 @@
 /**
  * config/app.config.example.php
  *
- * VERSIONADO — só placeholders. O arquivo real (app.config.php) é gerado
+ * VERSIONADO, só placeholders. O arquivo real (app.config.php) é gerado
  * pelo Wizard de instalação (R9), fica FORA do public_html e está no
- * .gitignore. Parte de "Development Pattern for Web Apps" — regra R1.
+ * .gitignore. Parte de "Development Pattern for Web Apps": regra R1.
  *
  * Se este arquivo precisar ficar dentro do webroot, acompanhe-o de um
- * .htaccess com "Require all denied" — e TESTE no navegador que responde 403.
+ * .htaccess com "Require all denied", e TESTE no navegador que responde 403.
  */
 
 declare(strict_types=1);

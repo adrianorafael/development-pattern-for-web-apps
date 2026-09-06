@@ -9,7 +9,7 @@ frase que cada passo produz: "verificar se a listagem funciona" não é testáve
 `Filtrar` e conferir que a tabela exibe exatamente 2 linhas, ambas com status `Fechado`" é.
 
 Ele é derivado dos requisitos numerados da spec (R3). Se um requisito não gerou caso de
-teste, ou o requisito é decorativo, ou o roteiro está incompleto — e o roteiro diz qual dos
+teste, ou o requisito é decorativo, ou o roteiro está incompleto, e o roteiro diz qual dos
 dois.
 
 Modelo completo:
@@ -23,7 +23,7 @@ Modelo completo:
 qa/
 ├── roteiro-de-testes.md          # o roteiro, versionado junto com o código
 ├── dados-de-teste.md             # usuários, seeds e como restaurar o estado inicial
-├── evidencias/                   # capturas geradas na execução — geralmente ignorado no git
+├── evidencias/                   # capturas geradas na execução: geralmente ignorado no git
 └── execucoes/
     └── 2026-09-05-v1.3.0.md      # resultado de uma execução: o que passou, o que falhou
 ```
@@ -43,7 +43,7 @@ Um agente navegando a interface precisa de âncoras estáveis. Isso é trabalho 
 | --- | --- |
 | Localizar elementos sem depender de texto ou posição | `data-testid` em campos, botões, linhas de tabela e mensagens |
 | Saber que a operação terminou | Um elemento de resultado observável (`[data-testid="alerta-sucesso"]`), não só um redirecionamento |
-| Estado inicial idêntico a cada execução | Seed determinístico documentado — sempre os mesmos registros, os mesmos IDs, as mesmas datas |
+| Estado inicial idêntico a cada execução | Seed determinístico documentado, sempre os mesmos registros, os mesmos IDs, as mesmas datas |
 | Repetir o teste sem sujar a base | Procedimento de reset (script de seed, ou "limpar e recriar" do Wizard em ambiente de teste) |
 | Testar papéis diferentes | Um usuário de teste por papel, com senha documentada em `qa/dados-de-teste.md` |
 | Distinguir erro de validação de erro de sistema | Mensagens de validação em elemento próprio, com `aria-describedby` |
@@ -63,11 +63,11 @@ ele roda **somente a suíte de leitura**, e isso é dito no cabeçalho em letras
 ## 3. Estrutura do roteiro
 
 ```markdown
-# Roteiro de testes — <Nome do App> v<versão>
+# Roteiro de testes: <Nome do App> v<versão>
 
 ## 0. Contexto para quem vai executar
    O que é o app, em uma frase. O que ele NÃO faz.
-   Ambiente: URL, navegador, resolução. Ambiente de teste — NÃO é produção.
+   Ambiente: URL, navegador, resolução. Ambiente de teste, NÃO é produção.
    Credenciais por papel. Estado inicial esperado. Como restaurar o estado.
    Regras de execução (§5).
 
@@ -92,7 +92,7 @@ Cada caso é autocontido. Quem executa não deve precisar ler o caso anterior pa
 este.
 
 ```markdown
-### CT-014 — Filtrar chamados por status
+### CT-014: Filtrar chamados por status
 
 | | |
 | --- | --- |
@@ -114,26 +114,26 @@ este.
 - A URL passa a conter `?status=fechado`.
 - Nenhum erro no console do navegador.
 
-**Evidência** — captura `CT-014-resultado.png` mostrando a tabela filtrada.
+**Evidência**: captura `CT-014-resultado.png` mostrando a tabela filtrada.
 
-**Falha se** — a contagem diverge, aparece chamado com outro status, o contador não
+**Falha se**: a contagem diverge, aparece chamado com outro status, o contador não
 atualiza, ou a página recarrega perdendo o filtro.
 ```
 
 Os cinco elementos que tornam um caso executável por um agente:
 
-1. **Pré-condição explícita** — inclusive quem está logado e qual o estado do seed.
-2. **Passos numerados e atômicos** — um clique, uma digitação, uma navegação por passo.
-3. **Resultado esperado observável e quantificado** — "exatamente 2 linhas", não "os
+1. **Pré-condição explícita**: inclusive quem está logado e qual o estado do seed.
+2. **Passos numerados e atômicos**: um clique, uma digitação, uma navegação por passo.
+3. **Resultado esperado observável e quantificado**: "exatamente 2 linhas", não "os
    registros corretos".
-4. **Evidência nomeada** — o arquivo tem nome previsível, para conferência posterior.
-5. **Critério de falha escrito** — para o executor não precisar julgar.
+4. **Evidência nomeada**: o arquivo tem nome previsível, para conferência posterior.
+5. **Critério de falha escrito**, para o executor não precisar julgar.
 
 ---
 
 ## 5. Regras de execução (vão no cabeçalho do roteiro)
 
-Estas regras são endereçadas a **quem executa** — o Claude Cowork ou uma pessoa:
+Estas regras são endereçadas a **quem executa**: o Claude Cowork ou uma pessoa:
 
 1. **Não conserte a aplicação durante o teste.** Encontrou defeito? Registre e siga. Corrigir
    no meio invalida a execução inteira.
@@ -142,7 +142,7 @@ Estas regras são endereçadas a **quem executa** — o Claude Cowork ou uma pes
    é útil; "o filtro não funcionou" não é.
 4. **Um caso não executado é `BLOQUEADO`, nunca `FALHOU`.** Registre o que bloqueou.
 5. **Não invente dado.** Se o roteiro pede o usuário `usuario.teste@example.com` e ele não
-   existe, o caso está bloqueado — não crie outro usuário.
+   existe, o caso está bloqueado, não crie outro usuário.
 6. **Capture evidência de toda falha**, e do estado da tela imediatamente antes.
 7. **Console e rede fazem parte do resultado.** Erro em vermelho no console é falha, mesmo
    que a tela pareça certa. Requisição 500 é falha, mesmo que a interface esconda.
@@ -154,7 +154,7 @@ Estas regras são endereçadas a **quem executa** — o Claude Cowork ou uma pes
 
 ## 6. As seis suítes
 
-### 6.1 Fumaça (`CT-SMK-nnn`) — 5 a 10 casos, roda primeiro
+### 6.1 Fumaça (`CT-SMK-nnn`): 5 a 10 casos, roda primeiro
 
 Se a fumaça falha, o resto não é executado: o ambiente está errado ou o build está quebrado.
 
@@ -165,7 +165,7 @@ Se a fumaça falha, o resto não é executado: o ambiente está errado ou o buil
 - Um registro é criado, aparece na listagem e é aberto
 - Logout encerra a sessão, e voltar no navegador não reexibe a área logada
 
-### 6.2 Funcional, por módulo (`CT-nnn`) — o corpo do roteiro
+### 6.2 Funcional, por módulo (`CT-nnn`): o corpo do roteiro
 
 Um caso por critério de aceite da spec, mais os limites:
 
@@ -174,14 +174,14 @@ Um caso por critério de aceite da spec, mais os limites:
 | Caminho feliz | O fluxo que o requisito descreve |
 | Validação | Campo vazio, muito longo, formato errado, valor fora da faixa, caractere acentuado, emoji |
 | Fronteira | Zero registros, um registro, o máximo permitido, o máximo + 1 |
-| Estados | Carregando, vazio, erro, sucesso — todos os quatro, em cada tela que busca dado |
+| Estados | Carregando, vazio, erro, sucesso: todos os quatro, em cada tela que busca dado |
 | Persistência | Recarregar a página mantém o resultado; voltar no navegador não duplica o envio |
 | Concorrência | Duas abas editando o mesmo registro; envio duplo por duplo clique |
 | Formato | Data, moeda, acento, maiúsculas, número grande, valor negativo |
 
 ### 6.3 Integração (`CT-INT-nnn`)
 
-Onde dois pedaços se encontram — o lugar em que testes unitários passam e o sistema falha:
+Onde dois pedaços se encontram: o lugar em que testes unitários passam e o sistema falha:
 
 - Formulário → banco: o registro gravado tem exatamente os valores enviados (confira no banco)
 - Upload → armazenamento → download: o arquivo baixado é idêntico ao enviado
@@ -189,15 +189,15 @@ Onde dois pedaços se encontram — o lugar em que testes unitários passam e o 
 - Webhook de terceiro: assinatura válida aceita, assinatura inválida recusada, entrega
   duplicada não duplica o efeito (idempotência)
 - Cron/tarefa agendada produz o efeito esperado
-- **Wizard de instalação** (R9) — a tabela de casos em [wizard-de-instalacao.md](wizard-de-instalacao.md)
-- **Painel de atualização** (R10) — a tabela de casos em [pacotes-de-atualizacao.md](pacotes-de-atualizacao.md)
+- **Wizard de instalação** (R9): a tabela de casos em [wizard-de-instalacao.md](wizard-de-instalacao.md)
+- **Painel de atualização** (R10): a tabela de casos em [pacotes-de-atualizacao.md](pacotes-de-atualizacao.md)
 
-### 6.4 Segurança (`CT-SEC-nnn`) — obrigatória, nunca "se der tempo"
+### 6.4 Segurança (`CT-SEC-nnn`): obrigatória, nunca "se der tempo"
 
 Executada **contra o ambiente de teste**, nunca contra produção nem contra sistema de
 terceiros. Cada caso descreve o payload, onde aplicá-lo e o que constitui aprovação.
 
-**SQL injection — em todo campo que chega ao banco** (R5)
+**SQL injection: em todo campo que chega ao banco** (R5)
 
 | Payload | Onde | Aprovado quando |
 | --- | --- | --- |
@@ -222,11 +222,11 @@ trace, ou qualquer dado que o usuário não deveria ver.
 | `<svg onload=alert(1)>` | campo com HTML rico | Sanitizado |
 | Payload salvo e reaberto por **outro** usuário | XSS armazenado | Nenhuma execução |
 
-**Autorização e IDOR** (R7) — os que mais pegam defeito real
+**Autorização e IDOR** (R7): os que mais pegam defeito real
 
 | Caso | Aprovado quando |
 | --- | --- |
-| Logado como A, acessar `/chamado/{id-do-B}` | 404 (não 403 — não confirme que existe) |
+| Logado como A, acessar `/chamado/{id-do-B}` | 404 (não 403, não confirme que existe) |
 | Logado como usuário comum, acessar `/admin` | 403 ou redirecionamento; nunca a tela |
 | `POST` direto na rota administrativa, sem interface | 403 |
 | Trocar um `id` em campo `hidden` antes de enviar | Recusado no servidor |
@@ -273,13 +273,13 @@ trace, ou qualquer dado que o usuário não deveria ver.
 | Estado vazio de cada listagem | Mensagem orientando, não tabela em branco |
 | Duplo clique em botão de envio | Não cria registro duplicado |
 
-### 6.6 Regressão (`CT-REG-nnn`) — a suíte que cresce
+### 6.6 Regressão (`CT-REG-nnn`): a suíte que cresce
 
 **Toda vez que um defeito é corrigido, um caso de regressão nasce.** É a única forma de o
 mesmo bug não voltar em três versões.
 
 ```markdown
-### CT-REG-004 — Busca com aspa simples não quebra a listagem
+### CT-REG-004: Busca com aspa simples não quebra a listagem
 
 | **Origem** | DEF-011, corrigido em v1.2.1 |
 | **Requisito** | RF-004 |
@@ -293,7 +293,7 @@ mesmo bug não voltar em três versões.
 - Nenhuma mensagem de erro de SQL na tela.
 - Nenhum erro 500 na aba de rede.
 
-**Falha se** — qualquer erro 500, mensagem do MySQL, ou tela em branco.
+**Falha se**: qualquer erro 500, mensagem do MySQL, ou tela em branco.
 ```
 
 A suíte de regressão roda **inteira** antes de todo release. Ela é a memória do projeto.
@@ -310,7 +310,7 @@ esquecimento silencioso.
 | RF-001 Cadastro de usuário | CT-001, CT-002, CT-003, CT-SEC-001, CT-SEC-014 | Funcional, Segurança | ✅ |
 | RF-002 Login | CT-004…CT-007, CT-SEC-002, CT-SEC-015 | Fumaça, Segurança | ✅ |
 | RF-004 Filtro de chamados | CT-014, CT-015, CT-016, CT-SEC-009 | Funcional, Segurança | ✅ |
-| RF-009 Exportar CSV | — | — | ⚠️ **sem cobertura** |
+| RF-009 Exportar CSV | nenhum | nenhuma | ⚠️ **sem cobertura** |
 
 O relatório final **nomeia** os requisitos sem cobertura. Nunca os omite.
 
@@ -339,14 +339,14 @@ O relatório final **nomeia** os requisitos sem cobertura. Nunca os omite.
 | Regressão | 7 | 7 | 0 | 0 |
 | **Total** | **97** | **91** | **5** | **1** |
 
-**Veredito:** ❌ Não liberado — DEF-014 é bloqueante (falha de autorização).
+**Veredito:** ❌ Não liberado. DEF-014 é bloqueante (falha de autorização).
 ```
 
 ```markdown
-### DEF-014 — Usuário comum acessa chamado de outro usuário
+### DEF-014: Usuário comum acessa chamado de outro usuário
 
 | **Caso** | CT-SEC-009 |
-| **Severidade** | 🔴 Crítica — vazamento de dados entre contas |
+| **Severidade** | 🔴 Crítica: vazamento de dados entre contas |
 | **Requisito** | RF-004 |
 
 **Passos para reproduzir**
@@ -372,7 +372,7 @@ Na Fase 5, a partir da spec e do código que existe:
 1. Ler os requisitos `RF-nnn` e os critérios de aceite da spec.
 2. Gerar um caso por critério de aceite, mais os casos de limite da tabela §6.2.
 3. Percorrer o código em busca de **todo campo que chega ao banco** e gerar um caso
-   `CT-SEC` de SQL injection para cada um — sem exceção (R5).
+   `CT-SEC` de SQL injection para cada um, sem exceção (R5).
 4. Percorrer todo ponto que **imprime dado do usuário** e gerar um caso de XSS.
 5. Percorrer toda rota que lê ou grava registro com dono e gerar um caso de IDOR.
 6. Acrescentar as suítes de fumaça, interface e integração conforme os módulos existentes.
@@ -383,7 +383,7 @@ Na Fase 5, a partir da spec e do código que existe:
 10. Entregar dizendo: quantos casos, quantos de segurança, quais requisitos ficaram
     descobertos e por quê.
 
-> Roteiro gerado: `qa/roteiro-de-testes.md` — 97 casos (8 fumaça, 34 funcionais,
+> Roteiro gerado: `qa/roteiro-de-testes.md`, 97 casos (8 fumaça, 34 funcionais,
 > 9 de integração, 27 de segurança, 12 de interface, 7 de regressão).
 > RF-009 (exportar CSV) está sem cobertura porque a funcionalidade ainda não existe.
 > O ambiente de teste precisa do seed `qa/seed.sql` aplicado antes da execução.

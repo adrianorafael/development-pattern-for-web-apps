@@ -1,10 +1,10 @@
 # ─────────────────────────────────────────────────────────────
-# .gitignore — projeto Next.js + Tailwind (Vercel)
-# Parte de "Development Pattern for Web Apps" — regra R1.
+# .gitignore: projeto Next.js + Tailwind (Vercel)
+# Parte de "Development Pattern for Web Apps": regra R1.
 # COPIE ISTO ANTES DO PRIMEIRO `git add`.
 # ─────────────────────────────────────────────────────────────
 
-# Ambiente — valores reais NUNCA versionados
+# Ambiente: valores reais NUNCA versionados
 .env
 .env.local
 .env.development.local
@@ -26,7 +26,7 @@
 next-env.d.ts
 *.tsbuildinfo
 
-# Vercel — guarda o vínculo com o projeto e, conforme a versão do CLI, credenciais
+# Vercel: guarda o vínculo com o projeto e, conforme a versão do CLI, credenciais
 .vercel
 .vercel/
 

@@ -1,4 +1,4 @@
-# SQL e acesso a dados — o dado nunca vira comando
+# SQL e acesso a dados: o dado nunca vira comando
 
 > Regra **R5**. É a falha mais grave que um projeto pessoal pode cometer, porque as
 > consequências não são suas: são dos usuários cujos dados estavam no banco.
@@ -13,7 +13,7 @@ Um comando SQL tem duas partes que **nunca** devem se misturar:
 | Parte | O que é | De onde pode vir |
 | --- | --- | --- |
 | **Estrutura** | `SELECT`, nomes de tabela e coluna, `JOIN`, `ORDER BY`, `ASC`/`DESC` | Só do seu código, ou de uma **allowlist** que o seu código controla |
-| **Dado** | valores comparados, inseridos, atualizados | Do usuário — e sempre por **parâmetro vinculado** |
+| **Dado** | valores comparados, inseridos, atualizados | Do usuário, e sempre por **parâmetro vinculado** |
 
 Toda vulnerabilidade de SQL injection é a mesma história: um dado atravessou para o lado da
 estrutura. A defesa não é "escapar melhor". É **nunca deixar atravessar**.
@@ -25,7 +25,7 @@ interpretado como SQL.
 
 ---
 
-## 2. PHP + MySQL — a configuração obrigatória do PDO
+## 2. PHP + MySQL: a configuração obrigatória do PDO
 
 Uma única fábrica de conexão, no projeto inteiro. Copie de
 [`../assets/templates/Database.php.template`](../assets/templates/Database.php.template).
@@ -35,7 +35,7 @@ $dsn = sprintf('mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4', $host, $port, 
 
 $pdo = new PDO($dsn, $usuario, $senha, [
     // Erro vira exceção. Sem isso, uma query que falha retorna false e o código segue
-    // adiante com dados errados — silenciosamente.
+    // adiante com dados errados: silenciosamente.
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
 
     // Arrays associativos. Evita o hábito de acessar colunas por índice numérico.
@@ -89,7 +89,7 @@ $stmt->execute([
 $novoId = (int) $pdo->lastInsertId();
 ```
 
-### `LIKE` — o caractere curinga também é entrada
+### `LIKE`, o caractere curinga também é entrada
 
 O `%` e o `_` do usuário viram curingas. Isso não derruba o banco, mas transforma
 `buscar("a_b")` em uma varredura completa e permite enumeração. Escape-os **no valor**,
@@ -101,7 +101,7 @@ $stmt  = $pdo->prepare("SELECT id, nome FROM produtos WHERE nome LIKE :termo LIM
 $stmt->execute([':termo' => '%' . $termo . '%']);
 ```
 
-### `IN (...)` — placeholders gerados, valores vinculados
+### `IN (...)`, placeholders gerados, valores vinculados
 
 O erro clássico é `implode(',', $ids)`. A forma correta gera **placeholders**, não valores:
 
@@ -114,9 +114,9 @@ $stmt = $pdo->prepare("SELECT id, nome FROM produtos WHERE id IN ($marcadores)")
 $stmt->execute($ids);
 ```
 
-O `$marcadores` só contém `?,?,?` — nada do usuário chega ao texto da query.
+O `$marcadores` só contém `?,?,?`, nada do usuário chega ao texto da query.
 
-### `ORDER BY` dinâmico e paginação — allowlist, sempre
+### `ORDER BY` dinâmico e paginação: allowlist, sempre
 
 ```php
 // O que o usuário manda é uma CHAVE do mapa. Se não estiver no mapa, cai no padrão.
@@ -131,18 +131,18 @@ $coluna = COLUNAS_ORDENAVEIS[$_GET['ordenar'] ?? ''] ?? 'p.criado_em';
 $dir    = DIRECOES[strtolower((string)($_GET['dir'] ?? ''))] ?? 'DESC';
 
 // LIMIT/OFFSET: force para inteiro e limite o teto. Com EMULATE_PREPARES=false,
-// vincule como PDO::PARAM_INT — MySQL não aceita string aqui.
+// vincule como PDO::PARAM_INT. MySQL não aceita string aqui.
 $porPagina = min(100, max(1, (int)($_GET['por_pagina'] ?? 20)));
 $offset    = max(0, ((int)($_GET['pagina'] ?? 1) - 1) * $porPagina);
 
-// scan-sql:allow — $coluna e $dir vêm de COLUNAS_ORDENAVEIS/DIRECOES, não da entrada
+// scan-sql:allow: $coluna e $dir vêm de COLUNAS_ORDENAVEIS/DIRECOES, não da entrada
 $stmt = $pdo->prepare("SELECT * FROM pedidos p ORDER BY $coluna $dir LIMIT :lim OFFSET :off");
 $stmt->bindValue(':lim', $porPagina, PDO::PARAM_INT);
 $stmt->bindValue(':off', $offset,    PDO::PARAM_INT);
 $stmt->execute();
 ```
 
-### Filtros opcionais — condições e parâmetros crescem juntos
+### Filtros opcionais: condições e parâmetros crescem juntos
 
 ```php
 $where  = ['1=1'];
@@ -159,7 +159,7 @@ $stmt->execute($params);
 
 Note: só **fragmentos escritos por você** entram em `$where`. Nada de `$where[] = $filtro`.
 
-### Transações — tudo ou nada
+### Transações: tudo ou nada
 
 ```php
 $pdo->beginTransaction();
@@ -179,12 +179,12 @@ try {
 
 ---
 
-## 4. Next.js — o mesmo princípio, sintaxe diferente
+## 4. Next.js: o mesmo princípio, sintaxe diferente
 
 Toda consulta roda **no servidor** (Server Component, Route Handler ou Server Action).
 Nenhuma credencial de banco, nenhuma query, nenhum resultado bruto atravessa para o cliente.
 
-### `postgres`/`@neondatabase/serverless` — template tag parametrizada
+### `postgres`/`@neondatabase/serverless`, template tag parametrizada
 
 ```ts
 import { sql } from '@/lib/db';           // ver assets/templates/db.ts.template
@@ -204,7 +204,7 @@ A diferença é sutil e fatal: `sql\`...${x}...\`` parametriza; `sql(\`...${x}..
 `pool.query(\`...${x}...\`)` concatenam. Qualquer método chamado `unsafe`, `raw` ou
 `queryRaw` com string interpolada é uma violação de R5.
 
-### `mysql2` — placeholders `?`
+### `mysql2`, placeholders `?`
 
 ```ts
 const [linhas] = await pool.execute(
@@ -214,7 +214,7 @@ const [linhas] = await pool.execute(
 ```
 
 `connection.query()` com string montada é proibido; `execute()` com array de valores é a
-forma. Identificadores continuam vindo de allowlist — `pool.escapeId()` só é aceitável
+forma. Identificadores continuam vindo de allowlist, `pool.escapeId()` só é aceitável
 sobre um valor **já validado contra a allowlist**, nunca sobre entrada crua.
 
 ### Prisma / Drizzle
@@ -237,7 +237,7 @@ O usuário MySQL da aplicação **não é** o usuário que instalou o app.
 | Usuário | Quando é usado | Permissões |
 | --- | --- | --- |
 | Instalação (wizard/migrações) | Só durante instalar e atualizar | `CREATE`, `ALTER`, `DROP`, `INDEX` no banco do app |
-| Aplicação (runtime) | Toda requisição normal | `SELECT`, `INSERT`, `UPDATE`, `DELETE` — e nada mais |
+| Aplicação (runtime) | Toda requisição normal | `SELECT`, `INSERT`, `UPDATE`, `DELETE`, e nada mais |
 
 Em shared hosting como a Hostinger nem sempre dá para ter dois usuários. Quando não der,
 **diga isso ao usuário** em vez de fingir que o modelo foi seguido, e compense: nenhuma
@@ -271,7 +271,7 @@ CREATE TABLE chamados (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ```
 
-- **`utf8mb4`, sempre.** `utf8` no MySQL é de três bytes e quebra emoji — e charset
+- **`utf8mb4`, sempre.** `utf8` no MySQL é de três bytes e quebra emoji, e charset
   inconsistente já foi vetor de injeção.
 - **InnoDB**, para ter transação e chave estrangeira.
 - **Chave estrangeira declarada**, não "garantida pela aplicação".
@@ -279,7 +279,7 @@ CREATE TABLE chamados (
   fica rápida com 200 registros e inutilizável com 200 mil.
 - **`DECIMAL(10,2)` para dinheiro**, jamais `FLOAT`.
 - **Datas em `DATETIME`** com fuso definido na aplicação, ou `TIMESTAMP` se você quer
-  conversão automática — escolha um e documente na spec.
+  conversão automática: escolha um e documente na spec.
 - **Nada de `SELECT *` em código de produção.** Liste as colunas: assim uma coluna nova
   não vaza para uma tela, e o índice de cobertura funciona.
 
@@ -299,12 +299,12 @@ try {
 ```
 
 Mensagem de erro do MySQL na tela entrega nome de tabela, nome de coluna e às vezes o SQL
-inteiro — é reconhecimento gratuito para quem está sondando. Em produção:
+inteiro: é reconhecimento gratuito para quem está sondando. Em produção:
 `display_errors = Off`, `log_errors = On`.
 
 ---
 
-## 8. A única interpolação aceita — e como declará-la
+## 8. A única interpolação aceita, e como declará-la
 
 Identificador (coluna, tabela, `ASC`/`DESC`) não pode ser parametrizado: é limitação do
 protocolo, não escolha de estilo. A allowlist é a defesa, e o scanner **exige que ela seja
@@ -312,25 +312,25 @@ declarada na própria linha**:
 
 ```php
 $coluna = COLUNAS_ORDENAVEIS[$_GET['ordenar'] ?? ''] ?? 'p.criado_em';
-$sql = "SELECT * FROM pedidos p ORDER BY $coluna";   // scan-sql:allow — COLUNAS_ORDENAVEIS
+$sql = "SELECT * FROM pedidos p ORDER BY $coluna";   // scan-sql:allow. COLUNAS_ORDENAVEIS
 ```
 
-O marcador vale na própria linha **ou na linha imediatamente acima** — é ali que cabe
+O marcador vale na própria linha **ou na linha imediatamente acima**: é ali que cabe
 escrever a justificativa por extenso:
 
 ```php
 // $tabela sai de TABELAS_DO_APP (allowlist) e as crases internas são escapadas.
-// scan-sql:allow — $prefixo foi sanitizado com preg_replace('/[^a-z0-9_]/i','') na instalação.
+// scan-sql:allow: $prefixo foi sanitizado com preg_replace('/[^a-z0-9_]/i','') na instalação.
 $pdo->exec("DROP TABLE IF EXISTS `{$prefixo}{$tabela}`");
 ```
 
 Sem o marcador, `scan-sql-injection.sh` acusa a linha e o commit para. Isso é intencional:
 **toda** interpolação em SQL passa a exigir uma justificativa escrita que o revisor lê ao
 lado do código. Uma linha com o marcador e sem allowlist real é uma mentira visível em
-revisão — o que é muito melhor do que uma concatenação silenciosa.
+revisão, o que é muito melhor do que uma concatenação silenciosa.
 
 Antes de escrever o marcador, responda: *este valor pode ser qualquer coisa que o usuário
-digitar?* Se puder, não é allowlist — é injeção, e o marcador não conserta.
+digitar?* Se puder, não é allowlist: é injeção, e o marcador não conserta.
 
 ### As três interpolações legítimas, e só elas
 
@@ -350,7 +350,7 @@ Qualquer outro caso é concatenação, e concatenação é injeção esperando a
 bash skills/development-pattern-for-web-apps/assets/scripts/scan-sql-injection.sh
 ```
 
-- [ ] Nenhuma variável dentro de string SQL — nem `"... $x ..."`, nem `'...' . $x . '...'`,
+- [ ] Nenhuma variável dentro de string SQL: nem `"... $x ..."`, nem `'...' . $x . '...'`,
       nem `` `...${x}...` `` fora de template tag parametrizada.
 - [ ] `ATTR_EMULATE_PREPARES => false` na fábrica de conexão.
 - [ ] `ATTR_ERRMODE => ERRMODE_EXCEPTION`.

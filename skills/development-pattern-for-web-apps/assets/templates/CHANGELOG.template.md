@@ -3,11 +3,11 @@
 Todas as mudanças relevantes de **<Nome do App>** são registradas aqui.
 
 Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
-Versionamento: [SemVer](https://semver.org/lang/pt-BR/) — aplicado como a regra **R13** do
+Versionamento: [SemVer](https://semver.org/lang/pt-BR/): aplicado como a regra **R13** do
 [Development Pattern for Web Apps](https://github.com/adrianorafael/development-pattern-for-web-apps)
 define: "quebrar" significa quebrar para **quem usa o aplicativo**.
 
-A versão é mantida em `<app/version.php | package.json>` — o arquivo de configuração é a
+A versão é mantida em `<app/version.php | package.json>`, o arquivo de configuração é a
 fonte da verdade, não a tag do Git.
 
 Escreva cada entrada para quem **usa** o app, não para quem leu o diff.
@@ -24,12 +24,12 @@ Escreva cada entrada para quem **usa** o app, não para quem leu o diff.
 
 ### Corrigido
 - Busca com apóstrofo (`O'Brien`) deixava a listagem em branco.
-- **Segurança:** o download de anexo não verificava o dono do chamado — qualquer
+- **Segurança:** o download de anexo não verificava o dono do chamado: qualquer
   usuário autenticado conseguia baixar anexos de outros. **Atualize assim que possível.**
 
 ### Migrações
-- `0007_adiciona_anexos.sql` — cria a tabela `anexos`. Aditiva, sem perda de dados.
-- `0008_indice_status_data.sql` — índice composto em `chamados`. Pode levar alguns
+- `0007_adiciona_anexos.sql`, cria a tabela `anexos`. Aditiva, sem perda de dados.
+- `0008_indice_status_data.sql`, índice composto em `chamados`. Pode levar alguns
   segundos em bases grandes.
 
 ### Requisitos

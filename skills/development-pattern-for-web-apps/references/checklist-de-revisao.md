@@ -1,10 +1,10 @@
-# Checklist de revisão — leia o código de IA como código hostil
+# Checklist de revisão: leia o código de IA como código hostil
 
-> Regra **R12**. Antes de todo push, este checklist roda contra o diff que existe — não
+> Regra **R12**. Antes de todo push, este checklist roda contra o diff que existe, não
 > contra a intenção, não contra a lembrança do que foi escrito.
 
 Código gerado por IA falha de um jeito particular: ele é **plausível**. Compila, passa no
-lint, tem nomes coerentes e comentários confiantes — e ainda assim concatena um `$_GET` no
+lint, tem nomes coerentes e comentários confiantes, e ainda assim concatena um `$_GET` no
 `WHERE` porque naquele trecho pareceu mais simples. Revisar código de IA como se fosse de um
 estagiário competente é o erro; revise-o como se fosse de alguém tentando passar algo
 despercebido.
@@ -18,7 +18,7 @@ git diff --cached --stat
 
 ---
 
-## 1. Segurança — bloqueia o push
+## 1. Segurança: bloqueia o push
 
 ### SQL (R5)
 
@@ -64,13 +64,13 @@ git diff --cached --stat
 
 ---
 
-## 2. Correção — o código faz o que a spec diz
+## 2. Correção: o código faz o que a spec diz
 
 - [ ] Cada requisito `RF-nnn` tocado tem implementação correspondente
 - [ ] Nenhum comportamento a mais que a spec não pediu (escopo não cresceu sozinho)
 - [ ] Os quatro estados de tela existem: carregando, vazio, erro, sucesso
 - [ ] Casos de fronteira tratados: zero registros, um, o máximo, o máximo + 1
-- [ ] Nulos tratados — nenhum acesso a propriedade de algo possivelmente ausente
+- [ ] Nulos tratados: nenhum acesso a propriedade de algo possivelmente ausente
 - [ ] Fusos e datas coerentes com o que a spec definiu
 - [ ] Dinheiro em `DECIMAL`/inteiro de centavos; nunca `FLOAT`
 - [ ] Transação onde duas escritas precisam acontecer juntas, com `rollBack` em `catch`
@@ -89,7 +89,7 @@ git diff --cached --stat
 - [ ] `composer audit` / `npm audit --omit=dev` sem vulnerabilidade crítica
 - [ ] Índice no banco para toda coluna nova usada em `WHERE`, `JOIN` ou `ORDER BY`
 - [ ] Nenhuma consulta dentro de laço (problema N+1)
-- [ ] Listagem com paginação e teto — nenhum `SELECT` sem `LIMIT` sobre tabela que cresce
+- [ ] Listagem com paginação e teto: nenhum `SELECT` sem `LIMIT` sobre tabela que cresce
 - [ ] Nenhum `SELECT *` em código de produção
 
 ---
@@ -105,7 +105,17 @@ git diff --cached --stat
 - [ ] Layout verificado em 375 px, 768 px e 1440 px
 - [ ] Nenhum erro no console do navegador
 
-## 4b. Rotas e URLs (R15)
+## 4a: Linguagem do texto (R17)
+
+- [ ] Zero travessão em texto visível ao usuário; `scan-linguagem.sh` limpo
+- [ ] Nenhuma muleta de texto gerado (`Além disso`, `Mergulhe`, `solução robusta`)
+- [ ] Vocabulário do domínio respeitado e consistente entre telas
+- [ ] Botões com verbo dizendo o que acontece, nunca `OK` sozinho
+- [ ] Erros com as três partes: o que houve, por quê, o que fazer
+- [ ] Estado vazio orientando a próxima ação
+- [ ] Corpo de texto justificado com `hyphens: auto`; títulos e listas curtas não
+
+## 4b: Rotas e URLs (R15)
 
 - [ ] Nenhuma URL nova contém `.php`, `.html` ou nome de pasta do servidor
 - [ ] Português, minúsculas, kebab-case, sem acento e sem underscore
@@ -123,7 +133,7 @@ git diff --cached --stat
 
 - [ ] Ponto de entrada único; rotas em mapa escrito à mão
 - [ ] Nenhum `include`/`require` com valor vindo da URL
-- [ ] `config/` e `storage/` inacessíveis pelo navegador — **testado**, não presumido
+- [ ] `config/` e `storage/` inacessíveis pelo navegador: **testado**, não presumido
 - [ ] Wizard recusa executar com `instalado.lock` presente (R9)
 - [ ] Painel de atualização valida caminho, extensão, `sha256` e versão (R10)
 - [ ] Nenhuma escrita do pacote de atualização em `config/` ou `storage/`
@@ -178,7 +188,7 @@ Honestamente e com números:
 > Revisão de `feat/anexos-em-chamados` (11 arquivos, +487/−52):
 >
 > **Corrigido durante a revisão:** o filtro de `anexos` concatenava `$_GET['chamado']` no
-> `WHERE` — reescrito com prepared statement; faltava `AND usuario_id = :sessao` na consulta
+> `WHERE`, reescrito com prepared statement; faltava `AND usuario_id = :sessao` na consulta
 > de download, o que permitia baixar anexo de outro usuário.
 >
 > **Pendente, com sua decisão:** a listagem de anexos não tem paginação. Com o volume atual

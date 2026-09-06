@@ -25,26 +25,26 @@ difíceis**, e não apenas desaconselhadas.
 
 ## Visão geral
 
-A skill é um `SKILL.md`, **16 documentos de referência**, **19 templates** prontos para
-copiar e **2 scanners** executáveis. Carrega em qualquer agente compatível com o formato
-aberto [Agent Skills](https://agentskills.io) — Claude Code, Cursor, GitHub Copilot,
-OpenCode, Gemini CLI e outros — e entra em ação no momento em que o agente começa a
-trabalhar em um app web.
+A skill é um `SKILL.md`, **17 documentos de referência**, **19 templates** prontos para
+copiar e **3 scanners** executáveis. Carrega em qualquer agente compatível com o formato
+aberto [Agent Skills](https://agentskills.io), como Claude Code, Cursor, GitHub Copilot,
+OpenCode e Gemini CLI, e entra em ação no momento em que o agente começa a trabalhar em um
+app web.
 
-Ela codifica **dezesseis regras inegociáveis** e um **pipeline de oito fases** com três
+Ela codifica **dezessete regras inegociáveis** e um **pipeline de oito fases** com três
 portões duros: nada de spec sem pesquisa, nada de push sem varredura, nada de deploy sem
 alvo nomeado e caminho de volta.
 
 Não traz cópia da documentação de ninguém. php.net, nextjs.org, tailwindcss.com, a
 documentação da Hostinger e da Vercel e as OWASP Cheat Sheets são referenciadas por URL e
-lidas no momento em que fazem falta — uma cópia congelada envelhece parecendo autoritativa.
+lidas no momento em que fazem falta: uma cópia congelada envelhece parecendo autoritativa.
 
 ## Índice
 
 1. [Pré-requisitos](#pré-requisitos)
 2. [Instalação](#instalação)
 3. [Como usar](#como-usar)
-4. [As dezesseis regras](#as-dezesseis-regras)
+4. [As dezessete regras](#as-dezessete-regras)
 5. [O pipeline](#o-pipeline)
 6. [SQL injection: a regra que mais importa](#sql-injection-a-regra-que-mais-importa)
 7. [Wizard de instalação](#wizard-de-instalação)
@@ -52,21 +52,22 @@ lidas no momento em que fazem falta — uma cópia congelada envelhece parecendo
 9. [Roteiro de testes para o Claude Cowork](#roteiro-de-testes-para-o-claude-cowork)
 10. [URLs como rotas semânticas](#urls-como-rotas-semânticas)
 11. [Build quebrado na Vercel](#build-quebrado-na-vercel)
-12. [Segurança proporcional ao porte](#segurança-proporcional-ao-porte)
-13. [O que ela previne](#o-que-ela-previne)
-14. [Comportamentos importantes](#comportamentos-importantes)
-15. [Estrutura do repositório](#estrutura-do-repositório)
-16. [Templates e ferramentas](#templates-e-ferramentas)
-17. [Versionamento](#versionamento)
+12. [A linguagem do texto](#a-linguagem-do-texto)
+13. [Segurança proporcional ao porte](#segurança-proporcional-ao-porte)
+14. [O que ela previne](#o-que-ela-previne)
+15. [Comportamentos importantes](#comportamentos-importantes)
+16. [Estrutura do repositório](#estrutura-do-repositório)
+17. [Templates e ferramentas](#templates-e-ferramentas)
+18. [Versionamento](#versionamento)
 
 ## Pré-requisitos
 
 - Um agente de IA compatível com [Agent Skills](https://agentskills.io)
 - Para a trilha PHP: PHP 8.1+, MySQL/MariaDB, uma conta de hospedagem (Hostinger ou similar)
 - Para a trilha Next.js: Node.js 20+, uma conta na Vercel, um banco (Neon, Supabase, …)
-- `git` e, de preferência, o [`gh` CLI](https://cli.github.com/) — é ele que cria o
+- `git` e, de preferência, o [`gh` CLI](https://cli.github.com/): é ele que cria o
   repositório já privado (R2)
-- Acesso de rede a php.net, nextjs.org, tailwindcss.com e GitHub — a skill lê as fontes ao
+- Acesso de rede a php.net, nextjs.org, tailwindcss.com e GitHub: a skill lê as fontes ao
   vivo em vez de citar uma cópia
 
 ## Instalação
@@ -99,7 +100,7 @@ Troque `.claude/skills/` pelo caminho que o seu agente lê (`.agents/skills/`,
 
 **Carregue com o primeiro prompt sobre o app, e depois só construa.** A skill dispara
 sozinha quando você menciona PHP, MySQL, Hostinger, Next.js, Vercel, Tailwind, SQL injection,
-wizard de instalação ou roteiro de testes — ou chame-a pelo nome.
+wizard de instalação ou roteiro de testes, ou chame-a pelo nome.
 
 ```
 "Faz um sistema de controle de chamados em PHP e MySQL pra eu subir na Hostinger."
@@ -110,12 +111,12 @@ lembrar de pedir a revisão de segurança, e não precisa pedir o roteiro de tes
 
 ### Rígido nas pontas, livre no meio
 
-Esta é a parte que importa, e é o oposto do que "dezesseis regras" costuma sugerir:
+Esta é a parte que importa, e é o oposto do que "dezessete regras" costuma sugerir:
 
 | | O que acontece | Quem conduz |
 | --- | --- | --- |
 | **Início** | Seis perguntas em um lote → documentação lida **ao vivo** → `specs/<slug>.md` com requisitos e casos de teste → ⛔ sua aprovação | A skill. Nenhuma linha de implementação existe ainda. |
-| **Meio** | Construa. Itere, mude de ideia, jogue trabalho fora. | **Você.** É aqui que o vibecoding acontece, e a skill sai da frente — ela só segura três invariantes: SQL parametrizado, nenhum segredo versionado, nenhuma API inventada. |
+| **Meio** | Construa. Itere, mude de ideia, jogue trabalho fora. | **Você.** É aqui que o vibecoding acontece, e a skill sai da frente: ela só segura três invariantes: SQL parametrizado, nenhum segredo versionado, nenhuma API inventada. |
 | **Fim** | O código que existe é verificado: lint, testes, varredura de segredos e de SQL injection, revisão de segurança, roteiro de QA gerado e executado, versão e documentação atualizadas → ⛔ aprovação → push → ⛔ aprovação → deploy | A skill. Item por item, contra o código real. |
 
 O objetivo não é deixar a construção lenta. É tornar o **começo deliberado** e o **fim
@@ -124,57 +125,57 @@ silêncio.
 
 ### Como é uma sessão de verdade
 
-**1 — Você pede.**
+**1. Você pede.**
 
 > Faz um sistema de controle de chamados em PHP e MySQL pra eu subir na Hostinger.
 
-**2 — Seis perguntas, em um lote.** Trilha? Repositório (novo já nasce privado)? Versão do
+**2. Seis perguntas, em um lote.** Trilha? Repositório (novo já nasce privado)? Versão do
 PHP e acesso da hospedagem? Tem login, dado pessoal, pagamento, upload? Nome e versão
-inicial? Quem executa o QA — você, o Cowork, ou os dois? Toda decisão posterior se refere a
+inicial? Quem executa o QA: você, o Cowork, ou os dois? Toda decisão posterior se refere a
 essas respostas, em vez de repetir a pergunta.
 
-**3 — A documentação é lida, não lembrada.** php.net para as funções que serão usadas, a
+**3. A documentação é lida, não lembrada.** php.net para as funções que serão usadas, a
 documentação da Hostinger para os limites do plano, MySQL para tipos e índices, OWASP para
 as defesas de cada categoria. Tudo vira um registro de evidências: afirmação → fonte →
 verificado, com data.
 
-**4 — Uma spec, depois uma parada.** `specs/0001-controle-de-chamados.md`: objetivo, o que
+**4. Uma spec, depois uma parada.** `specs/0001-controle-de-chamados.md`: objetivo, o que
 fica de fora, requisitos `RF-001`…`RF-012`, modelo de dados com índices e chaves
 estrangeiras, telas com os quatro estados, regras de negócio, seção de segurança com o nível
-(N1–N4), critérios de aceite no formato *dado/quando/então*, e os casos de teste que vão
+(N1 a N4), critérios de aceite no formato *dado/quando/então*, e os casos de teste que vão
 alimentar o roteiro de QA.
 
 > Aqui está a spec. Três decisões que preciso de você: `<A>`, `<B>` e `<C>`.
 > São 12 requisitos e 31 casos de teste. Aprova e eu construo?
 
-Se você responder *"pode fazer"*, é uma resposta válida — fica registrado como aprovado sem
+Se você responder *"pode fazer"*, é uma resposta válida: fica registrado como aprovado sem
 revisão e o trabalho segue. O portão é sobre consentimento, não cerimônia.
 
-**5 — Agora o vibecoding.** Construa, itere, mude de ideia. A skill não fica recitando regra
+**5. Agora o vibecoding.** Construa, itere, mude de ideia. A skill não fica recitando regra
 aqui. Ela segura três linhas: nenhuma variável dentro de uma string SQL, nenhuma credencial
 em arquivo versionado, nenhuma função ou prop usada sem ter sido verificada.
 
-**6 — O código pronto é verificado.** `php -l` em todos os arquivos, `composer audit`,
-`scan-secrets.sh`, `scan-sql-injection.sh`, e o checklist de revisão lido contra o diff — com
+**6. O código pronto é verificado.** `php -l` em todos os arquivos, `composer audit`,
+`scan-secrets.sh`, `scan-sql-injection.sh`, e o checklist de revisão lido contra o diff: com
 as sete perguntas adversariais no fim ("se eu fosse o invasor, qual linha deste diff eu
 atacaria primeiro?").
 
-**7 — O roteiro de testes é gerado e executado.** Um caso por critério de aceite, mais um
+**7. O roteiro de testes é gerado e executado.** Um caso por critério de aceite, mais um
 caso de SQL injection para **cada** campo que chega ao banco, mais XSS, IDOR, CSRF, upload e
 cabeçalhos. Entregue com números: quantos casos, quantos de segurança, quais requisitos
 ficaram sem cobertura.
 
-**8 — Versão, documentação, push, deploy.** Versão em SemVer, CHANGELOG datado, README
+**8. Versão, documentação, push, deploy.** Versão em SemVer, CHANGELOG datado, README
 atualizado, tudo no mesmo commit. Depois a skill nomeia a versão e pergunta antes do push; e
 nomeia o domínio, a migração pendente e o backup antes do deploy.
 
 ### Configure uma vez por repositório
 
 Copie [`AGENTS.template.md`](skills/development-pattern-for-web-apps/assets/templates/AGENTS.template.md)
-para o repositório do app como `AGENTS.md`. Assim a próxima sessão herda o padrão — incluindo
-as armadilhas que você já encontrou — em vez de começar do zero.
+para o repositório do app como `AGENTS.md`. Assim a próxima sessão herda o padrão: incluindo
+as armadilhas que você já encontrou: em vez de começar do zero.
 
-## As dezesseis regras
+## As dezessete regras
 
 | # | Regra |
 | --- | --- |
@@ -186,7 +187,7 @@ as armadilhas que você já encontrou — em vez de começar do zero.
 | **R6** | **Validar na entrada, escapar na saída**, no contexto correto de cada uma. Validação no cliente é usabilidade, nunca segurança. |
 | **R7** | **A linha de base de segurança é inegociável; acima dela, proporcional ao porte.** Doze itens de piso valem até no projeto de fim de semana. |
 | **R8** | **Interface por componentes.** Next.js: App Router, Server Components, Tailwind com tokens. PHP: front controller + partials, zero HTML concatenado. |
-| **R9** | **Todo app PHP+MySQL entrega um Wizard de instalação** que verifica dependências e cria — ou limpa e recria — o banco. |
+| **R9** | **Todo app PHP+MySQL entrega um Wizard de instalação** que verifica dependências e cria, ou limpa e recria, o banco. |
 | **R10** | **Todo app PHP entrega um painel administrativo** que instala pacotes ZIP com arquivos e migrações SQL, com backup e rollback. |
 | **R11** | **Toda aplicação entrega um roteiro de testes** em Markdown, executável pelo Claude Cowork: unitário → integração → interface → segurança → regressão. |
 | **R12** | **Revise código de IA como código hostil**, contra um checklist, antes de todo push. |
@@ -194,6 +195,7 @@ as armadilhas que você já encontrou — em vez de começar do zero.
 | **R14** | **Deploy é explícito, nomeado e reversível**, com backup antes e rollback documentado. |
 | **R15** | **A URL é interface, não caminho de arquivo.** `/cadastrar-novo-usuario`, nunca `/usuarios/cadastro.php`. Rota em português, kebab-case, sem extensão; navegação jamais por query string. |
 | **R16** | **Build quebrado se conserta com o log na mão e a correção provada localmente.** Reproduzir com `vercel build`, corrigir a causa raiz, um push por volta, teto de três voltas. Nunca `ignoreBuildErrors`. |
+| **R17** | **O texto é escrito na língua de quem usa, e nunca entrega que foi gerado.** Pesquisar as convenções do domínio antes da primeira frase de interface. Travessão proibido. Corpo de texto justificado, com hifenização. |
 
 ## O pipeline
 
@@ -238,17 +240,17 @@ $stmt->execute([':id' => $id, ':u' => $_SESSION['usuario_id']]);
 ```
 
 O caso difícil, e onde quase todo mundo escorrega, é o que **não pode** ser parametrizado:
-nome de coluna, nome de tabela, `ASC`/`DESC`. A resposta nunca é "concatena com cuidado" —
+nome de coluna, nome de tabela, `ASC`/`DESC`. A resposta nunca é "concatena com cuidado":
 é **allowlist**, com a exceção declarada na linha:
 
 ```php
 $colunas = ['nome' => 'p.nome', 'data' => 'p.criado_em'];
 $coluna  = $colunas[$_GET['ordenar'] ?? ''] ?? 'p.criado_em';
-$sql = "SELECT * FROM pedidos p ORDER BY $coluna";   // scan-sql:allow — $colunas
+$sql = "SELECT * FROM pedidos p ORDER BY $coluna";   // scan-sql:allow: $colunas
 ```
 
 O scanner acusa **toda** interpolação em SQL. Para silenciá-la é preciso escrever o
-marcador citando a allowlist — na própria linha ou na linha imediatamente acima, onde cabe a
+marcador citando a allowlist: na própria linha ou na linha imediatamente acima, onde cabe a
 justificativa por extenso. Isso transforma a exceção em algo visível na revisão, em vez de
 uma concatenação silenciosa.
 
@@ -263,14 +265,14 @@ e a existência de `new PDO(` no projeto sem nenhum `ATTR_EMULATE_PREPARES => fa
 ## Wizard de instalação
 
 Todo app PHP+MySQL sai com um instalador em cinco passos, porque "publicar na Hostinger" sem
-ele vira uma sessão de arqueologia — qual extensão falta, qual permissão está errada, qual
+ele vira uma sessão de arqueologia: qual extensão falta, qual permissão está errada, qual
 SQL rodar em que ordem, por que a página está em branco.
 
 | Passo | O que faz |
 | --- | --- |
-| **1 · Requisitos** | Versão do PHP, extensões, permissões de escrita, `mod_rewrite`, HTTPS — cada item com o valor encontrado, o exigido e **a instrução de correção no hPanel** |
+| **1 · Requisitos** | Versão do PHP, extensões, permissões de escrita, `mod_rewrite`, HTTPS: cada item com o valor encontrado, o exigido e **a instrução de correção no hPanel** |
 | **2 · Banco** | Host, porta, banco, usuário, senha. Testa a conexão na hora e **traduz o erro do MySQL** ("1045" vira "usuário ou senha incorretos, confira em hPanel → Bancos de dados") |
-| **3 · Estrutura** | Detecta o estado da base: cria do zero, mantém os dados, ou **limpa e recria** — este último exigindo digitar `APAGAR`, com a lista das tabelas e a contagem de linhas na tela |
+| **3 · Estrutura** | Detecta o estado da base: cria do zero, mantém os dados, ou **limpa e recria**: este último exigindo digitar `APAGAR`, com a lista das tabelas e a contagem de linhas na tela |
 | **4 · Administrador** | Primeiro admin, com `password_hash`. Nunca um `admin/admin` "para facilitar" |
 | **5 · Conclusão** | Grava a configuração fora do webroot, registra a versão do schema, **se tranca**, e manda apagar a pasta `install/` |
 
@@ -280,7 +282,7 @@ Nada é gravado antes do passo 5: desistir no meio não deixa resíduo. Esquelet
 ## Painel de atualização por pacote ZIP
 
 Atualizar por FTP é onde os projetos pessoais morrem: um arquivo esquecido, um SQL que
-ninguém rodou, e o app fica meio atualizado — o pior estado possível.
+ninguém rodou, e o app fica meio atualizado: o pior estado possível.
 
 ```
 meu-app-1.3.0.zip
@@ -294,8 +296,8 @@ O painel valida antes de escrever um único byte: é deste app? a sequência de 
 sentido? o servidor atende? o `sha256` de cada arquivo confere? há entrada não declarada no
 manifesto? algum caminho tenta sair das pastas permitidas (*zip slip*)?
 
-Só então mostra a prévia — arquivos que mudam, migrações a executar, **as destrutivas em
-destaque** — e espera a confirmação. Aplica com backup do banco e dos arquivos, modo
+Só então mostra a prévia: arquivos que mudam, migrações a executar, **as destrutivas em
+destaque**, e espera a confirmação. Aplica com backup do banco e dos arquivos, modo
 manutenção com expiração automática, migrações em ordem registradas em `schema_migrations`,
 e **rollback automático** se qualquer etapa falhar.
 
@@ -309,7 +311,7 @@ A diferença aparece na frase que cada passo produz. "Verificar se a listagem fu
 testável. Isto é:
 
 ```markdown
-### CT-014 — Filtrar chamados por status
+### CT-014: Filtrar chamados por status
 | **Requisito** | RF-004 |
 | **Pré-condição** | Logado como usuario.a@example.com. Seed: 3 abertos, 2 fechados. |
 
@@ -324,7 +326,7 @@ testável. Isto é:
 - [data-testid="contador-resultados"] exibe "2 chamados".
 - A URL passa a conter ?status=fechado. Nenhum erro no console.
 
-**Falha se** — a contagem diverge, aparece chamado com outro status, ou o filtro se perde.
+**Falha se**: a contagem diverge, aparece chamado com outro status, ou o filtro se perde.
 ```
 
 Seis suítes, executadas nesta ordem:
@@ -336,13 +338,13 @@ Seis suítes, executadas nesta ordem:
 | **Integração** | Formulário → banco → tela, upload → download, e-mail, webhook idempotente, o Wizard e o painel de atualização |
 | **Segurança** | Payloads de SQL injection em **cada** campo que chega ao banco; XSS refletido e armazenado; IDOR; CSRF; sessão; upload; cabeçalhos; acesso a `/config/`, `/.env`, `/.git/config`, `/install/` |
 | **Interface** | 375/768/1440 px, só teclado, rótulos, contraste AA, zoom 200%, estado vazio, duplo clique |
-| **Regressão** | Cresce a cada defeito corrigido. Roda inteira antes de todo release — é a memória do projeto |
+| **Regressão** | Cresce a cada defeito corrigido. Roda inteira antes de todo release: é a memória do projeto |
 
 Fecha com a **matriz de rastreabilidade** requisito × caso, que **declara por nome** os
 requisitos sem cobertura em vez de omiti-los, e com o registro de execução em números:
 aprovados, reprovados, bloqueados. Qualquer defeito 🔴 em aberto bloqueia o release.
 
-E com nove regras endereçadas a quem executa — entre elas: *não conserte a aplicação durante
+E com nove regras endereçadas a quem executa: entre elas: *não conserte a aplicação durante
 o teste*, *relate o que observou, não o que deveria acontecer*, e *caso não executado é
 BLOQUEADO, nunca FALHOU*.
 
@@ -361,18 +363,18 @@ ser um detalhe de implementação.
 ```
 
 `/usuarios/cadastro.php` entrega de graça a linguagem do servidor, a árvore de pastas e o
-nome do arquivo — e quebra todo link publicado no dia em que você mover o arquivo.
+nome do arquivo, e quebra todo link publicado no dia em que você mover o arquivo.
 
 As sete convenções: português, minúsculas, kebab-case · sem acento e sem cedilha · sem
 extensão · sem estrutura de pastas · ação é verbo no infinitivo (`/redefinir-senha`) ·
 coleção é substantivo plural com identificador (`/chamados/8`) · **navegação nunca depende de
 query string**.
 
-A query string não some — muda de papel. Ela carrega **estado da visualização**, e é por isso
+A query string não some: muda de papel. Ela carrega **estado da visualização**, e é por isso
 que `/chamados?status=fechado&pagina=2` é compartilhável e favoritável, enquanto
 `/index.php?p=chamados` não significa nada fora da sua sessão.
 
-Na trilha PHP, um front controller e um mapa de rotas escrito à mão — com canonicalização
+Na trilha PHP, um front controller e um mapa de rotas escrito à mão, com canonicalização
 (barra final e caixa respondem 301), tabela de redirecionamentos para rotas renomeadas e 404
 de verdade. Na trilha Next.js, o nome da pasta **é** a URL, então a convenção de nomes de
 pasta é a convenção de URLs: `app/cadastrar-novo-usuario/page.tsx`.
@@ -384,7 +386,7 @@ URLs antigas, e os treze casos de teste que entram no roteiro de QA.
 ## Build quebrado na Vercel
 
 Você pede, o agente se conecta à sua conta, encontra o deploy que falhou, lê o log, corrige e
-empurra — e o CI/CD da Vercel publica a versão nova. O ciclo repete até o preview ficar verde.
+empurra, e o CI/CD da Vercel publica a versão nova. O ciclo repete até o preview ficar verde.
 
 O que impede isso de virar *empurra e reza*:
 
@@ -400,7 +402,7 @@ O que impede isso de virar *empurra e reza*:
 ```
 
 **O passo 3 não é opcional.** Falha que não foi reproduzida localmente é falha que não foi
-entendida — e a correção é chute. `vercel build` reproduz o build da Vercel com a
+entendida, e a correção é chute. `vercel build` reproduz o build da Vercel com a
 configuração e as variáveis do ambiente escolhido, que é o que pega a falha que só aparece no
 deploy.
 
@@ -408,14 +410,14 @@ deploy.
 concreto, em vez de queimar minutos de CI.
 
 **A separação que mais importa é código × ambiente.** A causa não-código mais comum é uma
-variável que existe em Production e não em Preview — são ambientes separados. O agente
+variável que existe em Production e não em Preview: são ambientes separados. O agente
 **não conserta isso**: ele nomeia a variável e o ambiente e para. Inventar um valor padrão no
 código transformaria uma falha visível numa falha silenciosa em produção.
 
 E o que ele nunca faz para ficar verde:
 
 ```ts
-// ❌ next.config.ts — proibidos pela regra
+// ❌ next.config.ts: proibidos pela regra
 export default {
   typescript: { ignoreBuildErrors: true },   // o erro continua lá, agora invisível
   eslint:     { ignoreDuringBuilds: true },
@@ -424,11 +426,52 @@ export default {
 
 Também proibidos: apagar o teste que falha, `@ts-ignore` num erro real, `any` para atravessar
 uma incompatibilidade, e commit vazio para reprocessar. Se a única saída for uma dessas, é
-decisão sua — o agente apresenta o trade-off e espera.
+decisão sua: o agente apresenta o trade-off e espera.
 
 O acesso é por servidor MCP da Vercel (preferido, detectado antes de perguntar), CLI com
 `VERCEL_TOKEN`, ou API REST. O token vive em `.env`, com escopo mínimo, nunca versionado (R1),
 e `.vercel/` entra no `.gitignore`.
+
+## A linguagem do texto
+
+Para quem usa o sistema, o texto **é** o produto. A pessoa não vê a arquitetura, não vê o
+schema, não vê o SQL parametrizado. Ela vê "Não foi possível concluir a operação" e decide
+ali se confia ou não. Um botão escrito na língua errada custa mais suporte que um bug.
+
+**O travessão é proibido em texto visível ao usuário.** Ele não faz parte da escrita corrente
+em português brasileiro fora da literatura, soa empolado em tela de aplicação e hoje funciona
+como assinatura de texto gerado. O teclado ABNT2 nem tem a tecla. Junto dele caem as muletas
+que marcam texto de IA: `Além disso`, `Vale ressaltar`, `Mergulhe`, `solução robusta`,
+`experiência perfeita`, e o hábito de listar sempre três itens.
+
+| Em vez de | Escreva |
+| --- | --- |
+| `O prazo é curto — três dias.` | `O prazo é curto: três dias.` |
+| `A conta — que estava ativa — foi encerrada.` | `A conta, que estava ativa, foi encerrada.` |
+| `Tente de novo — se persistir, avise.` | `Tente de novo. Se persistir, avise.` |
+| `Status — Aberto` | `Status: Aberto` |
+
+`scan-linguagem.sh` pega os dois casos. Em Markdown ele ignora o que está entre crases, onde
+o travessão está sendo citado e não usado.
+
+**A segunda metade da regra é pesquisar o domínio** antes de escrever a primeira frase de
+interface. Escrever "seu dinheiro sumiu" num app bancário e "chamado encerrado com sucesso!"
+num ITSM são erros do mesmo tipo: linguagem que ignora a convenção de quem lê.
+
+| Domínio | O que a pesquisa mostra |
+| --- | --- |
+| **Banco** | Clareza e segurança se revezam como protagonistas, porque toda tela com dinheiro é lida em estado de alerta. Simplificar o jargão sem distorcer o que está no contrato. Regra de ouro: depois de uma operação com dinheiro, diga sempre o que aconteceu com o dinheiro. `Não conseguimos concluir a transferência. O valor não saiu da sua conta.`, nunca `Ops, algo deu errado`. |
+| **ITSM** | O vocabulário não é intercambiável: incidente é algo que quebrou, requisição é um pedido do catálogo. A distinção define priorização, SLA e comunicação. `Abrir chamado`, não `Criar novo registro`. `Aguardando você`, não `Pendente`, que não diz de quem. Quem abre chamado está com o trabalho parado: quer prazo e número, não animação. |
+| **Outros** | A referência traz saúde, educação, jurídico, e-commerce, governo e interno corporativo, com o vocabulário a respeitar, o tom e a armadilha de cada um. |
+
+A terceira parte é tipográfica: corpo de texto **justificado**, com `hyphens: auto` e o idioma
+declarado no `<html>`. Justificar sem hifenizar é pior que não justificar, porque o navegador
+estica os espaços e abre corredores brancos no meio do parágrafo. Títulos, rótulos, código,
+listas curtas e colunas abaixo de 40 caracteres continuam à esquerda.
+
+A referência traz ainda a anatomia das mensagens de erro (o que houve, por quê, o que fazer),
+os padrões de botão, estado vazio e confirmação destrutiva, e os casos de teste que entram no
+roteiro de QA.
 
 ## Segurança proporcional ao porte
 
@@ -436,10 +479,10 @@ O piso vale para todo projeto, inclusive o de fim de semana com três usuários:
 
 | | Piso obrigatório |
 | --- | --- |
-| P1–P3 | SQL parametrizado · nenhum segredo versionado · senha com `password_hash` |
-| P4–P6 | CSRF em toda ação de estado · saída escapada · cookie `HttpOnly`/`Secure`/`SameSite` |
-| P7–P9 | HTTPS forçado · cabeçalhos de segurança · autorização conferida por registro |
-| P10–P12 | Erros logados e nunca exibidos · upload restrito e sem execução · dependências auditadas |
+| P1 a P3 | SQL parametrizado · nenhum segredo versionado · senha com `password_hash` |
+| P4 a P6 | CSRF em toda ação de estado · saída escapada · cookie `HttpOnly`/`Secure`/`SameSite` |
+| P7 a P9 | HTTPS forçado · cabeçalhos de segurança · autorização conferida por registro |
+| P10 a P12 | Erros logados e nunca exibidos · upload restrito e sem execução · dependências auditadas |
 
 Acima dele, quatro níveis que só acrescentam:
 
@@ -465,13 +508,16 @@ Você pode subir de nível. Nunca descer.
 | Deploy quebra porque falta a extensão `intl` | Sem verificação de dependências na instalação | R9 |
 | Atualização subiu arquivos e não rodou o SQL | Migração fora do pacote, ou fora de ordem | R10 |
 | Bug corrigido volta três versões depois | Sem suíte de regressão que cresce | R11 |
-| "Testei, está tudo funcionando" — e não estava | Teste sem roteiro e sem resultado esperado escrito | R11 |
+| "Testei, está tudo funcionando", e não estava | Teste sem roteiro e sem resultado esperado escrito | R11 |
 | Três deploys, todos reportando `1.0.0` | Versão não subiu por publicação | R13 |
 | Ninguém sabe qual migração já rodou naquele banco | Versão do schema não gravada na base | R13 |
 | Deploy derrubou o site e não há caminho de volta | Sem backup e sem rollback documentado | R14 |
 | Cinco commits de "tenta assim" até o build passar | Correção sem reprodução local | R16 |
 | Build verde com `ignoreBuildErrors`, e o erro estourando em produção | Amputação em vez de correção | R16 |
 | Funciona em produção e quebra no preview | Variável de ambiente que só existe num dos dois | R16 |
+| O texto da tela parece gerado por IA e o usuário desconfia do produto | Travessão e muletas genéricas | R17 |
+| App bancário dizendo "Ops, algo deu errado" depois de uma transferência | Linguagem sem pesquisa do domínio | R17 |
+| Formulário de ITSM chamando pedido de acesso de "problema" | Vocabulário canônico do setor ignorado | R17 |
 | A URL entrega a linguagem, a pasta e o nome do arquivo do servidor | Caminho de arquivo servido como rota | R15 |
 | Todo link publicado quebrou ao reorganizar as pastas | URL acoplada à estrutura em disco | R15 |
 
@@ -480,11 +526,11 @@ Você pode subir de nível. Nunca descer.
 ### É opinativa de propósito
 As regras são absolutas porque "prefira prepared statements quando razoável" vira, na
 prática, "use prepared statements até dar um pouco de trabalho". Se você discorda de uma
-regra, edite o `SKILL.md` — é Markdown, e é seu.
+regra, edite o `SKILL.md`, é Markdown, e é seu.
 
 ### Ela se recusa a chutar
 Quando o pacote não está instalado e a documentação está inacessível, a instrução é dizer
-*"não consigo verificar isso"* e oferecer os dois passos que destravariam — em vez de emitir
+*"não consigo verificar isso"* e oferecer os dois passos que destravariam: em vez de emitir
 uma chamada plausível que falha em produção às duas da manhã. Espere mais perguntas e menos
 falhas silenciosas.
 
@@ -495,7 +541,7 @@ atualizar o README é, sob este padrão, um commit incompleto.
 ### Os scanners são rede, não garantia
 Eles pegam padrões conhecidos. Um segredo que pareça texto comum passa. Uma consulta montada
 em várias linhas pode escapar da varredura por linha. **Varredura limpa é necessária, não
-suficiente — leia o seu próprio diff.** A skill diz isso na saída de cada execução.
+suficiente: leia o seu próprio diff.** A skill diz isso na saída de cada execução.
 
 ### Ela assume que o repositório é privado
 Todo projeto nasce `--private`, e tornar público exige varrer o histórico completo, não o
@@ -510,35 +556,37 @@ abri-las durante a sessão.
 
 ```
 skills/development-pattern-for-web-apps/
-├── SKILL.md                          # 16 regras, 8 fases, 3 portões, roteamento
+├── SKILL.md                          # 17 regras, 8 fases, 3 portões, roteamento
 ├── references/
-│   ├── segredos-e-configuracao.md    # R1 — .env, config fora do webroot, Vercel, rotação
-│   ├── git-e-publicacao.md           # R2 — privado por padrão, commits, ramos, publicação
-│   ├── fluxo-spec-driven.md          # R3 — fases, portões, anatomia da spec
-│   ├── protocolo-de-verificacao.md   # R4 — hierarquia de fontes, comandos, armadilhas
-│   ├── sql-e-acesso-a-dados.md       # R5 — PDO, LIKE, IN, ORDER BY, transações, Next.js
-│   ├── entrada-e-saida-seguras.md    # R6 — validação, escape, CSRF, upload, traversal, SSRF
-│   ├── linha-de-base-de-seguranca.md # R7 — o piso de 12 itens e os níveis N1–N4
-│   ├── stack-php-mysql.md            # R8 — layout, front controller, partials, Hostinger
-│   ├── stack-nextjs-vercel.md        # R8 — App Router, Server Actions, Tailwind, Vercel
-│   ├── wizard-de-instalacao.md       # R9 — os cinco passos e o que testar
-│   ├── pacotes-de-atualizacao.md     # R10 — manifesto, zip slip, migrações, rollback
-│   ├── roteiro-de-testes-cowork.md   # R11 — as seis suítes, payloads, rastreabilidade
-│   ├── checklist-de-revisao.md       # R12 — o checklist e as sete perguntas adversariais
-│   ├── release-e-deploy.md           # R13, R14 — SemVer, CHANGELOG, deploy, rollback
-│   ├── rotas-e-urls.md               # R15 — convenções, roteador, 301, 404, tradução
-│   └── vercel-build-e-correcao.md    # R16 — conectar, ler log, reproduzir, corrigir
+│   ├── segredos-e-configuracao.md    # R1: .env, config fora do webroot, Vercel, rotação
+│   ├── git-e-publicacao.md           # R2: privado por padrão, commits, ramos, publicação
+│   ├── fluxo-spec-driven.md          # R3: fases, portões, anatomia da spec
+│   ├── protocolo-de-verificacao.md   # R4: hierarquia de fontes, comandos, armadilhas
+│   ├── sql-e-acesso-a-dados.md       # R5. PDO, LIKE, IN, ORDER BY, transações, Next.js
+│   ├── entrada-e-saida-seguras.md    # R6: validação, escape, CSRF, upload, traversal, SSRF
+│   ├── linha-de-base-de-seguranca.md # R7: o piso de 12 itens e os níveis N1 a N4
+│   ├── stack-php-mysql.md            # R8: layout, front controller, partials, Hostinger
+│   ├── stack-nextjs-vercel.md        # R8. App Router, Server Actions, Tailwind, Vercel
+│   ├── wizard-de-instalacao.md       # R9: os cinco passos e o que testar
+│   ├── pacotes-de-atualizacao.md     # R10: manifesto, zip slip, migrações, rollback
+│   ├── roteiro-de-testes-cowork.md   # R11: as seis suítes, payloads, rastreabilidade
+│   ├── checklist-de-revisao.md       # R12: o checklist e as sete perguntas adversariais
+│   ├── release-e-deploy.md           # R13, R14. SemVer, CHANGELOG, deploy, rollback
+│   ├── rotas-e-urls.md               # R15: convenções, roteador, 301, 404, tradução
+│   ├── vercel-build-e-correcao.md    # R16: conectar, ler log, reproduzir, corrigir
+│   └── linguagem-e-texto-da-interface.md  # R17: domínio, travessão, microcopy, tipografia
 └── assets/
     ├── templates/                    # 18 arquivos prontos para copiar
     └── scripts/
         ├── scan-secrets.sh
-        └── scan-sql-injection.sh
+        ├── scan-sql-injection.sh
+        └── scan-linguagem.sh
 docs/index.html                       # fonte da página deste projeto
 specs/                                # a spec desta própria skill (R3 aplicada a ela mesma)
 .github/workflows/pages.yml           # publica docs/ no ramo gh-pages, gerado
 ```
 
-`gh-pages` é gerado e sobrescrito pelo CI — edite `docs/`, nunca aquele ramo.
+`gh-pages` é gerado e sobrescrito pelo CI: edite `docs/`, nunca aquele ramo.
 
 ## Templates e ferramentas
 
@@ -567,23 +615,24 @@ Rode os scanners a qualquer momento:
 bash skills/development-pattern-for-web-apps/assets/scripts/scan-secrets.sh
 git diff --cached | bash skills/development-pattern-for-web-apps/assets/scripts/scan-secrets.sh --stdin
 bash skills/development-pattern-for-web-apps/assets/scripts/scan-sql-injection.sh
+bash skills/development-pattern-for-web-apps/assets/scripts/scan-linguagem.sh
 ```
 
 ## Versionamento
 
-Esta skill segue [SemVer](https://semver.org/lang/pt-BR/) — o mesmo padrão que a R13 exige
+Esta skill segue [SemVer](https://semver.org/lang/pt-BR/): o mesmo padrão que a R13 exige
 dos apps que ela ajuda a construir. "Quebrar" significa quebrar para quem **usa** a skill:
 uma regra renumerada, uma referência removida, um contrato de template alterado.
 
-- `.claude-plugin/plugin.json` → `version` é a fonte da verdade — um arquivo de configuração,
+- `.claude-plugin/plugin.json` → `version` é a fonte da verdade: um arquivo de configuração,
   do mesmo jeito que `app/version.php` ou `package.json` é para um app.
 - Toda publicação é registrada em [CHANGELOG.md](CHANGELOG.md).
 
 **Versão atual: 1.0.0.**
 
-Correções e adições são bem-vindas — abra uma issue ou um pull request.
+Correções e adições são bem-vindas: abra uma issue ou um pull request.
 
 ---
 
-Projeto irmão: [Development Pattern for Dynatrace](https://github.com/adrianorafael/development-pattern-for-Dynatrace) —
+Projeto irmão: [Development Pattern for Dynatrace](https://github.com/adrianorafael/development-pattern-for-Dynatrace):
 o mesmo formato de guarda-corpo, aplicado à construção de Apps nativos do Dynatrace.

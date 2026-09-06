@@ -1,7 +1,7 @@
 /**
- * lib/db.ts — acesso a dados, só no servidor.
+ * lib/db.ts: acesso a dados, só no servidor.
  *
- * Parte de "Development Pattern for Web Apps" — regras R1 e R5.
+ * Parte de "Development Pattern for Web Apps": regras R1 e R5.
  *
  * `server-only` transforma um import acidental a partir de um Client Component
  * em erro de build, em vez de vazar a string de conexão para o navegador.
@@ -24,7 +24,7 @@ if (!process.env.DATABASE_URL) {
 export const sql = neon(process.env.DATABASE_URL);
 
 // ─────────────────────────────────────────────────────────────
-// Tipos de domínio — fonte única, importada por página e por action
+// Tipos de domínio: fonte única, importada por página e por action
 // ─────────────────────────────────────────────────────────────
 
 export type Chamado = {
@@ -96,7 +96,7 @@ export async function inserirChamado(dados: {
 /**
  * ORDER BY dinâmico: o valor do usuário é uma CHAVE de um mapa que você
  * controla, nunca um fragmento de SQL. Um identificador não pode ser
- * parametrizado — por isso a allowlist é a única defesa correta.
+ * parametrizado, por isso a allowlist é a única defesa correta.
  */
 const COLUNAS_ORDENAVEIS = {
   titulo: 'titulo',
@@ -112,9 +112,9 @@ export async function listarOrdenado(
   const coluna = COLUNAS_ORDENAVEIS[ordenarPor as keyof typeof COLUNAS_ORDENAVEIS] ?? 'criado_em';
   const dir = direcao === 'asc' ? 'ASC' : 'DESC';
 
-  // Só os dois valores acima — ambos provenientes de constantes deste arquivo —
-  // participam do texto. Todo dado continua indo por ${}.
-  // scan-sql:allow — coluna e dir saem de COLUNAS_ORDENAVEIS/constante deste arquivo
+  // Só os dois valores acima (ambos vindos de constantes deste arquivo) participam
+  // do texto. Todo dado continua indo por ${}.
+  // scan-sql:allow: coluna e dir saem de COLUNAS_ORDENAVEIS/constante deste arquivo
   const query = `
     SELECT id, titulo, status, usuario_id, criado_em
     FROM chamados WHERE usuario_id = $1

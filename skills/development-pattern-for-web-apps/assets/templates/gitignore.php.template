@@ -1,10 +1,10 @@
 # ─────────────────────────────────────────────────────────────
-# .gitignore — projeto PHP + MySQL (Hostinger)
-# Parte de "Development Pattern for Web Apps" — regra R1.
+# .gitignore: projeto PHP + MySQL (Hostinger)
+# Parte de "Development Pattern for Web Apps": regra R1.
 # COPIE ISTO ANTES DO PRIMEIRO `git add`.
 # ─────────────────────────────────────────────────────────────
 
-# Configuração com credenciais reais — NUNCA versionar
+# Configuração com credenciais reais, NUNCA versionar
 .env
 .env.*
 !.env.example
@@ -20,7 +20,7 @@ sftp.json
 deploy.php
 deployment-config.json
 
-# Dados reais — dump de banco é vazamento de dado pessoal, não arquivo de apoio
+# Dados reais: dump de banco é vazamento de dado pessoal, não arquivo de apoio
 *.sql
 !database/schema.sql
 !database/migrations/*.sql
@@ -37,7 +37,7 @@ storage/uploads/*
 public_html/uploads/*
 !public_html/uploads/.gitkeep
 
-# Logs — podem conter dado sensível
+# Logs: podem conter dado sensível
 *.log
 error_log
 storage/logs/*

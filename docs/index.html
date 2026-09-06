@@ -39,6 +39,7 @@
         <a href="#wizard" class="hover:text-gray-950 dark:hover:text-white">Wizard</a>
         <a href="#qa" class="hover:text-gray-950 dark:hover:text-white">Testes</a>
         <a href="#build" class="hover:text-gray-950 dark:hover:text-white">Build</a>
+        <a href="#linguagem" class="hover:text-gray-950 dark:hover:text-white">Texto</a>
       </nav>
       <div class="flex items-center gap-1 border-l border-gray-950/10 pl-4 dark:border-white/10">
         <button id="alternar-tema" type="button" aria-pressed="false"
@@ -70,10 +71,10 @@
     Construa seus apps web com IA sem
     <span class="bg-gradient-to-r from-marca-500 to-marca-700 bg-clip-text text-transparent dark:from-marca-300 dark:to-marca-500">acumular dívida em silêncio</span>.
   </h1>
-  <p class="mt-6 max-w-2xl text-lg/8 text-pretty text-gray-600 dark:text-gray-400">
-    Dezesseis regras que mantêm um agente de IA dentro das boas práticas: SQL sempre parametrizado,
+  <p class="prosa mt-6 max-w-2xl text-lg/8 text-gray-600 dark:text-gray-400">
+    Dezessete regras que mantêm um agente de IA dentro das boas práticas: SQL sempre parametrizado,
     segredos fora do repositório, URLs como rotas semânticas, Wizard de instalação, atualização
-    por pacote ZIP — e um roteiro de testes que o Claude Cowork executa sozinho.
+    por pacote ZIP, e um roteiro de testes que o Claude Cowork executa sozinho.
   </p>
   <div class="mt-8 flex flex-wrap items-center gap-3">
     <a href="#instalar" class="botao-primario">Instalar</a>
@@ -85,108 +86,108 @@
   </div>
 
   <dl class="mt-14 grid grid-cols-2 gap-x-8 gap-y-8 border-t border-gray-950/5 pt-8 sm:grid-cols-4 dark:border-white/10">
-    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">16</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">regras inegociáveis</dd></div>
+    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">17</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">regras inegociáveis</dd></div>
     <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">8</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">fases, 3 portões duros</dd></div>
-    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">16</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">referências sob demanda</dd></div>
-    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">19</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">templates + 2 scanners</dd></div>
+    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">17</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">referências sob demanda</dd></div>
+    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">19</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">templates + 3 scanners</dd></div>
   </dl>
 
-  <p class="aviso mt-10">
+  <p class="aviso prosa mt-10">
     ⚠️ <strong class="font-semibold text-amber-700 dark:text-amber-400">Aviso:</strong> criada e mantida por
     <a href="https://github.com/adrianorafael" class="link">@adrianorafael</a>,
     <strong class="font-semibold">sem garantia</strong> e sem responsabilidade por falhas, incidentes,
     perda de dados ou custos. É uma <strong class="font-semibold">versão de estudo, sem suporte oficial</strong>.
-    Usá-la — e publicar ou implantar os aplicativos que ela ajuda a construir — é por sua conta e risco.
+    Usá-la, e publicar ou implantar os aplicativos que ela ajuda a construir, é por sua conta e risco.
   </p>
 </section>
 
 <section id="problema" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">O problema</p>
-  <h2 class="titulo-secao">Vibecodar um app pessoal funciona — até não funcionar</h2>
-  <p class="texto-secao">Quatro falhas aparecem em quase todo app pessoal construído com IA. Nenhuma se
+  <h2 class="titulo-secao">Vibecodar um app pessoal funciona, até não funcionar</h2>
+  <p class="texto-secao prosa">Quatro falhas aparecem em quase todo app pessoal construído com IA. Nenhuma se
     anuncia; todas custam caro, e a primeira custa os dados de outras pessoas.</p>
   <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
     <div class="cartao cartao-realce"><span class="mb-3 block text-xl" aria-hidden="true">💉</span><h3>SQL concatenado</h3>
       <p>Um <code>$_GET</code> dentro do <code>WHERE</code>. Funciona nos testes, e devolve a base inteira
          para quem digitar <code>' OR '1'='1</code> no campo de busca.</p>
-      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R5</b> — prepared statements, allowlist e scanner</div></div>
+      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R5</b>: prepared statements, allowlist e scanner</div></div>
     <div class="cartao cartao-realce"><span class="mb-3 block text-xl" aria-hidden="true">🔑</span><h3>Credencial versionada</h3>
       <p>A senha do MySQL da Hostinger em um <code>config.php</code> commitado. Continua legível no
          histórico mesmo depois de apagada.</p>
-      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R1</b> e <b class="font-semibold text-gray-700 dark:text-gray-300">R2</b> — config ignorada, repo privado</div></div>
+      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R1</b> e <b class="font-semibold text-gray-700 dark:text-gray-300">R2</b>: config ignorada, repo privado</div></div>
     <div class="cartao cartao-realce"><span class="mb-3 block text-xl" aria-hidden="true">🧩</span><h3>Ninguém sabe instalar</h3>
       <p>Falta uma extensão, falta permissão, ninguém sabe qual SQL rodar. A página abre em branco e não
          há nada na tela dizendo por quê.</p>
-      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R9</b> — Wizard que diagnostica e corrige</div></div>
+      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R9</b>. Wizard que diagnostica e corrige</div></div>
     <div class="cartao cartao-realce"><span class="mb-3 block text-xl" aria-hidden="true">🧪</span><h3>"Testei, está funcionando"</h3>
       <p>Teste manual sem roteiro, sem resultado esperado escrito, sem caso de segurança. O bug corrigido
          volta três versões depois.</p>
-      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R11</b> — roteiro executável e regressão que cresce</div></div>
+      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R11</b>: roteiro executável e regressão que cresce</div></div>
   </div>
 </section>
 
 <section id="uso" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">Como funciona na prática</p>
   <h2 class="titulo-secao">Rígido nas pontas, livre no meio</h2>
-  <p class="texto-secao">Carregue com o primeiro prompt sobre o app e depois só construa. O objetivo não é
-    deixar a construção lenta — é tornar o começo deliberado e o fim verificado, para que a parte rápida
+  <p class="texto-secao prosa">Carregue com o primeiro prompt sobre o app e depois só construa. O objetivo não é
+    deixar a construção lenta: é tornar o começo deliberado e o fim verificado, para que a parte rápida
     do meio continue rápida sem acumular dívida em silêncio.</p>
 
   <div class="mt-10 grid gap-5 lg:grid-cols-3">
     <div class="cartao cartao-realce"><h3>Início</h3>
       <p>Seis perguntas em um lote, a documentação oficial lida <b class="font-semibold text-gray-800 dark:text-gray-200">ao vivo</b>,
-         e então uma spec com requisitos numerados e casos de teste — e uma parada para a sua aprovação.
+         e então uma spec com requisitos numerados e casos de teste, e uma parada para a sua aprovação.
          Nenhuma linha de implementação existe ainda.</p>
       <div class="cartao-nota">Conduzido pela skill</div></div>
-    <div class="cartao cartao-realce"><h3>O meio — o seu vibecoding</h3>
+    <div class="cartao cartao-realce"><h3>O meio: o seu vibecoding</h3>
       <p>Construa. Itere, mude de direção, jogue trabalho fora. A skill não fica recitando regra aqui; ela
          segura três invariantes: SQL parametrizado, nenhum segredo versionado, nenhuma API inventada.</p>
       <div class="cartao-nota">Conduzido por <b class="font-semibold text-gray-700 dark:text-gray-300">você</b></div></div>
     <div class="cartao cartao-realce"><h3>Fim</h3>
       <p>O código que existe é verificado: lint, testes, varreduras, revisão adversarial, roteiro de QA
-         gerado e executado, versão e documentação atualizadas — e uma parada antes do push e outra antes
+         gerado e executado, versão e documentação atualizadas, e uma parada antes do push e outra antes
          do deploy.</p>
       <div class="cartao-nota">Conduzido pela skill</div></div>
   </div>
 
   <div class="painel-codigo mt-8">
     <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>uma sessão de verdade</div>
-<pre class="bloco"><span class="c">1 — Você pede</span>
+<pre class="bloco"><span class="c">1. Você pede</span>
 <span class="s">"Faz um sistema de controle de chamados em PHP e MySQL pra eu subir na Hostinger."</span>
 
-<span class="c">2 — Seis perguntas, um lote</span>
+<span class="c">2. Seis perguntas, um lote</span>
 Trilha? Repositório (novo nasce privado)? Versão do PHP e acesso da hospedagem?
 Tem login, dado pessoal, pagamento, upload? Nome e versão inicial? Quem executa o QA?
 
-<span class="c">3 — A documentação é lida, não lembrada</span>
+<span class="c">3. A documentação é lida, não lembrada</span>
 php.net · docs da Hostinger · MySQL · OWASP  <span class="p">→</span>  registro de evidências com data
 
-<span class="c">4 — Uma spec, depois uma parada</span>
-specs/0001-controle-de-chamados.md — RF-001…RF-012, modelo de dados com índices,
+<span class="c">4. Uma spec, depois uma parada</span>
+specs/0001-controle-de-chamados.md. RF-001…RF-012, modelo de dados com índices,
 rotas nomeadas, critérios de aceite (dado/quando/então), nível de segurança, 31 casos
 <span class="k">⛔ "Aprova e eu construo?"</span>
 
-<span class="c">5 — Agora o vibecoding</span>
+<span class="c">5. Agora o vibecoding</span>
 Você constrói. Ela segura três linhas e sai da frente.
 
-<span class="c">6 — O código pronto é verificado</span>
+<span class="c">6. O código pronto é verificado</span>
 php -l · composer audit · scan-secrets.sh · scan-sql-injection.sh · checklist de revisão
 <span class="c">+ as sete perguntas adversariais ("qual linha deste diff eu atacaria primeiro?")</span>
 
-<span class="c">7 — O roteiro de testes é gerado e executado</span>
+<span class="c">7. O roteiro de testes é gerado e executado</span>
 Um caso por critério de aceite + um de SQL injection para CADA campo que chega ao banco
 + XSS + IDOR + CSRF + upload + rotas + cabeçalhos    <span class="c"># o Cowork executa</span>
 
-<span class="c">8 — Versão, documentação, push, deploy</span>
+<span class="c">8. Versão, documentação, push, deploy</span>
 <span class="k">⛔ "Publicar v1.0.0?"</span>   <span class="k">⛔ "Implantar em seu-dominio.com.br? Há 1 migração. Faço backup antes."</span></pre>
   </div>
 </section>
 
 <section id="regras" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">O núcleo</p>
-  <h2 class="titulo-secao">Dezesseis regras inegociáveis</h2>
-  <p class="texto-secao">Elas passam por cima de qualquer outro instinto, inclusive "mas essa mudança é
-    minúscula". Se uma não puder ser cumprida, o agente para e diz — nunca entrega uma versão degradada
+  <h2 class="titulo-secao">Dezessete regras inegociáveis</h2>
+  <p class="texto-secao prosa">Elas passam por cima de qualquer outro instinto, inclusive "mas essa mudança é
+    minúscula". Se uma não puder ser cumprida, o agente para e diz, nunca entrega uma versão degradada
     em silêncio.</p>
   <div class="tabela-caixa mt-10">
     <table class="tabela">
@@ -200,7 +201,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
         <tr><td class="id-regra">R6</td><td><b class="font-semibold text-gray-950 dark:text-white">Validar na entrada, escapar na saída</b>, no contexto correto de cada uma. Validação no cliente é usabilidade, nunca segurança.</td></tr>
         <tr><td class="id-regra">R7</td><td><b class="font-semibold text-gray-950 dark:text-white">A linha de base de segurança é inegociável; acima dela, proporcional ao porte.</b> Doze itens de piso valem até no projeto de fim de semana.</td></tr>
         <tr><td class="id-regra">R8</td><td><b class="font-semibold text-gray-950 dark:text-white">Interface por componentes.</b> Next.js: App Router, Server Components, Tailwind com tokens. PHP: front controller + partials, zero HTML concatenado.</td></tr>
-        <tr><td class="id-regra">R9</td><td><b class="font-semibold text-gray-950 dark:text-white">Todo app PHP+MySQL entrega um Wizard de instalação</b> que verifica dependências e cria — ou limpa e recria — o banco.</td></tr>
+        <tr><td class="id-regra">R9</td><td><b class="font-semibold text-gray-950 dark:text-white">Todo app PHP+MySQL entrega um Wizard de instalação</b> que verifica dependências e cria, ou limpa e recria, o banco.</td></tr>
         <tr><td class="id-regra">R10</td><td><b class="font-semibold text-gray-950 dark:text-white">Todo app PHP entrega um painel administrativo</b> que instala pacotes ZIP com arquivos e migrações SQL, com backup e rollback.</td></tr>
         <tr><td class="id-regra">R11</td><td><b class="font-semibold text-gray-950 dark:text-white">Toda aplicação entrega um roteiro de testes</b> em Markdown, executável pelo Claude Cowork: unitário → integração → interface → segurança → regressão.</td></tr>
         <tr><td class="id-regra">R12</td><td><b class="font-semibold text-gray-950 dark:text-white">Revise código de IA como código hostil</b>, contra um checklist, antes de todo push.</td></tr>
@@ -208,6 +209,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
         <tr><td class="id-regra">R14</td><td><b class="font-semibold text-gray-950 dark:text-white">Deploy é explícito, nomeado e reversível</b>, com backup antes e rollback documentado.</td></tr>
         <tr><td class="id-regra">R15</td><td><b class="font-semibold text-gray-950 dark:text-white">A URL é interface, não caminho de arquivo.</b> <code>/cadastrar-novo-usuario</code>, nunca <code>/usuarios/cadastro.php</code>. Rota em português, kebab-case, sem extensão; navegação jamais por query string.</td></tr>
         <tr><td class="id-regra">R16</td><td><b class="font-semibold text-gray-950 dark:text-white">Build quebrado se conserta com o log na mão e a correção provada localmente.</b> Reproduzir com <code>vercel build</code>, corrigir a causa raiz, um push por volta, teto de três voltas. Nunca <code>ignoreBuildErrors</code>.</td></tr>
+        <tr><td class="id-regra">R17</td><td><b class="font-semibold text-gray-950 dark:text-white">O texto é escrito na língua de quem usa, e nunca entrega que foi gerado.</b> Pesquisar as convenções do domínio antes da primeira frase de interface. Travessão proibido em texto visível. Corpo de texto justificado, com hifenização.</td></tr>
       </tbody>
     </table>
   </div>
@@ -216,7 +218,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 <section id="sql" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">R5</p>
   <h2 class="titulo-secao">A regra que mais importa</h2>
-  <p class="texto-secao">SQL injection é a única falha desta lista que transforma um projeto pessoal em um
+  <p class="texto-secao prosa">SQL injection é a única falha desta lista que transforma um projeto pessoal em um
     incidente com dados de terceiros. Tem uma causa única e uma cura única.</p>
 
   <div class="painel-codigo mt-10">
@@ -229,8 +231,8 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 <span class="v">$stmt</span>-&gt;<span class="p">execute</span>([<span class="s">':id'</span> =&gt; <span class="v">$id</span>, <span class="s">':u'</span> =&gt; <span class="v">$_SESSION</span>[<span class="s">'usuario_id'</span>]]);</pre>
   </div>
 
-  <p class="mt-8 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
-    <b class="font-semibold text-gray-950 dark:text-white">O caso difícil</b> — o que não pode ser
+  <p class="prosa mt-8 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
+    <b class="font-semibold text-gray-950 dark:text-white">O caso difícil</b>, o que não pode ser
     parametrizado: nome de coluna, nome de tabela, <code>ASC</code>/<code>DESC</code>. A resposta nunca é
     "concatena com cuidado". É <b class="font-semibold text-gray-950 dark:text-white">allowlist</b>, com a
     exceção declarada na linha:</p>
@@ -238,12 +240,12 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
   <div class="painel-codigo mt-4">
 <pre class="bloco"><span class="v">$colunas</span> = [<span class="s">'nome'</span> =&gt; <span class="s">'p.nome'</span>, <span class="s">'data'</span> =&gt; <span class="s">'p.criado_em'</span>];
 <span class="v">$coluna</span>  = <span class="v">$colunas</span>[<span class="v">$_GET</span>[<span class="s">'ordenar'</span>] ?? <span class="s">''</span>] ?? <span class="s">'p.criado_em'</span>;
-<span class="v">$sql</span> = <span class="s">"SELECT * FROM pedidos p ORDER BY $coluna"</span>;   <span class="k">// scan-sql:allow — $colunas</span></pre>
+<span class="v">$sql</span> = <span class="s">"SELECT * FROM pedidos p ORDER BY $coluna"</span>;   <span class="k">// scan-sql:allow: $colunas</span></pre>
   </div>
 
-  <p class="destaque">
+  <p class="destaque prosa">
     O scanner acusa <b class="font-semibold">toda</b> interpolação em SQL. Para silenciá-la é preciso escrever
-    o marcador citando a allowlist — na própria linha ou na linha imediatamente acima, onde cabe a
+    o marcador citando a allowlist: na própria linha ou na linha imediatamente acima, onde cabe a
     justificativa por extenso. Isso transforma a exceção em algo visível na revisão, em vez de uma
     concatenação silenciosa.
   </p>
@@ -254,7 +256,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
         <li><code>mysql_query</code> e <code>mysqli_real_escape_string</code> usado como defesa</li>
         <li><code>$queryRawUnsafe</code>, <code>sql.unsafe</code>, <code>sql.raw</code>, <code>knex.raw</code></li>
         <li>Template literal com SQL e <code>${}</code> fora de tag parametrizada</li>
-        <li><code>ATTR_EMULATE_PREPARES =&gt; true</code> — e a ausência do <code>false</code> em projetos com <code>new PDO(</code></li>
+        <li><code>ATTR_EMULATE_PREPARES =&gt; true</code>, e a ausência do <code>false</code> em projetos com <code>new PDO(</code></li>
       </ul></div>
     <div class="cartao"><h3>E o que ele não pega</h3>
       <ul class="setas">
@@ -262,14 +264,14 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
         <li>Um marcador <code>scan-sql:allow</code> escrito sobre uma allowlist que não existe</li>
       </ul>
       <div class="cartao-nota">Varredura limpa é <b class="font-semibold text-gray-700 dark:text-gray-300">necessária, não suficiente</b>.
-        A skill diz isso na saída de cada execução — e manda ler o próprio diff.</div></div>
+        A skill diz isso na saída de cada execução, e manda ler o próprio diff.</div></div>
   </div>
 </section>
 
 <section id="rotas" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">R15</p>
   <h2 class="titulo-secao">A URL é interface, não caminho de arquivo</h2>
-  <p class="texto-secao">É a única parte da aplicação que sai dela: vai para o histórico, os favoritos, o
+  <p class="texto-secao prosa">É a única parte da aplicação que sai dela: vai para o histórico, os favoritos, o
     WhatsApp de quem compartilha, o índice do Google e o log do servidor. Por isso não pode ser um detalhe
     de implementação.</p>
 
@@ -281,7 +283,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 <span class="k">✅ https://seu-dominio.com.br/chamados/8/impressora-nao-imprime</span></pre>
   </div>
 
-  <p class="mt-6 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
+  <p class="prosa mt-6 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
     <code>/usuarios/cadastro.php</code> entrega de graça três coisas: a linguagem do servidor, a árvore de
     pastas e o nome do arquivo. Quem está sondando começa por aí. E no dia em que você mover o arquivo,
     todo link publicado quebra.</p>
@@ -289,20 +291,20 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
   <div class="mt-8 grid gap-5 lg:grid-cols-2">
     <div class="cartao"><h3>As sete convenções</h3>
       <ul class="setas">
-        <li>Português, minúsculas, kebab-case — <code>/redefinir-senha</code></li>
-        <li>Sem acento e sem cedilha — o percent-encoding deixa a URL ilegível ao ser copiada</li>
+        <li>Português, minúsculas, kebab-case: <code>/redefinir-senha</code></li>
+        <li>Sem acento e sem cedilha: o percent-encoding deixa a URL ilegível ao ser copiada</li>
         <li>Sem extensão de arquivo</li>
         <li>Sem estrutura de pastas do servidor</li>
-        <li>Ação = verbo no infinitivo — <code>/cadastrar-novo-usuario</code></li>
-        <li>Coleção = substantivo plural + identificador — <code>/chamados/8</code></li>
+        <li>Ação = verbo no infinitivo: <code>/cadastrar-novo-usuario</code></li>
+        <li>Coleção = substantivo plural + identificador: <code>/chamados/8</code></li>
         <li>Navegação <b class="font-semibold text-gray-800 dark:text-gray-200">nunca</b> depende de query string</li>
       </ul></div>
     <div class="cartao"><h3>A query string muda de papel</h3>
       <p>Ela não some: passa a carregar <b class="font-semibold text-gray-800 dark:text-gray-200">estado da
          visualização</b>, não roteamento.</p>
       <ul class="setas">
-        <li><code>/chamados?status=fechado&amp;pagina=2</code> — filtro e paginação</li>
-        <li><code>/produtos?busca=teclado</code> — busca</li>
+        <li><code>/chamados?status=fechado&amp;pagina=2</code>: filtro e paginação</li>
+        <li><code>/produtos?busca=teclado</code>: busca</li>
       </ul>
       <div class="cartao-nota">A vantagem é concreta: <code>/chamados?status=fechado</code> é compartilhável e
         favoritável. Já <code>/index.php?p=chamados</code> não significa nada fora da sua sessão.</div></div>
@@ -323,7 +325,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 ];</pre>
     </div>
     <div class="painel-codigo min-w-0">
-      <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>app/ — a pasta <em class="not-italic text-gray-300">é</em> a URL</div>
+      <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>app/: a pasta <em class="not-italic text-gray-300">é</em> a URL</div>
 <pre class="bloco">app/
 ├── entrar/page.tsx                    <span class="c">→ /entrar</span>
 ├── cadastrar-novo-usuario/page.tsx    <span class="c">→ /cadastrar-novo-usuario</span>
@@ -335,7 +337,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
     </div>
   </div>
 
-  <p class="destaque">
+  <p class="destaque prosa">
     <b class="font-semibold">Renomear uma rota é uma mudança MAJOR.</b> Links publicados quebram, e você não
     controla quem os publicou. A antiga responde <b class="font-semibold">301</b> por pelo menos uma versão
     maior, e a mudança entra no CHANGELOG. A referência traz o roteador completo com canonicalização, o
@@ -348,13 +350,13 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 <section id="wizard" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">R9</p>
   <h2 class="titulo-secao">Wizard de instalação em todo app PHP</h2>
-  <p class="texto-secao">Instalar deve ser: subir os arquivos, abrir <code>/install/</code>, informar host,
-    banco, usuário e senha, e clicar em avançar. Nada é gravado antes do último passo — desistir no meio não
+  <p class="texto-secao prosa">Instalar deve ser: subir os arquivos, abrir <code>/install/</code>, informar host,
+    banco, usuário e senha, e clicar em avançar. Nada é gravado antes do último passo: desistir no meio não
     deixa resíduo.</p>
   <ol class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
     <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">passo 1</div>
       <h3 class="mt-2">Requisitos</h3>
-      <p>PHP, extensões, permissões, <code>mod_rewrite</code>, HTTPS — cada item com o valor encontrado, o
+      <p>PHP, extensões, permissões, <code>mod_rewrite</code>, HTTPS: cada item com o valor encontrado, o
          exigido e <b class="font-semibold text-gray-800 dark:text-gray-200">a instrução de correção no hPanel</b>.</p></li>
     <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">passo 2</div>
       <h3 class="mt-2">Banco</h3>
@@ -363,10 +365,10 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
     <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">passo 3</div>
       <h3 class="mt-2">Estrutura</h3>
       <p>Detecta o estado da base: criar do zero, manter os dados, ou <b class="font-semibold text-gray-800 dark:text-gray-200">limpar
-         e recriar</b> — exigindo digitar <code>APAGAR</code>, com as tabelas e a contagem de linhas na tela.</p></li>
+         e recriar</b>: exigindo digitar <code>APAGAR</code>, com as tabelas e a contagem de linhas na tela.</p></li>
     <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">passo 4</div>
       <h3 class="mt-2">Administrador</h3>
-      <p>Primeiro admin com <code>password_hash</code>. Nunca um <code>admin/admin</code> "para facilitar" — é
+      <p>Primeiro admin com <code>password_hash</code>. Nunca um <code>admin/admin</code> "para facilitar": é
          o primeiro alvo de qualquer varredura automática.</p></li>
     <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">passo 5</div>
       <h3 class="mt-2">Conclusão</h3>
@@ -381,8 +383,8 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 <section id="updates" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">R10</p>
   <h2 class="titulo-secao">Atualização por pacote ZIP, pelo painel</h2>
-  <p class="texto-secao">Atualizar por FTP é onde os projetos pessoais morrem: um arquivo esquecido, um SQL
-    que ninguém rodou, e o app fica meio atualizado — o pior estado possível.</p>
+  <p class="texto-secao prosa">Atualizar por FTP é onde os projetos pessoais morrem: um arquivo esquecido, um SQL
+    que ninguém rodou, e o app fica meio atualizado: o pior estado possível.</p>
   <div class="painel-codigo mt-10">
     <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>meu-app-1.3.0.zip</div>
 <pre class="bloco">├── <span class="k">manifest.json</span>      <span class="c"># app, versão, versão mínima, PHP mínimo, extensões, sha256 por arquivo</span>
@@ -401,14 +403,14 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
       </ul></div>
     <div class="cartao"><h3>Aplica com caminho de volta</h3>
       <ul class="setas">
-        <li>Prévia com os arquivos que mudam e as migrações — <b class="font-semibold text-gray-800 dark:text-gray-200">as destrutivas em destaque</b></li>
+        <li>Prévia com os arquivos que mudam e as migrações: <b class="font-semibold text-gray-800 dark:text-gray-200">as destrutivas em destaque</b></li>
         <li>Backup do banco e dos arquivos que serão sobrescritos</li>
         <li>Modo manutenção com <b class="font-semibold text-gray-800 dark:text-gray-200">expiração automática</b>, para o site não ficar preso</li>
         <li>Migrações em ordem, registradas em <code>schema_migrations</code></li>
         <li><b class="font-semibold text-gray-800 dark:text-gray-200">Rollback automático</b> se qualquer etapa falhar</li>
       </ul></div>
   </div>
-  <p class="destaque">O pacote nunca escreve em <code>config/</code> nem em <code>storage/</code>: essas pastas
+  <p class="destaque prosa">O pacote nunca escreve em <code>config/</code> nem em <code>storage/</code>: essas pastas
     são do usuário, não do aplicativo. É assim que uma atualização não sobrescreve a configuração de quem
     instalou.</p>
 </section>
@@ -416,12 +418,12 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 <section id="qa" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">R11</p>
   <h2 class="titulo-secao">Um roteiro de testes que o Cowork executa</h2>
-  <p class="texto-secao">Não é um resumo do que foi feito. É um procedimento — escrito para outro agente
+  <p class="texto-secao prosa">Não é um resumo do que foi feito. É um procedimento: escrito para outro agente
     executar navegando pela aplicação, sem ter participado do desenvolvimento e sem poder fazer perguntas.</p>
 
   <div class="painel-codigo mt-10">
     <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>qa/roteiro-de-testes.md</div>
-<pre class="bloco"><span class="k">### CT-014 — Filtrar chamados por status</span>
+<pre class="bloco"><span class="k">### CT-014. Filtrar chamados por status</span>
 | <span class="c">Requisito</span> | RF-004 |
 | <span class="c">Pré-condição</span> | Logado como usuario.a@example.com. Seed: 3 abertos, 2 fechados. |
 
@@ -436,7 +438,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 - [data-testid="contador-resultados"] exibe "2 chamados".
 - A URL passa a conter ?status=fechado. Nenhum erro no console.
 
-<span class="p">**Falha se**</span> — a contagem diverge, aparece chamado com outro status, ou o filtro se perde.</pre>
+<span class="p">**Falha se**</span>: a contagem diverge, aparece chamado com outro status, ou o filtro se perde.</pre>
   </div>
 
   <div class="tabela-caixa mt-8">
@@ -447,8 +449,8 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
         <tr><td><b class="font-semibold text-gray-950 dark:text-white">Funcional</b></td><td>Um caso por critério de aceite, mais validação, fronteira, os quatro estados de tela, persistência, concorrência e formatos.</td></tr>
         <tr><td><b class="font-semibold text-gray-950 dark:text-white">Integração</b></td><td>Formulário → banco → tela, upload → download, e-mail, webhook idempotente, o Wizard e o painel de atualização.</td></tr>
         <tr><td><b class="font-semibold text-gray-950 dark:text-white">Segurança</b></td><td>Payloads de SQL injection em <b class="font-semibold">cada</b> campo que chega ao banco; XSS refletido e armazenado; IDOR; CSRF; sessão; upload; cabeçalhos; acesso a <code>/config/</code>, <code>/.env</code>, <code>/.git/config</code>, <code>/install/</code>.</td></tr>
-        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Interface</b></td><td>375/768/1440 px, só teclado, rótulos, contraste AA, zoom 200%, estado vazio, duplo clique — e as rotas: 301 de canonicalização, 404 real, F5 e Voltar.</td></tr>
-        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Regressão</b></td><td>Cresce a cada defeito corrigido. Roda inteira antes de todo release — é a memória do projeto.</td></tr>
+        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Interface</b></td><td>375/768/1440 px, só teclado, rótulos, contraste AA, zoom 200%, estado vazio, duplo clique, e as rotas: 301 de canonicalização, 404 real, F5 e Voltar.</td></tr>
+        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Regressão</b></td><td>Cresce a cada defeito corrigido. Roda inteira antes de todo release: é a memória do projeto.</td></tr>
       </tbody>
     </table>
   </div>
@@ -456,7 +458,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
   <div class="mt-6 grid gap-5 lg:grid-cols-2">
     <div class="cartao"><h3>Regras para quem executa</h3>
       <ul class="setas">
-        <li>Não conserte a aplicação durante o teste — registre e siga</li>
+        <li>Não conserte a aplicação durante o teste: registre e siga</li>
         <li>Relate o que observou, não o que deveria acontecer</li>
         <li>Caso não executado é <b class="font-semibold text-gray-800 dark:text-gray-200">BLOQUEADO</b>, nunca FALHOU</li>
         <li>Console e rede fazem parte do resultado</li>
@@ -475,8 +477,8 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 <section id="build" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">R16</p>
   <h2 class="titulo-secao">Build quebrado na Vercel, corrigido em ciclo fechado</h2>
-  <p class="texto-secao">Você pede, o agente se conecta à sua conta, acha o deploy que falhou, lê o log,
-    corrige e empurra — e o CI/CD da Vercel publica a versão nova. O ciclo repete até o preview ficar
+  <p class="texto-secao prosa">Você pede, o agente se conecta à sua conta, acha o deploy que falhou, lê o log,
+    corrige e empurra, e o CI/CD da Vercel publica a versão nova. O ciclo repete até o preview ficar
     verde. O que impede isso de virar <em>empurra e reza</em> são o passo 3 e o teto.</p>
 
   <div class="painel-codigo mt-10">
@@ -493,7 +495,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 
   <div class="mt-6 grid gap-5 lg:grid-cols-2">
     <div class="cartao"><h3>O passo 3 não é opcional</h3>
-      <p>Falha que não foi reproduzida localmente é falha que não foi entendida — e a correção é chute.
+      <p>Falha que não foi reproduzida localmente é falha que não foi entendida, e a correção é chute.
          <code>vercel build</code> reproduz o build da Vercel com a configuração e as variáveis do ambiente
          escolhido, que é justamente o que pega a falha que só aparece no deploy.</p>
       <div class="cartao-nota"><b class="font-semibold text-gray-700 dark:text-gray-300">Teto de três voltas.</b>
@@ -501,34 +503,108 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
         minutos de CI e poluir o histórico.</div></div>
     <div class="cartao"><h3>Código × ambiente é a separação que importa</h3>
       <p>A causa não-código mais comum é uma variável que existe em Production e <b class="font-semibold text-gray-800 dark:text-gray-200">não
-         em Preview</b> — são ambientes separados.</p>
+         em Preview</b>: são ambientes separados.</p>
       <ul class="setas">
         <li>O agente <b class="font-semibold text-gray-800 dark:text-gray-200">não conserta isso</b>: nomeia a variável e o ambiente, e para</li>
         <li>Inventar um valor padrão no código trocaria uma falha visível por uma silenciosa em produção</li>
       </ul></div>
   </div>
 
-  <p class="mt-8 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
+  <p class="prosa mt-8 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
     E o que ele <b class="font-semibold text-gray-950 dark:text-white">nunca</b> faz para ficar verde:</p>
   <div class="painel-codigo mt-4">
     <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>next.config.ts</div>
-<pre class="bloco"><span class="r">// ❌ proibidos pela regra — o erro continua lá, agora invisível</span>
+<pre class="bloco"><span class="r">// ❌ proibidos pela regra: o erro continua lá, agora invisível</span>
 <span class="p">export default</span> {
   typescript: { ignoreBuildErrors: <span class="v">true</span> },
   eslint:     { ignoreDuringBuilds: <span class="v">true</span> },
 };</pre>
   </div>
-  <p class="destaque">Também proibidos: apagar o teste que falha, <code>@ts-ignore</code> num erro real,
+  <p class="destaque prosa">Também proibidos: apagar o teste que falha, <code>@ts-ignore</code> num erro real,
     <code>any</code> para atravessar uma incompatibilidade, e commit vazio para reprocessar. Se a única
-    saída for uma dessas, é <b class="font-semibold">decisão sua</b> — o agente apresenta o trade-off e espera.
+    saída for uma dessas, é <b class="font-semibold">decisão sua</b>: o agente apresenta o trade-off e espera.
     O acesso é por servidor MCP da Vercel (detectado antes de perguntar), CLI com <code>VERCEL_TOKEN</code>
     ou API REST; o token vive em <code>.env</code>, com escopo mínimo, nunca versionado.</p>
 </section>
 
+<section id="linguagem" class="divisoria interno py-16 sm:py-20">
+  <p class="rotulo">R17</p>
+  <h2 class="titulo-secao">O texto é escrito na língua de quem usa</h2>
+  <p class="texto-secao prosa">Para quem usa o sistema, o texto <b class="font-semibold text-gray-950 dark:text-white">é</b>
+    o produto. A pessoa não vê a arquitetura, não vê o schema, não vê o SQL parametrizado. Ela vê
+    "Não foi possível concluir a operação" e decide ali se confia ou não. Um botão escrito na língua
+    errada custa mais suporte que um bug.</p>
+
+  <div class="mt-10 grid gap-5 lg:grid-cols-2">
+    <div class="cartao"><h3>O travessão é proibido</h3>
+      <p>Travessão e meia-risca não fazem parte da escrita corrente em português brasileiro fora da
+         literatura. Em tela de aplicação soam empolados e, hoje, funcionam como assinatura de texto
+         gerado. O leitor não sabe explicar por quê, mas percebe.</p>
+      <div class="cartao-nota">O teclado ABNT2 não tem tecla de travessão. Se você não digitaria aquilo
+        naturalmente, não escreva.</div></div>
+    <div class="cartao"><h3>E as muletas que vêm junto</h3>
+      <p>Nenhuma é errada sozinha. Juntas, viram carimbo.</p>
+      <ul class="setas">
+        <!-- scan-linguagem:allow: a lista CITA as muletas para poder proibi-las. -->
+        <li><code>Além disso</code>, <code>Vale ressaltar</code>, <code>É importante notar que</code></li>
+        <li><code>Mergulhe</code>, <code>desbloqueie</code>, <code>revolucione</code></li>  <!-- scan-linguagem:allow -->
+        <li><code>robusto</code>, <code>perfeito</code>, <code>sem emenda</code>, <code>intuitivo</code></li>  <!-- scan-linguagem:allow -->
+        <li>Três itens sempre que se lista algo</li>
+      </ul></div>
+  </div>
+
+  <div class="painel-codigo mt-5">
+    <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>como substituir</div>
+<!-- scan-linguagem:allow: as quatro linhas abaixo CITAM o travessão para poder proibi-lo. -->
+<pre class="bloco"><span class="r">❌ O prazo é curto &#8212; três dias.</span><span class="c"><!-- scan-linguagem:allow --></span>          <span class="k">✅ O prazo é curto: três dias.</span>
+<span class="r">❌ A conta &#8212; que estava ativa &#8212; foi encerrada.</span><span class="c"><!-- scan-linguagem:allow --></span>  <span class="k">✅ A conta, que estava ativa, foi encerrada.</span>
+<span class="r">❌ Tente de novo &#8212; se persistir, avise.</span><span class="c"><!-- scan-linguagem:allow --></span>    <span class="k">✅ Tente de novo. Se persistir, avise.</span>
+<span class="r">❌ Status &#8212; Aberto</span><span class="c"><!-- scan-linguagem:allow --></span>                       <span class="k">✅ Status: Aberto</span></pre>
+  </div>
+
+  <p class="prosa mt-8 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
+    A segunda metade da regra é <b class="font-semibold text-gray-950 dark:text-white">pesquisar o
+    domínio</b> antes de escrever a primeira frase de interface. Cada setor tem vocabulário próprio,
+    expectativa de tom e, às vezes, obrigação legal sobre o que se pode dizer. Escrever "seu dinheiro
+    sumiu" num app bancário e "chamado encerrado com sucesso!" num ITSM são erros do mesmo tipo:
+    linguagem que ignora a convenção de quem lê.</p>
+
+  <div class="mt-6 grid gap-5 lg:grid-cols-2">
+    <div class="cartao"><h3>Banco: clareza e segurança se revezam</h3>
+      <p>Toda tela que mexe com dinheiro é lida em estado de alerta. O texto precisa tranquilizar sem
+         esconder, e informar sem assustar. Simplificar o jargão sem distorcer o que está no contrato.</p>
+      <ul class="setas">
+        <li><code>Não conseguimos concluir a transferência. O valor não saiu da sua conta.</code></li>
+        <li>Nunca <code>Ops, algo deu errado</code> depois de uma operação com dinheiro</li>
+        <li>Tarifa e prazo sempre explícitos: <code>R$ 3,90, cobrada no dia 10</code></li>
+      </ul>
+      <div class="cartao-nota">Regra de ouro do setor: depois de uma operação com dinheiro, diga sempre
+        o que aconteceu com o dinheiro.</div></div>
+    <div class="cartao"><h3>ITSM: o vocabulário não é intercambiável</h3>
+      <p>Incidente é algo que quebrou. Requisição é um pedido do catálogo, sem nada quebrado. A distinção
+         define priorização, SLA e a comunicação com o usuário.</p>
+      <ul class="setas">
+        <li><code>Abrir chamado</code>, nunca <code>Criar novo registro</code></li>
+        <li><code>Aguardando você</code>, nunca <code>Pendente</code>, que não diz de quem</li>
+        <li><code>Prazo de atendimento: até 4 horas úteis (SLA Alto)</code></li>
+      </ul>
+      <div class="cartao-nota">Quem abre chamado está com o trabalho parado. Texto animado irrita: ele
+        quer prazo, número do chamado e o que fazer agora.</div></div>
+  </div>
+
+  <p class="destaque prosa">
+    A terceira parte é tipográfica: corpo de texto <b class="font-semibold">justificado</b>, com
+    <code>hyphens: auto</code> e o idioma declarado no <code>&lt;html&gt;</code>. Justificar sem
+    hifenizar é pior que não justificar, porque o navegador estica os espaços e abre corredores brancos
+    no meio do parágrafo. Títulos, rótulos, código, listas curtas e colunas abaixo de 40 caracteres
+    continuam alinhados à esquerda. Esta página segue a própria regra.
+  </p>
+</section>
+
 <section id="seguranca" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">R7</p>
-  <h2 class="titulo-secao">Segurança proporcional — mas nunca abaixo do piso</h2>
-  <p class="texto-secao">"É só um projeto pessoal" é o raciocínio que precede a maioria dos vazamentos de
+  <h2 class="titulo-secao">Segurança proporcional, mas nunca abaixo do piso</h2>
+  <p class="texto-secao prosa">"É só um projeto pessoal" é o raciocínio que precede a maioria dos vazamentos de
     projeto pessoal. O invasor não sabe que é pessoal: ele varre faixas de IP procurando formulários de login.</p>
   <div class="tabela-caixa mt-10">
     <table class="tabela">
@@ -549,7 +625,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
       </tbody>
     </table>
   </div>
-  <p class="mt-6 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
+  <p class="prosa mt-6 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
     <b class="font-semibold text-gray-950 dark:text-white">Regra de escada: você pode subir de nível, nunca
     descer.</b> Um app que começou N2 e passou a guardar CPF virou N3 no mesmo commit em que a coluna foi criada.</p>
 </section>
@@ -557,7 +633,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 <section id="instalar" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">Começar</p>
   <h2 class="titulo-secao">Instalar e usar</h2>
-  <p class="texto-secao">A skill dispara sozinha quando você menciona PHP, MySQL, Hostinger, Next.js, Vercel,
+  <p class="texto-secao prosa">A skill dispara sozinha quando você menciona PHP, MySQL, Hostinger, Next.js, Vercel,
     Tailwind, SQL injection, wizard de instalação, rotas amigáveis ou roteiro de testes.</p>
 
   <div class="mt-10 grid gap-5 lg:grid-cols-2">
@@ -585,7 +661,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
  em PHP e MySQL pra eu subir na Hostinger."</span></pre>
         </div>
         <div class="cartao-nota">Copie <code>AGENTS.template.md</code> para o repositório do app como
-          <code>AGENTS.md</code> — assim a próxima sessão herda o padrão e as armadilhas que você já encontrou.</div></div>
+          <code>AGENTS.md</code>: assim a próxima sessão herda o padrão e as armadilhas que você já encontrou.</div></div>
       <div class="cartao"><h3>Rode os scanners quando quiser</h3>
         <div class="painel-codigo mt-3">
 <pre class="bloco"><span class="p">bash</span> .../scan-secrets.sh
@@ -598,32 +674,34 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
 <section id="estrutura" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">Conteúdo</p>
   <h2 class="titulo-secao">O que vem na caixa</h2>
-  <p class="texto-secao">Um <code>SKILL.md</code>, dezesseis referências carregadas sob demanda, dezenove
-    templates e dois scanners — e nenhuma cópia da documentação de terceiros.</p>
+  <p class="texto-secao prosa">Um <code>SKILL.md</code>, dezessete referências carregadas sob demanda, dezenove
+    templates e dois scanners, e nenhuma cópia da documentação de terceiros.</p>
   <div class="painel-codigo mt-10">
     <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>skills/development-pattern-for-web-apps/</div>
-<pre class="bloco">├── <span class="k">SKILL.md</span>                          <span class="c"># 16 regras, 8 fases, 3 portões, roteamento</span>
+<pre class="bloco">├── <span class="k">SKILL.md</span>                          <span class="c"># 17 regras, 8 fases, 3 portões, roteamento</span>
 ├── references/
-│   ├── segredos-e-configuracao.md    <span class="c"># R1 — .env, config fora do webroot, Vercel, rotação</span>
-│   ├── git-e-publicacao.md           <span class="c"># R2 — privado por padrão, commits, publicação</span>
-│   ├── fluxo-spec-driven.md          <span class="c"># R3 — fases, portões, anatomia da spec</span>
-│   ├── protocolo-de-verificacao.md   <span class="c"># R4 — hierarquia de fontes, comandos, armadilhas</span>
-│   ├── sql-e-acesso-a-dados.md       <span class="c"># R5 — PDO, LIKE, IN, ORDER BY, transações, Next.js</span>
-│   ├── entrada-e-saida-seguras.md    <span class="c"># R6 — validação, escape, CSRF, upload, traversal</span>
-│   ├── linha-de-base-de-seguranca.md <span class="c"># R7 — o piso de 12 itens e os níveis N1–N4</span>
-│   ├── stack-php-mysql.md            <span class="c"># R8 — layout, front controller, partials, Hostinger</span>
-│   ├── stack-nextjs-vercel.md        <span class="c"># R8 — App Router, Server Actions, Tailwind, Vercel</span>
-│   ├── wizard-de-instalacao.md       <span class="c"># R9 — os cinco passos e o que testar</span>
-│   ├── pacotes-de-atualizacao.md     <span class="c"># R10 — manifesto, zip slip, migrações, rollback</span>
-│   ├── roteiro-de-testes-cowork.md   <span class="c"># R11 — as seis suítes, payloads, rastreabilidade</span>
-│   ├── checklist-de-revisao.md       <span class="c"># R12 — checklist + 7 perguntas adversariais</span>
-│   ├── release-e-deploy.md           <span class="c"># R13, R14 — SemVer, CHANGELOG, deploy, rollback</span>
-│   ├── rotas-e-urls.md               <span class="c"># R15 — convenções, roteador, 301, 404, tradução</span>
-│   └── vercel-build-e-correcao.md    <span class="c"># R16 — conectar, ler log, reproduzir, corrigir</span>
+│   ├── segredos-e-configuracao.md    <span class="c"># R1: .env, config fora do webroot, Vercel, rotação</span>
+│   ├── git-e-publicacao.md           <span class="c"># R2: privado por padrão, commits, publicação</span>
+│   ├── fluxo-spec-driven.md          <span class="c"># R3: fases, portões, anatomia da spec</span>
+│   ├── protocolo-de-verificacao.md   <span class="c"># R4: hierarquia de fontes, comandos, armadilhas</span>
+│   ├── sql-e-acesso-a-dados.md       <span class="c"># R5. PDO, LIKE, IN, ORDER BY, transações, Next.js</span>
+│   ├── entrada-e-saida-seguras.md    <span class="c"># R6: validação, escape, CSRF, upload, traversal</span>
+│   ├── linha-de-base-de-seguranca.md <span class="c"># R7: o piso de 12 itens e os níveis N1 a N4</span>
+│   ├── stack-php-mysql.md            <span class="c"># R8: layout, front controller, partials, Hostinger</span>
+│   ├── stack-nextjs-vercel.md        <span class="c"># R8. App Router, Server Actions, Tailwind, Vercel</span>
+│   ├── wizard-de-instalacao.md       <span class="c"># R9: os cinco passos e o que testar</span>
+│   ├── pacotes-de-atualizacao.md     <span class="c"># R10: manifesto, zip slip, migrações, rollback</span>
+│   ├── roteiro-de-testes-cowork.md   <span class="c"># R11: as seis suítes, payloads, rastreabilidade</span>
+│   ├── checklist-de-revisao.md       <span class="c"># R12: checklist + 7 perguntas adversariais</span>
+│   ├── release-e-deploy.md           <span class="c"># R13, R14. SemVer, CHANGELOG, deploy, rollback</span>
+│   ├── rotas-e-urls.md               <span class="c"># R15: convenções, roteador, 301, 404, tradução</span>
+│   ├── vercel-build-e-correcao.md    <span class="c"># R16: conectar, ler log, reproduzir, corrigir</span>
+│   └── linguagem-e-texto-da-interface.md <span class="c"># R17: domínio, travessão, microcopy, tipografia</span>
 └── assets/
     ├── templates/                    <span class="c"># wizard, updater, Database.php, db.ts, schema,</span>
     │                                 <span class="c">#   migração, manifesto, .htaccess, spec, roteiro…</span>
-    └── scripts/                      <span class="c"># scan-secrets.sh · scan-sql-injection.sh</span></pre>
+    └── scripts/                      <span class="c"># scan-secrets.sh · scan-sql-injection.sh</span>
+                                      <span class="c"># scan-linguagem.sh</span></pre>
   </div>
 </section>
 
@@ -637,7 +715,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
         <tr><td>Os scanners pegam tudo?</td>
             <td>Não. Eles pegam padrões conhecidos. Um segredo que pareça texto comum passa; uma consulta
                 montada em várias linhas pode escapar da varredura por linha. Varredura limpa é
-                <b class="font-semibold text-gray-950 dark:text-white">necessária, não suficiente</b> — leia o seu próprio diff.</td></tr>
+                <b class="font-semibold text-gray-950 dark:text-white">necessária, não suficiente</b>: leia o seu próprio diff.</td></tr>
         <tr><td>Funciona com Laravel, WordPress, Django?</td>
             <td>Não foi feita para eles. As regras de segurança (R1, R5, R6, R7) valem em qualquer stack, mas
                 as trilhas, os templates e os scanners assumem PHP puro + MySQL ou Next.js.</td></tr>
@@ -649,11 +727,11 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
                 inacessível, a instrução é dizer "não consigo verificar" e oferecer os dois passos que
                 destravariam.</td></tr>
         <tr><td>Posso discordar de uma regra?</td>
-            <td>Pode. É Markdown, e é seu — edite o <code>SKILL.md</code>. As regras são absolutas porque
+            <td>Pode. É Markdown, e é seu: edite o <code>SKILL.md</code>. As regras são absolutas porque
                 preferência suave erode sob prazo, não porque sejam sagradas.</td></tr>
         <tr><td>Por que repositório privado por padrão?</td>
             <td>Porque um <code>.env</code> apagado há dez commits continua legível no histórico. Publicar é
-                uma decisão consciente, tomada depois de varrer o histórico completo — não o estado atual
+                uma decisão consciente, tomada depois de varrer o histórico completo, não o estado atual
                 dos arquivos.</td></tr>
         <tr><td>URL amigável não é só estética?</td>
             <td>Não. <code>/usuarios/cadastro.php</code> entrega a linguagem, a árvore de pastas e o nome do

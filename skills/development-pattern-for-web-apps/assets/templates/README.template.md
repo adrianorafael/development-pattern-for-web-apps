@@ -31,7 +31,7 @@
 
 <Dois ou três parágrafos: o problema que resolve, quem usa, o que ele deliberadamente não faz.>
 
-**Não faz:** <lista curta — evita expectativa errada e defeito falso no QA.>
+**Não faz:** <lista curta: evita expectativa errada e defeito falso no QA.>
 
 ---
 
@@ -62,7 +62,7 @@
 
 ### PHP na Hostinger
 
-1. **Crie o banco** — hPanel → Bancos de dados → MySQL. Anote nome, usuário e senha.
+1. **Crie o banco**: hPanel → Bancos de dados → MySQL. Anote nome, usuário e senha.
 2. **Envie os arquivos** para `public_html/` (Git, FTP ou upload de ZIP).
    Não envie: `.git/`, `.env`, `tests/`, `specs/`, `qa/`, `node_modules/`.
 3. **Confira as permissões:** `config/` e `storage/` graváveis (755).
@@ -134,7 +134,7 @@ Publicação: importe o repositório na Vercel, defina as variáveis em
 
 ## Atualização
 
-Pelo **painel administrativo** (forma preferida — faz backup, valida e sabe voltar atrás):
+Pelo **painel administrativo** (forma preferida: faz backup, valida e sabe voltar atrás):
 
 1. **Administração → Atualizações**.
 2. Envie o arquivo `<app>-<versão>.zip`.
@@ -184,7 +184,7 @@ Restaurar manualmente:
 
 Este projeto segue o
 [Development Pattern for Web Apps](https://github.com/adrianorafael/development-pattern-for-web-apps).
-Antes de qualquer mudança, leia `AGENTS.md` — ele traz as convenções e as armadilhas já
+Antes de qualquer mudança, leia `AGENTS.md`, ele traz as convenções e as armadilhas já
 encontradas aqui.
 
 ```bash
@@ -204,7 +204,7 @@ bash skills/development-pattern-for-web-apps/assets/scripts/scan-sql-injection.s
 
 ## Testes
 
-O roteiro completo está em [`qa/roteiro-de-testes.md`](qa/roteiro-de-testes.md) — escrito
+O roteiro completo está em [`qa/roteiro-de-testes.md`](qa/roteiro-de-testes.md): escrito
 para ser executado pelo **Claude Cowork** ou por uma pessoa, sem conhecimento prévio do
 código.
 
@@ -224,7 +224,7 @@ Credenciais e seed: [`qa/dados-de-teste.md`](qa/dados-de-teste.md).
 
 ## Segurança
 
-Nível **N2** (área logada, dados dos próprios usuários) — ver R7 do padrão.
+Nível **N2** (área logada, dados dos próprios usuários): ver R7 do padrão.
 
 - Todas as consultas SQL são parametrizadas (prepared statements).
 - Senhas com `password_hash()`; nunca `md5`/`sha1`.
