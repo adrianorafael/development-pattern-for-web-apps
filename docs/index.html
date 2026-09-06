@@ -135,7 +135,7 @@
 
   <div class="mt-10 grid gap-5 lg:grid-cols-3">
     <div class="cartao cartao-realce"><h3>Início</h3>
-      <p>Seis perguntas em um lote, a documentação oficial lida <b class="font-semibold text-gray-800 dark:text-gray-200">ao vivo</b>,
+      <p>As perguntas de bootstrap em um lote (seis na trilha PHP, sete na Next.js), a documentação oficial lida <b class="font-semibold text-gray-800 dark:text-gray-200">ao vivo</b>,
          e então uma spec com requisitos numerados e casos de teste, e uma parada para a sua aprovação.
          Nenhuma linha de implementação existe ainda.</p>
       <div class="cartao-nota">Conduzido pela skill</div></div>
@@ -155,9 +155,10 @@
 <pre class="bloco"><span class="c">1. Você pede</span>
 <span class="s">"Faz um sistema de controle de chamados em PHP e MySQL pra eu subir na Hostinger."</span>
 
-<span class="c">2. Seis perguntas, um lote</span>
+<span class="c">2. As perguntas de bootstrap, um lote</span>
 Trilha? Repositório (novo nasce privado)? Versão do PHP e acesso da hospedagem?
 Tem login, dado pessoal, pagamento, upload? Nome e versão inicial? Quem executa o QA?
+Na trilha Next.js, mais uma: posso me conectar à sua conta da Vercel?
 
 <span class="c">3. A documentação é lida, não lembrada</span>
 php.net · docs da Hostinger · MySQL · OWASP  <span class="p">→</span>  registro de evidências com data
@@ -171,7 +172,8 @@ rotas nomeadas, critérios de aceite (dado/quando/então), nível de segurança,
 Você constrói. Ela segura três linhas e sai da frente.
 
 <span class="c">6. O código pronto é verificado</span>
-php -l · composer audit · scan-secrets.sh · scan-sql-injection.sh · checklist de revisão
+php -l · composer audit · scan-secrets.sh · scan-sql-injection.sh · scan-linguagem.sh
+· checklist de revisão
 <span class="c">+ as sete perguntas adversariais ("qual linha deste diff eu atacaria primeiro?")</span>
 
 <span class="c">7. O roteiro de testes é gerado e executado</span>
@@ -674,7 +676,8 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
       <div class="cartao"><h3>Rode os scanners quando quiser</h3>
         <div class="painel-codigo mt-3">
 <pre class="bloco"><span class="p">bash</span> .../scan-secrets.sh
-<span class="p">bash</span> .../scan-sql-injection.sh</pre>
+<span class="p">bash</span> .../scan-sql-injection.sh
+<span class="p">bash</span> .../scan-linguagem.sh</pre>
         </div></div>
     </div>
   </div>
@@ -710,7 +713,7 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
     ├── templates/                    <span class="c"># wizard, updater, Database.php, db.ts, schema,</span>
     │                                 <span class="c">#   migração, manifesto, .htaccess, spec, roteiro…</span>
     └── scripts/                      <span class="c"># scan-secrets.sh · scan-sql-injection.sh</span>
-                                      <span class="c"># scan-linguagem.sh</span></pre>
+                                      <span class="c">#   · scan-linguagem.sh</span></pre>
   </div>
 </section>
 
@@ -766,7 +769,6 @@ Um caso por critério de aceite + um de SQL injection para CADA campo que chega 
     </p>
     <nav aria-label="Links do rodapé" class="flex flex-wrap gap-x-5 gap-y-2 text-sm/6">
       <a href="https://github.com/adrianorafael/development-pattern-for-web-apps" class="link">Código no GitHub</a>
-      <a href="https://github.com/adrianorafael/development-pattern-for-Dynatrace" class="link">Development Pattern for Dynatrace</a>
       <a href="https://agentskills.io" class="link">Agent Skills</a>
     </nav>
   </div>

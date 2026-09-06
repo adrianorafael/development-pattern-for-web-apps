@@ -65,7 +65,7 @@ página. Nunca responda só de memória.
 | Riscos e defesas por categoria | https://owasp.org/www-project-top-ten/ e as OWASP Cheat Sheets |
 | O que já está instalado neste projeto | `composer show`, `npm ls`, `php -m` |
 
-Saída da fase: um **registro de evidências**: afirmação → fonte → verificado. Ele vai
+Saída da fase: um **registro de evidências** no formato afirmação → fonte → verificado. Ele vai
 inteiro para a spec.
 
 Não comece a spec com uma pergunta estrutural em aberto. "Eu decido o modelo de dados

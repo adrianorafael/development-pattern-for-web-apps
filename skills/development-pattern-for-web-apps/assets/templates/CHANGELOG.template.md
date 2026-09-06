@@ -3,7 +3,7 @@
 Todas as mudanças relevantes de **<Nome do App>** são registradas aqui.
 
 Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
-Versionamento: [SemVer](https://semver.org/lang/pt-BR/): aplicado como a regra **R13** do
+Versionamento: [SemVer](https://semver.org/lang/pt-BR/), aplicado como a regra **R13** do
 [Development Pattern for Web Apps](https://github.com/adrianorafael/development-pattern-for-web-apps)
 define: "quebrar" significa quebrar para **quem usa o aplicativo**.
 

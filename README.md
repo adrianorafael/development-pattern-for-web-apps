@@ -32,8 +32,8 @@ OpenCode e Gemini CLI, e entra em ação no momento em que o agente começa a tr
 app web.
 
 Ela codifica **dezessete regras inegociáveis** e um **pipeline de oito fases** com três
-portões duros: nada de spec sem pesquisa, nada de push sem varredura, nada de deploy sem
-alvo nomeado e caminho de volta.
+portões duros: nada de código sem spec aprovada, nada de push sem a versão e a documentação
+no mesmo commit, nada de produção sem alvo nomeado e caminho de volta.
 
 Não traz cópia da documentação de ninguém. php.net, nextjs.org, tailwindcss.com, a
 documentação da Hostinger e da Vercel e as OWASP Cheat Sheets são referenciadas por URL e
@@ -100,7 +100,8 @@ Troque `.claude/skills/` pelo caminho que o seu agente lê (`.agents/skills/`,
 
 **Carregue com o primeiro prompt sobre o app, e depois só construa.** A skill dispara
 sozinha quando você menciona PHP, MySQL, Hostinger, Next.js, Vercel, Tailwind, SQL injection,
-wizard de instalação ou roteiro de testes, ou chame-a pelo nome.
+wizard de instalação, painel administrativo, rotas amigáveis, roteiro de testes ou Cowork.
+Também dá para chamá-la pelo nome.
 
 ```
 "Faz um sistema de controle de chamados em PHP e MySQL pra eu subir na Hostinger."
@@ -115,9 +116,9 @@ Esta é a parte que importa, e é o oposto do que "dezessete regras" costuma sug
 
 | | O que acontece | Quem conduz |
 | --- | --- | --- |
-| **Início** | Seis perguntas em um lote → documentação lida **ao vivo** → `specs/<slug>.md` com requisitos e casos de teste → ⛔ sua aprovação | A skill. Nenhuma linha de implementação existe ainda. |
+| **Início** | As perguntas de bootstrap em um lote (seis na trilha PHP, sete na Next.js) → documentação lida **ao vivo** → `specs/<slug>.md` com requisitos e casos de teste → ⛔ sua aprovação | A skill. Nenhuma linha de implementação existe ainda. |
 | **Meio** | Construa. Itere, mude de ideia, jogue trabalho fora. | **Você.** É aqui que o vibecoding acontece, e a skill sai da frente: ela só segura três invariantes: SQL parametrizado, nenhum segredo versionado, nenhuma API inventada. |
-| **Fim** | O código que existe é verificado: lint, testes, varredura de segredos e de SQL injection, revisão de segurança, roteiro de QA gerado e executado, versão e documentação atualizadas → ⛔ aprovação → push → ⛔ aprovação → deploy | A skill. Item por item, contra o código real. |
+| **Fim** | O código que existe é verificado: lint, testes, as três varreduras (segredos, SQL injection e linguagem), revisão de segurança, roteiro de QA gerado e executado, versão e documentação atualizadas → ⛔ aprovação → push → ⛔ aprovação → deploy | A skill. Item por item, contra o código real. |
 
 O objetivo não é deixar a construção lenta. É tornar o **começo deliberado** e o **fim
 verificado**, para que a parte rápida do meio continue rápida sem acumular dívida em
@@ -129,10 +130,11 @@ silêncio.
 
 > Faz um sistema de controle de chamados em PHP e MySQL pra eu subir na Hostinger.
 
-**2. Seis perguntas, em um lote.** Trilha? Repositório (novo já nasce privado)? Versão do
-PHP e acesso da hospedagem? Tem login, dado pessoal, pagamento, upload? Nome e versão
-inicial? Quem executa o QA: você, o Cowork, ou os dois? Toda decisão posterior se refere a
-essas respostas, em vez de repetir a pergunta.
+**2. As perguntas de bootstrap, em um lote.** Trilha? Repositório (novo já nasce privado)?
+Versão do PHP e acesso da hospedagem? Tem login, dado pessoal, pagamento, upload? Nome e
+versão inicial? Quem executa o QA: você, o Cowork, ou os dois? Na trilha Next.js entra ainda
+uma sétima: posso me conectar à sua conta da Vercel para diagnosticar build quebrado? Toda
+decisão posterior se refere a essas respostas, em vez de repetir a pergunta.
 
 **3. A documentação é lida, não lembrada.** php.net para as funções que serão usadas, a
 documentação da Hostinger para os limites do plano, MySQL para tipos e índices, OWASP para
@@ -156,13 +158,13 @@ aqui. Ela segura três linhas: nenhuma variável dentro de uma string SQL, nenhu
 em arquivo versionado, nenhuma função ou prop usada sem ter sido verificada.
 
 **6. O código pronto é verificado.** `php -l` em todos os arquivos, `composer audit`,
-`scan-secrets.sh`, `scan-sql-injection.sh`, e o checklist de revisão lido contra o diff: com
-as sete perguntas adversariais no fim ("se eu fosse o invasor, qual linha deste diff eu
+`scan-secrets.sh`, `scan-sql-injection.sh`, `scan-linguagem.sh`, e o checklist de revisão
+lido contra o diff, com as sete perguntas adversariais no fim ("se eu fosse o invasor, qual linha deste diff eu
 atacaria primeiro?").
 
 **7. O roteiro de testes é gerado e executado.** Um caso por critério de aceite, mais um
-caso de SQL injection para **cada** campo que chega ao banco, mais XSS, IDOR, CSRF, upload e
-cabeçalhos. Entregue com números: quantos casos, quantos de segurança, quais requisitos
+caso de SQL injection para **cada** campo que chega ao banco, mais XSS, IDOR, CSRF, upload,
+rotas e cabeçalhos. Entregue com números: quantos casos, quantos de segurança, quais requisitos
 ficaram sem cobertura.
 
 **8. Versão, documentação, push, deploy.** Versão em SemVer, CHANGELOG datado, README
@@ -172,8 +174,8 @@ nomeia o domínio, a migração pendente e o backup antes do deploy.
 ### Configure uma vez por repositório
 
 Copie [`AGENTS.template.md`](skills/development-pattern-for-web-apps/assets/templates/AGENTS.template.md)
-para o repositório do app como `AGENTS.md`. Assim a próxima sessão herda o padrão: incluindo
-as armadilhas que você já encontrou: em vez de começar do zero.
+para o repositório do app como `AGENTS.md`. Assim a próxima sessão herda o padrão, incluindo
+as armadilhas que você já encontrou, em vez de começar do zero.
 
 ## As dezessete regras
 
@@ -206,23 +208,27 @@ as armadilhas que você já encontrou: em vez de começar do zero.
 1 PESQUISA    documentação oficial do stack, lida ao vivo
               → registro de evidências: afirmação → URL/arquivo → verificado
 
-2 SPEC        specs/<slug>.md: RF-nnn, critérios de aceite, casos CT-nnn,
+2 SPEC        specs/<slug>.md: requisitos RF-nnn, critérios de aceite, casos CT-nnn,
               modelo de dados, superfície de ataque, nível de segurança
               → ⛔ PORTÃO DE APROVAÇÃO
 
-3 BUILD       componentes, SQL parametrizado, segredos fora, wizard e updater no PHP
+3 BUILD       componentes, rotas semânticas, SQL parametrizado, segredos fora,
+              wizard e updater no PHP        → cada símbolo rastreado a uma fonte
 
-4 VALIDAÇÃO   lint + tipos + testes + scan-secrets + scan-sql-injection + revisão
+4 VALIDAÇÃO   lint + tipos + testes unitários + testes de integração
+              + scan-secrets.sh + scan-sql-injection.sh + scan-linguagem.sh
+              + checklist de revisão
               → resultados reais, reportados honestamente
 
-5 QA/COWORK   gerar qa/roteiro-de-testes.md e executá-lo
-              → evidências, defeitos, suíte de regressão atualizada
+5 QA/COWORK   gerar qa/roteiro-de-testes.md e executá-lo (ou entregá-lo ao Cowork)
+              → evidências, defeitos registrados, suíte de regressão atualizada
 
-6 RELEASE     versão + CHANGELOG + README + versão do schema
+6 RELEASE     versão SemVer + CHANGELOG + README + versão do schema
               → ⛔ PORTÃO DE APROVAÇÃO antes do push
 
-7 DEPLOY      Hostinger ou Vercel, alvo nomeado, backup, migração, rollback
-              → ⛔ PORTÃO DE APROVAÇÃO antes do deploy
+7 DEPLOY      Hostinger (FTP/SSH/Git) ou Vercel, alvo nomeado, backup, migração, rollback
+              build quebrado: log → reproduzir → corrigir → provar → 1 push (teto de 3)
+              → ⛔ PORTÃO DE APROVAÇÃO antes de promover para produção
 ```
 
 ## SQL injection: a regra que mais importa
@@ -272,7 +278,7 @@ SQL rodar em que ordem, por que a página está em branco.
 | --- | --- |
 | **1 · Requisitos** | Versão do PHP, extensões, permissões de escrita, `mod_rewrite`, HTTPS: cada item com o valor encontrado, o exigido e **a instrução de correção no hPanel** |
 | **2 · Banco** | Host, porta, banco, usuário, senha. Testa a conexão na hora e **traduz o erro do MySQL** ("1045" vira "usuário ou senha incorretos, confira em hPanel → Bancos de dados") |
-| **3 · Estrutura** | Detecta o estado da base: cria do zero, mantém os dados, ou **limpa e recria**: este último exigindo digitar `APAGAR`, com a lista das tabelas e a contagem de linhas na tela |
+| **3 · Estrutura** | Detecta o estado da base: cria do zero, mantém os dados, ou **limpa e recria**. O último exige digitar `APAGAR`, com a lista das tabelas e a contagem de linhas na tela |
 | **4 · Administrador** | Primeiro admin, com `password_hash`. Nunca um `admin/admin` "para facilitar" |
 | **5 · Conclusão** | Grava a configuração fora do webroot, registra a versão do schema, **se tranca**, e manda apagar a pasta `install/` |
 
@@ -648,8 +654,3 @@ uma regra renumerada, uma referência removida, um contrato de template alterado
 **Versão atual: 1.0.0.**
 
 Correções e adições são bem-vindas: abra uma issue ou um pull request.
-
----
-
-Projeto irmão: [Development Pattern for Dynatrace](https://github.com/adrianorafael/development-pattern-for-Dynatrace):
-o mesmo formato de guarda-corpo, aplicado à construção de Apps nativos do Dynatrace.

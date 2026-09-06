@@ -3,7 +3,7 @@
 Todas as mudanças relevantes de **Development Pattern for Web Apps** são registradas aqui.
 
 Formato: [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
-Versionamento: [SemVer](https://semver.org/lang/pt-BR/): aplicado a esta skill do mesmo
+Versionamento: [SemVer](https://semver.org/lang/pt-BR/), aplicado a esta skill do mesmo
 jeito que a regra [R13](skills/development-pattern-for-web-apps/references/release-e-deploy.md)
 exige dos aplicativos que ela ajuda a construir. "Quebrar" significa quebrar para quem
 **usa** a skill: uma regra renumerada, uma referência removida, um contrato de template

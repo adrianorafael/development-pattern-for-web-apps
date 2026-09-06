@@ -163,8 +163,8 @@ RF-007
 ## 11. Questões em aberto
 
 1. Acrescentar uma terceira trilha (WordPress como tema/plugin) quando houver projeto que peça.
-2. Publicar um app de demonstração construído sob este padrão, como o
-   *Command Center for Dynatrace* é para a skill irmã.
+2. Publicar um app de demonstração construído sob este padrão, para a skill ter uma
+   referência viva do que ela produz.
 
 ---
 
