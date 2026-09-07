@@ -686,6 +686,25 @@ cp $T/commit-msg.template  .git/hooks/commit-msg
 chmod +x .git/hooks/pre-commit .git/hooks/commit-msg
 ```
 
+E desligue a atribuição automática na origem (R18). No Claude Code, em
+`~/.claude/settings.json` para valer em todos os projetos, ou em `.claude/settings.json`
+para valer só neste:
+
+```json
+{
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  }
+}
+```
+
+Os três campos importam: `commit` zera o rodapé do commit, `pr` zera o do pull request, e
+`sessionUrl: false` suprime o trailer `Claude-Session:` que sessões web e de Remote Control
+acrescentam por conta própria. O hook é a rede que pega o que passar da configuração,
+inclusive na máquina onde ninguém lembrou de mexer nela.
+
 Rode os scanners a qualquer momento:
 
 ```bash

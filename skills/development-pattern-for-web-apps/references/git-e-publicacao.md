@@ -123,15 +123,38 @@ dia vira público, vira a primeira coisa que alguém repara.
 **Não basta o agente lembrar.** Alguns ambientes acrescentam o trailer **automaticamente**,
 depois que a mensagem foi escrita. Por isso a defesa é mecânica, e são duas camadas:
 
-1. **Desligue na configuração do seu ambiente**, se ele tiver essa opção. No Claude Code a
-   chave fica em `settings.json`; confirme o nome exato na documentação da sua versão (R4).
+1. **Desligue na configuração do seu ambiente.** No Claude Code é o bloco `attribution` em
+   `settings.json`, com três campos independentes. String vazia esconde o texto; `sessionUrl`
+   controla o link de sessão que sessões web e de Remote Control acrescentam por conta
+   própria:
+
+   ```json
+   {
+     "attribution": {
+       "commit": "",
+       "pr": "",
+       "sessionUrl": false
+     }
+   }
+   ```
+
+   Os três precisam estar lá. Zerar só `commit` deixa o corpo do pull request assinado, e
+   zerar os dois primeiros ainda deixa passar o trailer `Claude-Session:` quando o commit
+   nasce numa sessão web. Existe também `includeCoAuthoredBy: false`, mais antigo e marcado
+   como obsoleto no schema: ele cobre commit e pull request de uma vez, mas não o link de
+   sessão. Prefira o bloco acima.
+
+   O arquivo vai em `~/.claude/settings.json` para valer em todos os seus projetos, ou em
+   `.claude/settings.json` dentro do repositório para valer só nele. Confirme os nomes contra
+   o schema da sua versão antes de confiar (R4): esta lista foi conferida em 07/09/2026.
+
 2. **Instale o hook**, que pega o que passar da configuração:
 
-```bash
-cp skills/development-pattern-for-web-apps/assets/templates/commit-msg.template \
-   .git/hooks/commit-msg
-chmod +x .git/hooks/commit-msg
-```
+   ```bash
+   cp skills/development-pattern-for-web-apps/assets/templates/commit-msg.template \
+      .git/hooks/commit-msg
+   chmod +x .git/hooks/commit-msg
+   ```
 
 O hook roda depois de a mensagem estar pronta, que é exatamente onde o trailer automático
 aparece. Ele recusa o commit e mostra a linha ofensora.
@@ -143,10 +166,20 @@ git log --format='%h %s' --grep='Co-Authored-By' --grep='Generated with' --grep=
 git log --all --format='%b' | grep -inE 'co-authored-by|generated with|claude\.ai/code'
 ```
 
-Encontrou em histórico já publicado? Limpar exige reescrever o histórico
-(`git filter-repo --message-callback`), o que muda todos os hashes. Num repositório pessoal
-sem forks o custo é baixo; ainda assim é decisão sua, e vale mais impedir daqui para a frente
-do que reescrever o passado.
+Encontrou em histórico já publicado? Limpar exige reescrever o histórico, o que muda todos
+os hashes. A ferramenta recomendada é `git filter-repo`, que quase nunca vem instalada
+(`pip install git-filter-repo`). O `git filter-branch`, que vem junto com o Git, resolve num
+repositório pequeno:
+
+```bash
+git filter-branch -f --msg-filter \
+  'grep -vE "^(Co-Authored-By|Claude-Session|Assisted-By):" || true' -- --all
+git push --force-with-lease origin <ramo>
+```
+
+Num repositório pessoal sem forks e sem release publicado o custo é baixo. Ainda assim, o
+force-push apaga o histórico antigo para qualquer clone que já exista, então é decisão
+consciente: vale mais impedir daqui para a frente do que reescrever o passado.
 
 ---
 

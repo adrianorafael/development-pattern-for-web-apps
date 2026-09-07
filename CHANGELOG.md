@@ -74,9 +74,11 @@ Primeira versão.
 - **R18: nenhuma atribuição de IA nos artefatos do projeto.** Nada de `Co-Authored-By`,
   "Generated with", link de sessão ou "Assisted-By" em commit, pull request, README, página
   ou comentário de código, em duas camadas: desligar a inserção automática na configuração
-  da ferramenta e o hook `commit-msg`, que recusa a mensagem e mostra a linha ofensora. A
-  referência traz os comandos de auditoria do histórico existente e o de reescrita, com o
-  aviso de que reescrever histórico já publicado quebra o clone de quem já baixou.
+  da ferramenta (no Claude Code, os três campos de `attribution` em `settings.json`, o
+  terceiro deles suprimindo o link de sessão que sessões web acrescentam sozinhas) e o hook
+  `commit-msg`, que recusa a mensagem e mostra a linha ofensora. A referência traz os
+  comandos de auditoria do histórico existente e o de reescrita com `git filter-branch`,
+  com o aviso de que reescrever histórico já publicado quebra o clone de quem já baixou.
 - **R11: roteiro de testes para o Claude Cowork** em toda entrega: seis suítes (fumaça,
   funcional, integração, segurança, interface, regressão), matriz de rastreabilidade
   requisito × caso, registro de execução, catálogo de payloads de SQL injection, XSS, IDOR,

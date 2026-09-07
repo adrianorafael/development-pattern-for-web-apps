@@ -51,14 +51,16 @@ if [ "$ACHOU" -eq 1 ]; then
   echo
   echo "Remova essas linhas da mensagem e faça o commit de novo."
   echo
-  echo "Se o seu ambiente acrescenta o trailer sozinho, procure a configuração que o"
-  echo "desliga (no Claude Code ela fica em settings.json; confira o nome na documentação"
-  echo "da sua versão). Este hook é a rede que pega o que passar dela."
+  echo "Se o seu ambiente acrescenta o trailer sozinho, desligue na origem. No Claude Code,"
+  echo "em ~/.claude/settings.json ou .claude/settings.json do projeto:"
   echo
-  echo "Para limpar o histórico já existente:"
-  echo "   git log --format='%H %s' --grep='Co-Authored-By' --grep='Generated with' --all-match"
-  echo "   git filter-repo --message-callback ..." 
-  echo "   (reescrever histórico publicado exige combinar com quem clonou)"
+  echo '   { "attribution": { "commit": "", "pr": "", "sessionUrl": false } }'
+  echo
+  echo "Este hook é a rede que pega o que passar dela."
+  echo
+  echo "Para auditar o histórico já existente:"
+  echo "   git log --all --format='%b' | grep -inE 'co-authored-by|generated with|claude-session'"
+  echo "   (reescrever histórico já publicado muda todos os hashes e quebra o clone alheio)"
   exit 1
 fi
 

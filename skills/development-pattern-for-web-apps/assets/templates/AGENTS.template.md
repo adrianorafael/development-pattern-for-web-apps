@@ -46,7 +46,7 @@ As dezoito regras inegociáveis valem para toda mudança neste repositório, inc
 | **Prefixo de tabelas** | `<vazio ou app_>` |
 | **Projeto Vercel** | `<nome>`, token em `.env`, nunca versionado |
 | **Domínio e público (R17)** | `<banco / ITSM / saúde / interno>`, lendo `<quem>` |
-| **Atribuição de IA (R18)** | Nenhuma. Hook `commit-msg` instalado |
+| **Atribuição de IA (R18)** | Nenhuma. Hook `commit-msg` instalado, `attribution` zerado no `settings.json` |
 
 ## Convenções deste repositório
 

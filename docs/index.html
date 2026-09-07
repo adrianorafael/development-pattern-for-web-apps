@@ -697,8 +697,18 @@ atribuição de IA <span class="c">(R18)</span>
   <div class="mt-6 grid gap-5 lg:grid-cols-2">
     <div class="cartao"><h3>Na configuração da ferramenta</h3>
       <p>A opção que insere o rodapé automaticamente fica desligada, para o trailer nunca chegar a ser
-         escrito. É a camada que resolve o caso comum, e vale igual para pull request: título e corpo
-         descrevem a mudança, não quem ajudou a digitá-la.</p>
+         escrito. No Claude Code são três campos, e os três importam: o terceiro é o link de sessão,
+         que sessões web acrescentam por conta própria.</p>
+      <div class="painel-codigo mt-4">
+        <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>~/.claude/settings.json</div>
+<pre class="bloco">{
+  <span class="v">"attribution"</span>: {
+    <span class="v">"commit"</span>: <span class="s">""</span>,
+    <span class="v">"pr"</span>: <span class="s">""</span>,
+    <span class="v">"sessionUrl"</span>: <span class="p">false</span>
+  }
+}</pre>
+      </div>
       <div class="cartao-nota">Configuração se perde ao trocar de máquina, ao reinstalar, ao clonar em
         outro lugar. Por isso ela sozinha não basta.</div></div>
     <div class="cartao"><h3>No hook do repositório</h3>

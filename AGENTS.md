@@ -56,7 +56,10 @@ As dezoito regras que ele define valem também para este repositório.
 - **R18: nenhum commit deste repositório credita uma ferramenta de IA.** Nada de
   `Co-Authored-By`, "Generated with", link de sessão ou "Assisted-By" em mensagem de commit,
   título ou corpo de pull request. Se a sua ferramenta insere o rodapé automaticamente,
-  desligue a opção antes do primeiro commit e instale o hook:
+  desligue antes do primeiro commit e instale o hook. No Claude Code, em
+  `~/.claude/settings.json` ou em `.claude/settings.json` do projeto, os três campos:
+  `{"attribution": {"commit": "", "pr": "", "sessionUrl": false}}`. O terceiro é o que
+  suprime o trailer `Claude-Session:` das sessões web.
 
   ```bash
   cp skills/development-pattern-for-web-apps/assets/templates/commit-msg.template \
