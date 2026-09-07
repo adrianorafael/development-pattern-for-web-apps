@@ -122,7 +122,7 @@ Esta é a parte que importa, e é o oposto do que "dezoito regras" costuma suger
 | **Fim** | O código que existe é verificado: lint, testes, as três varreduras (segredos, SQL injection e linguagem), revisão de segurança, roteiro de QA gerado e executado, versão e documentação atualizadas → ⛔ aprovação → push → ⛔ aprovação → deploy | A skill. Item por item, contra o código real. |
 
 O objetivo não é deixar a construção lenta. É tornar o **começo deliberado** e o **fim
-verificado**, para que a parte rápida do meio continue rápida sem acumular dívida em
+verificado**, para que a parte rápida do meio continue rápida sem acumular débito técnico em
 silêncio.
 
 ### Como é uma sessão de verdade
@@ -352,7 +352,7 @@ Fecha com a **matriz de rastreabilidade** requisito × caso, que **declara por n
 requisitos sem cobertura em vez de omiti-los, e com o registro de execução em números:
 aprovados, reprovados, bloqueados. Qualquer defeito 🔴 em aberto bloqueia o release.
 
-E com nove regras endereçadas a quem executa: entre elas: *não conserte a aplicação durante
+E com nove regras voltadas a quem executa: entre elas: *não conserte a aplicação durante
 o teste*, *relate o que observou, não o que deveria acontecer*, e *caso não executado é
 BLOQUEADO, nunca FALHOU*.
 

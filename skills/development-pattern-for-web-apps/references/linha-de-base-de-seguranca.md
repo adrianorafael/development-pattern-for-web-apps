@@ -203,7 +203,7 @@ export default { async headers() { return [{ source: '/:path*', headers }]; } };
 **CSP quebra as coisas antes de proteger.** Suba primeiro em `Content-Security-Policy-Report-Only`,
 veja o que reclama no console, ajuste, e só então torne obrigatória. `'unsafe-inline'` em
 `script-src` anula a maior parte do benefício: se o projeto precisa dele, registre isso na
-spec como dívida consciente.
+spec como débito técnico consciente.
 
 Confira o resultado real, não a intenção:
 

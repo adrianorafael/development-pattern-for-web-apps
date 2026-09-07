@@ -133,7 +133,7 @@ Os cinco elementos que tornam um caso executável por um agente:
 
 ## 5. Regras de execução (vão no cabeçalho do roteiro)
 
-Estas regras são endereçadas a **quem executa**: o Claude Cowork ou uma pessoa:
+Estas regras são voltadas a **quem executa**: o Claude Cowork ou uma pessoa:
 
 1. **Não conserte a aplicação durante o teste.** Encontrou defeito? Registre e siga. Corrigir
    no meio invalida a execução inteira.

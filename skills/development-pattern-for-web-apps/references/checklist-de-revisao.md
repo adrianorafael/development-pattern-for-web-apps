@@ -194,7 +194,7 @@ Honestamente e com números:
 > de download, o que permitia baixar anexo de outro usuário.
 >
 > **Pendente, com sua decisão:** a listagem de anexos não tem paginação. Com o volume atual
-> (dezenas) não é problema; acima de mil ficará lenta. Registrei como dívida na spec.
+> (dezenas) não é problema; acima de mil ficará lenta. Registrei como débito técnico na spec.
 >
 > **Verificações:** `php -l` limpo em 11 arquivos · `scan-secrets.sh` limpo ·
 > `scan-sql-injection.sh` limpo · `composer audit` sem vulnerabilidade ·
