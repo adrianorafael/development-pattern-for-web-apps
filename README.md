@@ -5,9 +5,10 @@
 **Development Pattern for Web Apps** é uma [Agent Skill](https://agentskills.io) criada e
 mantida por [@adrianorafael](https://github.com/adrianorafael).
 
-É um **guarda-corpo** para construir aplicações web pessoais com um agente de IA, em dois
-stacks: **HTML5 + PHP 8 + MySQL** hospedado na **Hostinger**, e **Next.js + Tailwind**
-publicado na **Vercel**.
+É um **guarda-corpo** para vibecoding: construir aplicações web pessoais com um agente de
+IA de forma **mais segura** e com **menor esforço seu**, porque o trabalho de segurança,
+teste e documentação passa a ser do agente. Em dois stacks: **HTML5 + PHP 8 + MySQL**
+hospedado na **Hostinger**, e **Next.js + Tailwind** publicado na **Vercel**.
 
 Vibecodar um app pessoal é rápido e agradável até o momento em que o agente concatena um
 `$_GET` dentro de um `WHERE`, versiona a senha do MySQL, entrega um sistema que ninguém sabe
