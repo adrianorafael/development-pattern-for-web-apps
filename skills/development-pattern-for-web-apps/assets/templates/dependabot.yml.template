@@ -1,0 +1,44 @@
+# ─────────────────────────────────────────────────────────────
+# .github/dependabot.yml. VERSIONADO.
+# Parte de "Development Pattern for Web Apps": regra R7, piso P12.
+#
+# Copie para .github/dependabot.yml (o arquivo vive na pasta .github
+# do repositório). Toda semana o Dependabot abre pull requests que
+# atualizam as dependências do npm e as actions dos workflows.
+#
+# Este arquivo cuida das ATUALIZAÇÕES DE VERSÃO. Os ALERTAS de
+# vulnerabilidade se ligam à parte, no repositório:
+#   Settings → Advanced Security (seção "Security and quality")
+#   → Dependabot alerts → Enable
+#
+# Cada pull request do Dependabot é mudança de dependência como outra
+# qualquer: build verde, varreduras limpas e diff do package-lock.json
+# lido antes do merge (git-e-publicacao.md, "O lockfile é contrato").
+#
+# Chaves conferidas em 2026-10-10 em
+# https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference
+#   version: sempre 2
+#   package-ecosystem: "npm" (npm, pnpm e yarn) e "github-actions"
+#   directory: "/" (para github-actions, o Dependabot procura em /.github/workflows)
+#   schedule.interval: daily, weekly, monthly, quarterly, semiannually, yearly ou cron
+#   open-pull-requests-limit: padrão 5
+# ─────────────────────────────────────────────────────────────
+
+version: 2
+updates:
+  # Dependências do app: package.json e package-lock.json na raiz.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+
+  # As actions usadas em .github/workflows/*.yml.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(ci)"

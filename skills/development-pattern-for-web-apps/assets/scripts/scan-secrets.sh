@@ -31,9 +31,9 @@ ACHADOS=0
 # nome|severidade|regex-estendida
 PADROES=(
   "Chave privada|ALTA|-----BEGIN ([A-Z ]+ )?PRIVATE KEY-----"
-  "String de conexão com credencial|ALTA|(mysql|mysqli|postgres|postgresql|mongodb(\+srv)?|redis|amqp|ftp|sftp)://[A-Za-z0-9._%+-]+:[^@[:space:]\"']{4,}@"
+  "String de conexão com credencial|ALTA|(postgres|postgresql|mongodb(\+srv)?|redis|rediss|amqp|ftp|sftp)://[A-Za-z0-9._%+-]+:[^@[:space:]\"']{4,}@"
   "Credencial embutida no código|ALTA|(senha|password|passwd|pwd|secret|api_?key|apikey|client_secret|access_key|auth_token|private_key|db_pass[a-z]*)[\"']?[[:space:]]*(=>|=|:|,)[[:space:]]*[\"'][^\"']{8,}[\"']"
-  "Variável de ambiente com valor|ALTA|^[[:space:]]*(DB_PASSWORD|DB_PASS|DB_USER|DATABASE_URL|AUTH_SECRET|NEXTAUTH_SECRET|JWT_SECRET|APP_KEY|SESSION_SECRET|SMTP_PASSWORD|MAIL_PASSWORD)[[:space:]]*=[[:space:]]*[\"']?[^[:space:]\"'#]{8,}"
+  "Variável de ambiente com valor|ALTA|^[[:space:]]*(DB_PASSWORD|DB_PASS|DB_USER|DATABASE_URL|POSTGRES_URL|POSTGRES_PRISMA_URL|POSTGRES_URL_NON_POOLING|POSTGRES_PASSWORD|SUPABASE_SECRET_KEY|SUPABASE_SERVICE_ROLE_KEY|SUPABASE_JWT_SECRET|SUPABASE_DB_PASSWORD|AUTH_SECRET|NEXTAUTH_SECRET|JWT_SECRET|SESSION_SECRET|ADMIN_SENHA_INICIAL|VERCEL_TOKEN|SMTP_PASSWORD)[[:space:]]*=[[:space:]]*[\"']?[^[:space:]\"'#]{8,}"
   "Chave AWS|ALTA|\b(AKIA|ASIA)[0-9A-Z]{16}\b"
   "Chave Stripe (produção)|ALTA|\b(sk|rk)_live_[0-9A-Za-z]{16,}"
   "Token do GitHub|ALTA|\b(ghp|gho|ghu|ghs|ghr)_[0-9A-Za-z]{30,}|\bgithub_pat_[0-9A-Za-z_]{30,}"
@@ -43,9 +43,10 @@ PADROES=(
   "Chave Resend|ALTA|\bre_[A-Za-z0-9_]{20,}"
   "Token Mercado Pago|ALTA|\bAPP_USR-[0-9a-zA-Z-]{20,}"
   "Token Vercel/Netlify|ALTA|\b(vercel|netlify)_[A-Za-z0-9]{24,}"
+  "Chave secreta do Supabase|ALTA|\bsb_secret_[A-Za-z0-9_-]{20,}"
   "JWT com payload legível|ALTA|\beyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}"
   "Bearer literal|ALTA|[Bb]earer[[:space:]]+[A-Za-z0-9._-]{25,}"
-  "Segredo em variável NEXT_PUBLIC_|ALTA|NEXT_PUBLIC_[A-Z0-9_]*(SECRET|PASSWORD|TOKEN|PRIVATE|DATABASE|DB_)"
+  "Segredo em variável NEXT_PUBLIC_|ALTA|NEXT_PUBLIC_[A-Z0-9_]*(SECRET|SERVICE_ROLE|PASSWORD|TOKEN|PRIVATE|DATABASE|DB_)"
   "Endereço de e-mail|MEDIA|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"
   "CPF|MEDIA|\b[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]{2}\b"
   "CNPJ|MEDIA|\b[0-9]{2}\.[0-9]{3}\.[0-9]{3}/[0-9]{4}-[0-9]{2}\b"
@@ -114,7 +115,7 @@ varrer_arquivo() {
   caminho_ignorado "$f" && return 0
   case "$f" in
     *.png|*.jpg|*.jpeg|*.gif|*.ico|*.webp|*.woff|*.woff2|*.ttf|*.pdf|*.zip|*.tgz|*.gz) return 0 ;;
-    */package-lock.json|package-lock.json|*/composer.lock|composer.lock|*/node_modules/*|*/vendor/*) return 0 ;;
+    */package-lock.json|package-lock.json|*/pnpm-lock.yaml|pnpm-lock.yaml|*/node_modules/*|*/.next/*) return 0 ;;
   esac
   grep -Iq . "$f" 2>/dev/null || return 0
   varrer_buffer "$f" "$f"
@@ -133,14 +134,14 @@ elif git rev-parse --git-dir >/dev/null 2>&1; then
     < <(git ls-files --cached --others --exclude-standard)
 else
   while IFS= read -r f; do varrer_arquivo "$f"; done \
-    < <(find . -type f -not -path '*/.git/*' -not -path '*/node_modules/*' -not -path '*/vendor/*')
+    < <(find . -type f -not -path '*/.git/*' -not -path '*/node_modules/*' -not -path '*/.next/*')
 fi
 
 # ── Verificações estruturais (só em repositório git) ────────────────────────────
 if git rev-parse --git-dir >/dev/null 2>&1; then
   rastreados="$(git ls-files | grep -Ei \
-    '(^|/)\.env($|\.)|config\.local\.php|app\.config\.php|\.pem$|\.key$|\.p12$|\.ppk$|ftpconfig|sftp\.json|(^|/)(dumps?|backups?)/' \
-    || true)"
+    '(^|/)\.env($|\.)|(^|/)\.vercel/|\.pem$|\.key$|\.p12$|\.ppk$|sftp\.json|(^|/)(dumps?|backups?)/' \
+    | grep -vE '(^|/)\.env\.example$' || true)"
   if [ -n "$rastreados" ]; then
     echo "${RED}[ALTA]${NC} Arquivos sensíveis RASTREADOS pelo git:"
     printf '      %s\n' $rastreados
@@ -158,7 +159,7 @@ if git rev-parse --git-dir >/dev/null 2>&1; then
     ACHADOS=$((ACHADOS + 1))
   fi
 
-  for alvo in .env .env.local config/app.config.php config/config.local.php; do
+  for alvo in .env .env.local .vercel; do
     if [ -e "$alvo" ] && ! git check-ignore -q "$alvo" 2>/dev/null; then
       echo "${YEL}[MEDIA]${NC} '$alvo' existe mas não está no .gitignore."
       echo
@@ -166,8 +167,8 @@ if git rev-parse --git-dir >/dev/null 2>&1; then
     fi
   done
 
-  if [ -e .env ] && [ ! -e .env.example ]; then
-    echo "${DIM}[BAIXA]${NC} Existe .env mas não existe .env.example."
+  if { [ -e .env ] || [ -e .env.local ]; } && [ ! -e .env.example ]; then
+    echo "${DIM}[BAIXA]${NC} Existe .env ou .env.local mas não existe .env.example."
     echo "      Sem ele, ninguém (nem você em três meses) sabe quais chaves configurar."
     echo
     ACHADOS=$((ACHADOS + 1))
@@ -185,7 +186,7 @@ echo "${RED}❌ $ACHADOS achado(s). NÃO FAÇA COMMIT.${NC}"
 echo
 echo "Próximos passos:"
 echo "  1. Troque o valor real por um placeholder óbvio (SEU-USUARIO, SUA-SENHA)."
-echo "  2. Mova o valor real para .env (ignorado) ou para o painel da Vercel."
+echo "  2. Mova o valor real para o painel da Vercel (por ambiente) e baixe com: vercel env pull .env.local"
 echo "  3. Rode a varredura de novo."
 echo "  4. Se a credencial já foi commitada ou enviada: ROTACIONE. Limpar o histórico não basta."
 echo

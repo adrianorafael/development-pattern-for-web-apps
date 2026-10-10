@@ -1,0 +1,111 @@
+/**
+ * lib/supabase/server.ts: os dois clientes do Supabase que rodam no servidor.
+ *
+ * Parte de "Development Pattern for Web Apps": regras R1, R5, R7 e R9.
+ * Detalhes: references/segredos-e-configuracao.md, references/sql-e-acesso-a-dados.md
+ * e references/stack-nextjs-vercel.md
+ *
+ * QUAL CLIENTE USAR
+ *   criarClienteServidor()  Server Components, Server Actions e Route Handlers.
+ *                           Usa a chave PUBLISHABLE e o token do usuário lido dos
+ *                           cookies: toda consulta passa pela RLS como ESTE usuário.
+ *                           É o padrão. Na dúvida, é este.
+ *   criarClienteAdmin()     Só para o que o usuário comum não pode fazer: seed,
+ *                           exclusão de conta (auth.admin.deleteUser), tarefa de
+ *                           manutenção. Usa a chave SECRET, que vai como o papel
+ *                           service_role e IGNORA a RLS. Quem chama confere a
+ *                           autorização ANTES, no código (R7). Nunca em Client
+ *                           Component, nunca em resposta para o navegador.
+ *
+ * REGRAS
+ *   1. `import 'server-only'`: importar este arquivo de um Client Component vira
+ *      erro de build, e a secret key nunca chega ao bundle do navegador (R1).
+ *   2. Para saber QUEM está logado no servidor, use `supabase.auth.getUser()`
+ *      (consulta o servidor de Auth) ou `supabase.auth.getClaims()` (confere a
+ *      assinatura do JWT). Nunca `getSession()`: ele lê o cookie sem validar,
+ *      e cookie é entrada do usuário (auth-js 2.117.3, GoTrueClient.d.ts l.1411).
+ *   3. Papel de administrador vem de `app_metadata.papel`, que só a secret key
+ *      altera. Nunca de `user_metadata`, que o próprio usuário edita.
+ *   4. Cookies: NÃO force `httpOnly: true` nas opções. O @supabase/ssr@0.12.7 grava
+ *      o cookie de sessão com `httpOnly: false` por projeto (dist/main/utils/constants.js:
+ *      DEFAULT_COOKIE_OPTIONS com path "/", sameSite "lax", httpOnly false), porque o
+ *      cliente do navegador (lib/supabase/browser.ts) precisa ler o token. Forçar
+ *      httpOnly quebra o login no navegador. O pacote também não marca `Secure`:
+ *      quem garante o transporte é o HTTPS da Vercel mais o cabeçalho HSTS do
+ *      next.config.ts. A defesa contra roubo do token por script é não ter XSS
+ *      (CSP, React escapando a saída: references/entrada-e-saida-seguras.md).
+ *   5. Um cliente novo por requisição. Nunca guarde o cliente do usuário em
+ *      variável de módulo: em serverless, a instância é compartilhada entre
+ *      requisições de pessoas diferentes.
+ *
+ * Conferido em @supabase/ssr@0.12.7 (createServerClient, cookies com getAll/setAll:
+ * dist/main/types.d.ts), @supabase/supabase-js@2.117.3 (createClient, opções
+ * auth.persistSession e auth.autoRefreshToken) e next@16.4.0 (cookies() de
+ * next/headers devolve Promise), 2026-10-10.
+ */
+
+import 'server-only';
+import { cookies } from 'next/headers';
+import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
+import { env } from '@/lib/env';
+
+/**
+ * Cria o cliente com a sessão do usuário (chave publishable + cookies). Toda
+ * consulta passa pela RLS como esse usuário; sem sessão, como `anon`.
+ * `cookies()` é assíncrono desde o Next 15: por isso esta função também é.
+ *
+ * @returns Um cliente novo, só para esta requisição.
+ * @throws Error do Next quando chamada fora do escopo de uma requisição (num
+ *   script, ou dentro de `after()`), porque `cookies()` não tem o que ler
+ *   (next@16.4.0, dist/server/request/cookies.js).
+ *
+ * @example
+ *   const supabase = await criarClienteServidor();
+ *   const { data } = await supabase.auth.getClaims();
+ *   if (!data) redirect('/entrar');
+ *   const { data: chamados } = await supabase.from('chamados').select('id, titulo');
+ */
+export async function criarClienteServidor() {
+  const loja = await cookies();
+
+  return createServerClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
+    cookies: {
+      getAll() {
+        return loja.getAll();
+      },
+      setAll(cookiesParaGravar) {
+        try {
+          for (const { name, value, options } of cookiesParaGravar) {
+            loja.set(name, value, options);
+          }
+        } catch {
+          // Server Component não pode gravar cookie: o Next lança erro aqui.
+          // Pode ignorar SE o proxy.ts renova a sessão a cada requisição
+          // (proxy.ts.template): é ele que grava o token renovado.
+        }
+      },
+    },
+  });
+}
+
+/**
+ * Cria o cliente ADMINISTRATIVO (secret key). IGNORA a RLS.
+ * Sem cookies e sem sessão persistida: ele não representa nenhum usuário.
+ * Quem chama confere ANTES, no código, que a sessão tem o papel exigido.
+ *
+ * @returns Um cliente com acesso total ao projeto. Nunca o devolva, nem o que
+ *   ele leu sem filtrar, para o navegador.
+ *
+ * @example
+ * ❌ const supabase = criarClienteAdmin();               // numa action qualquer, "para funcionar"
+ *    await supabase.from('chamados').select();           // devolve os chamados de TODO mundo
+ *
+ * ✅ const supabase = await criarClienteServidor();      // o padrão: a RLS filtra pelo dono
+ *    await supabase.from('chamados').select();
+ */
+export function criarClienteAdmin() {
+  return createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SECRET_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}

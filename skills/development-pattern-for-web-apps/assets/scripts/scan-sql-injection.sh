@@ -6,7 +6,7 @@
 #
 # USO
 #   bash scan-sql-injection.sh                  # varre a árvore de trabalho
-#   bash scan-sql-injection.sh arquivo.php ...  # varre caminhos específicos
+#   bash scan-sql-injection.sh lib/db.ts ...    # varre caminhos específicos
 #
 # SAÍDA
 #   0  limpo
@@ -34,20 +34,31 @@ SQLKW='SELECT|INSERT|UPDATE|DELETE|REPLACE|WHERE|FROM|INTO|VALUES|ORDER[[:space:
 
 # nome|severidade|regex|linguagens
 PADROES=(
-  # ── PHP ───────────────────────────────────────────────────────────────────────
-  "Variável interpolada em string SQL (aspas duplas)|ALTA|\"[^\"]*($SQLKW)[^\"]*(\\\$[a-zA-Z_]|\{\\\$)|php"
-  "SQL concatenado com variável|ALTA|['\"][^'\"]*($SQLKW)[^'\"]*['\"][[:space:]]*\.[[:space:]]*\\\$|php"
-  "Variável concatenada antes de SQL|ALTA|\\\$[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\.[[:space:]]*['\"][^'\"]*($SQLKW)|php"
-  "Concatenação acumulada em variável de query|ALTA|\\\$(sql|query|consulta|q|where|stmt)[a-zA-Z0-9_]*[[:space:]]*\.=|php"
-  "Função de banco removida do PHP|ALTA|\bmysql_(query|connect|real_escape_string)[[:space:]]*\(|php"
-  "Escape manual usado como defesa contra injeção|MEDIA|\b(mysqli_real_escape_string|addslashes|real_escape_string)[[:space:]]*\(|php"
-  "Emulação de prepared statements LIGADA|ALTA|ATTR_EMULATE_PREPARES[[:space:]]*=>[[:space:]]*true|php"
-  "Modo de erro do PDO silencioso|MEDIA|ATTR_ERRMODE[[:space:]]*=>[[:space:]]*PDO::ERRMODE_(SILENT|WARNING)|php"
-
   # ── JavaScript / TypeScript ───────────────────────────────────────────────────
-  "Método 'unsafe'/'raw' de acesso a banco|ALTA|(\\\$queryRawUnsafe|\\\$executeRawUnsafe|sql\.unsafe|sql\.raw|knex\.raw|sequelize\.query)[[:space:]]*\(|js"
+  "Método 'unsafe'/'raw' de acesso a banco|ALTA|(\\\$queryRawUnsafe|\\\$executeRawUnsafe|sql\.raw|knex\.raw|sequelize\.query)[[:space:]]*\(|js"
+  # sql.unsafe('… $1', [v]) com texto LITERAL é a forma parametrizada do driver `postgres`.
+  # Com o texto numa variável, o scanner não enxerga como ele foi montado: exige o marcador.
+  "sql.unsafe() com o texto numa variável: declare a allowlist com o marcador|ALTA|\.unsafe[[:space:]]*\([[:space:]]*[a-zA-Z_\$][a-zA-Z0-9_\$.]*[[:space:]]*[,)]|js"
+  "sql.unsafe() com template literal interpolado|ALTA|\.unsafe[[:space:]]*\([[:space:]]*\`[^\`]*\\\$\{|js"
   "Template literal com SQL e \${} fora de tag parametrizada|ALTA|[^a-zA-Z0-9_\$]\`[^\`]*($SQLKW)[^\`]*\\\$\{|js"
   "Query montada por concatenação de string|ALTA|['\"][^'\"]*($SQLKW)[^'\"]*['\"][[:space:]]*\+[[:space:]]*[a-zA-Z_\$]|js"
+  # sql.query(`... ${x} ...`) e pool.query(`... ${x} ...`): o template literal é
+  # resolvido ANTES da chamada, então o ${} vira texto, não parâmetro. É
+  # concatenação disfarçada, mesmo sem palavra-chave SQL na mesma linha.
+  "Template literal interpolado passado a .query()/.execute()|ALTA|\.(query|execute)[[:space:]]*(<[^>]*>)?[[:space:]]*\([[:space:]]*\`[^\`]*\\\$\{|js"
+  # Mesma armadilha em várias linhas: a varredura é por linha e não vê o ${}
+  # das linhas seguintes. Peça a leitura humana.
+  "Template literal multilinha passado a .query()/.unsafe(): confira se há \${}|MEDIA|\.(query|unsafe)[[:space:]]*(<[^>]*>)?[[:space:]]*\([[:space:]]*\`[^\`]*$|js"
+  # ── Cliente do Supabase (@supabase/postgrest-js) ──────────────────────────────
+  # .or() recebe uma STRING de filtro do PostgREST, usada como está
+  # (dist/index.d.cts, linha 3180 na 2.117.3). Uma vírgula ou um parêntese no
+  # dado vira condição nova: é injeção de filtro. Use .eq/.ilike/.in, ou .rpc().
+  "Template literal interpolado passado a .or() do Supabase|ALTA|\.or[[:space:]]*\([[:space:]]*\`[^\`]*\\\$\{|js"
+  # .filter(coluna, operador, valor) e .not(...) usam operador e valor "as-is"
+  # (linhas 3161 e 3339). Exige as três partes para não acusar Array.filter().
+  "Template literal interpolado passado a .filter()/.not() do Supabase|ALTA|\.(filter|not)[[:space:]]*\([[:space:]]*['\"\`][^'\"\`]*['\"\`][[:space:]]*,[^,]*,[[:space:]]*\`[^\`]*\\\$\{|js"
+  "String concatenada passada a .or() do Supabase|ALTA|\.or[[:space:]]*\([[:space:]]*['\"][^'\"]*['\"][[:space:]]*\+|js"
+  "Template literal multilinha passado a .or(): confira se há \${}|MEDIA|\.or[[:space:]]*\([[:space:]]*\`[^\`]*$|js"
 )
 
 caminho_ignorado() {
@@ -73,17 +84,16 @@ reportar() { # arquivo linha severidade nome texto
 
 lingua_do_arquivo() {
   case "$1" in
-    *.php|*.phtml|*.php.template) echo php ;;
-    *.js|*.jsx|*.ts|*.tsx|*.mjs|*.cjs|*.ts.template) echo js ;;
+    *.js|*.jsx|*.ts|*.tsx|*.mjs|*.cjs|*.mts|*.ts.template) echo js ;;
     *) echo outro ;;
   esac
 }
 
 varrer_arquivo() {
-  local f="$1" lang entrada nome resto sev re alvo linha num texto anterior
+  local f="$1" lang entrada nome resto sev re alvo linha num texto sem_recuo anterior
   [ -f "$f" ] || return 0
   caminho_ignorado "$f" && return 0
-  case "$f" in */node_modules/*|*/vendor/*|*/.git/*) return 0 ;; esac
+  case "$f" in */node_modules/*|*/.next/*|*/.git/*) return 0 ;; esac
 
   lang="$(lingua_do_arquivo "$f")"
   [ "$lang" = outro ] && return 0
@@ -97,10 +107,12 @@ varrer_arquivo() {
     while IFS= read -r linha; do
       [ -z "$linha" ] && continue
       num="${linha%%:*}"; texto="${linha#*:}"
-      case "$texto" in
-        *"$MARCADOR"*) continue ;;
+      # Sem o recuo, para reconhecer comentário em qualquer coluna (inclusive a 1).
+      sem_recuo="${texto#"${texto%%[![:space:]]*}"}"
+      case "$texto" in *"$MARCADOR"*) continue ;; esac
+      case "$sem_recuo" in
         # Linhas de comentário costumam ser exemplo do que NÃO fazer.
-        [[:space:]]*"//"*|[[:space:]]*"#"*|[[:space:]]*"*"*|[[:space:]]*"--"*) continue ;;
+        "//"*|"#"*|"*"*|"/*"*|"--"*) continue ;;
       esac
       # O marcador também vale como comentário na linha imediatamente acima: é onde
       # cabe escrever POR QUE a interpolação é segura, que é o ponto do mecanismo.
@@ -123,24 +135,8 @@ elif git rev-parse --git-dir >/dev/null 2>&1; then
     < <(git ls-files --cached --others --exclude-standard)
 else
   while IFS= read -r f; do varrer_arquivo "$f"; done \
-    < <(find . -type f \( -name '*.php' -o -name '*.js' -o -name '*.ts' -o -name '*.tsx' -o -name '*.jsx' \) \
-        -not -path '*/node_modules/*' -not -path '*/vendor/*' -not -path '*/.git/*')
-fi
-
-# ── Verificação estrutural: PDO sem EMULATE_PREPARES => false ──────────────────
-if ls ./*.php >/dev/null 2>&1 || [ -d app ] || [ -d src ]; then
-  usa_pdo="$(grep -rlE 'new[[:space:]]+PDO[[:space:]]*\(' --include='*.php' . 2>/dev/null \
-             | grep -v node_modules | grep -v vendor || true)"
-  if [ -n "$usa_pdo" ]; then
-    if ! grep -rqE 'ATTR_EMULATE_PREPARES[[:space:]]*=>[[:space:]]*false' --include='*.php' . 2>/dev/null; then
-      echo "${RED}[ALTA]${NC} Existe 'new PDO(' no projeto, mas nenhum 'ATTR_EMULATE_PREPARES => false'."
-      printf '      %s\n' $usa_pdo
-      echo "      O padrão do PDO é emulação LIGADA: o PHP monta a query interpolando os"
-      echo "      parâmetros e reabre superfície de injeção. Desligue na fábrica de conexão."
-      echo
-      ACHADOS=$((ACHADOS + 1))
-    fi
-  fi
+    < <(find . -type f \( -name '*.js' -o -name '*.ts' -o -name '*.tsx' -o -name '*.jsx' -o -name '*.mjs' -o -name '*.cjs' -o -name '*.mts' \) \
+        -not -path '*/node_modules/*' -not -path '*/.next/*' -not -path '*/.git/*')
 fi
 
 if [ "$ACHADOS" -eq 0 ]; then
@@ -153,12 +149,17 @@ fi
 echo "${RED}❌ $ACHADOS achado(s). NÃO FAÇA COMMIT.${NC}"
 echo
 echo "Como corrigir:"
-echo "  • Dado do usuário → parâmetro vinculado:  \$stmt = \$pdo->prepare('… = :x'); \$stmt->execute([':x' => \$v]);"
+echo "  • Dado do usuário → parâmetro vinculado: sql\`… = \${v}\` (template tag) ou"
+echo "    sql.unsafe('… = \$1', [v]). Nunca sql.unsafe(\`… \${v} …\`) nem pool.query(\`… \${v} …\`): isso é concatenação."
 echo "  • Nome de coluna/tabela/direção → allowlist (mapa no seu código), nunca a entrada crua."
 echo "    Identificador NÃO pode ser parametrizado: resolva por allowlist e declare a exceção"
 echo "    na própria linha com '${MARCADOR}: <nome da allowlist>'. Sem marcador, o commit para."
-echo "  • LIMIT/OFFSET → (int) com teto, vinculados como PDO::PARAM_INT."
-echo "  • Em JS/TS → sql\`… \${v} …\` (template tag parametrizada), nunca sql(\`…\${v}…\`)."
+echo "  • Supabase → métodos tipados (.eq, .ilike com escaparLike, .in) ou .rpc() com"
+echo "    argumentos. Nunca .or(\`… \${v} …\`) nem .filter(col, op, \`… \${v} …\`): a string"
+echo "    de filtro do PostgREST é usada como está, e uma vírgula no dado vira condição."
+echo "  • LIMIT/OFFSET → Math.trunc com teto, e ainda assim por parâmetro."
+echo "  • Prisma → \$queryRaw\`…\` (tag), nunca \$queryRawUnsafe com interpolação."
+echo "    Drizzle → sql\`…\` do drizzle-orm, nunca sql.raw() com entrada."
 echo "  • Detalhes: references/sql-e-acesso-a-dados.md"
 echo
 echo "${DIM}Falso positivo? Marcador '${MARCADOR}' na linha, ou caminho em .sqlscanignore.${NC}"

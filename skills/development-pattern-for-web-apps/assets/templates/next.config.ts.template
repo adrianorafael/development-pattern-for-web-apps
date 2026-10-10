@@ -1,0 +1,139 @@
+/**
+ * next.config.ts: cabeçalhos de segurança e redirecionamentos.
+ *
+ * Parte de "Development Pattern for Web Apps": regras R7 e R15.
+ * Detalhes: references/linha-de-base-de-seguranca.md §6 e references/rotas-e-urls.md
+ *
+ * Conferido em next@16.4.0, 2026-10-10, no tipo NextConfig
+ * (dist/server/config-shared.d.ts): headers (l. 1421), redirects (l. 1441),
+ * poweredByHeader (l. 1528), productionBrowserSourceMaps (l. 1576, padrão false
+ * em l. 1842) e experimental.serverActions.allowedOrigins (l. 1099).
+ * A chave `eslint` NÃO existe mais no NextConfig do 16: lint é `eslint .` no package.json.
+ *
+ * CONFIRA O RESULTADO, NÃO A INTENÇÃO, no preview e em produção:
+ *   curl -sI https://seu-dominio.com.br | grep -iE 'content-security|strict-transport|x-content|referrer|permissions|x-powered-by'
+ */
+
+import type { NextConfig } from 'next';
+
+/**
+ * Cabeçalhos de segurança que vão em TODA resposta (ver `headers()` abaixo).
+ * Cada linha diz o que o cabeçalho impede.
+ *
+ * A Content-Security-Policy completa ainda não está aqui, de propósito: CSP
+ * quebra as coisas antes de proteger. Caminho seguro:
+ *   1. Publique a política do exemplo em 'Content-Security-Policy-Report-Only'.
+ *   2. Navegue pelo preview com o console aberto e anote cada bloqueio.
+ *   3. Ajuste a lista; só então troque a chave para 'Content-Security-Policy'
+ *      e tire daqui a linha de frame-ancestors, que passa a viver nela.
+ * 'unsafe-inline' em script-src anula a maior parte do benefício. Se o projeto
+ * precisar dele, registre na spec como débito técnico consciente. Nunca
+ * 'unsafe-eval' para "fazer funcionar": se uma biblioteca exige, troque a
+ * biblioteca ou registre na spec como débito consciente (checklist-de-revisao.md).
+ *
+ * Na política de partida, um domínio por serviço que o app usa. SEU-PROJETO é o
+ * identificador do projeto do Supabase, o mesmo de NEXT_PUBLIC_SUPABASE_URL:
+ *   connect-src: o cliente do navegador (lib/supabase/browser.ts) fala com a API
+ *                REST, o Auth e o Storage nesse domínio.
+ *   img-src:     URL assinada do Storage (createSignedUrl) é servida por ele.
+ *   wss://...:   só se o app usar Realtime; sem Realtime, tire.
+ *
+ * @example
+ * Fase 1 da CSP completa: a constante acima de `cabecalhosDeSeguranca` e uma
+ * entrada nova dentro dele.
+ * ```ts
+ * const supabase = 'https://SEU-PROJETO.supabase.co';
+ * const csp = [
+ *   "default-src 'self'",
+ *   "script-src 'self'",
+ *   "style-src 'self' 'unsafe-inline'",           // estilos inline do Next/Tailwind em dev
+ *   `img-src 'self' data: blob: ${supabase}`,
+ *   "font-src 'self' https://fonts.gstatic.com",
+ *   `connect-src 'self' ${supabase} wss://SEU-PROJETO.supabase.co`,
+ *   "form-action 'self'",
+ *   "base-uri 'self'",
+ *   "object-src 'none'",
+ *   "frame-ancestors 'none'",
+ * ].join('; ');
+ *
+ * { key: 'Content-Security-Policy-Report-Only', value: csp },
+ * ```
+ */
+const cabecalhosDeSeguranca = [
+  // Navegador não "adivinha" o tipo: um .txt enviado não vira script.
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  // Envia só a origem para outros sites, nunca o caminho com id ou token.
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  // Desliga APIs que o app não usa. Libere uma a uma, se precisar.
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), browsing-topics=()' },
+  // HTTPS por dois anos, inclusive subdomínios. Só ligue includeSubDomains se
+  // TODOS os subdomínios já servem HTTPS. Não acrescente "preload" sem decidir:
+  // sair da lista de preload dos navegadores leva meses.
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
+  // Anti-clickjacking: ninguém emoldura o app num <iframe>. Quando a CSP completa
+  // (exemplo acima) for ativada, frame-ancestors passa a viver nela e esta linha sai.
+  { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
+  // Para navegadores antigos que não leem frame-ancestors.
+  { key: 'X-Frame-Options', value: 'DENY' },
+];
+
+/**
+ * A configuração do Next: cabeçalhos de segurança, source maps desligados e os
+ * redirecionamentos de URL antiga (R15).
+ *
+ * Server Actions conferem Origin contra Host por padrão, e nada aqui mexe
+ * nisso. Só acrescente `experimental.serverActions.allowedOrigins` se houver
+ * proxy reverso na frente, e só com domínio que é SEU.
+ *
+ * @example
+ * ```ts
+ * // ❌ allowedOrigins: ['*.vercel.app']   (qualquer projeto de qualquer pessoa)
+ * // ✅ só o seu domínio, e só com proxy reverso na frente
+ * experimental: {
+ *   serverActions: {
+ *     allowedOrigins: ['app.seu-dominio.com.br'],
+ *     bodySizeLimit: '2mb',              // padrão: 1 MB. Aumente só o necessário.
+ *   },
+ * },
+ * ```
+ */
+const nextConfig: NextConfig = {
+  // Não anuncie "X-Powered-By: Next.js": é reconhecimento gratuito.
+  poweredByHeader: false,
+
+  // Source map do navegador em produção entrega o código-fonte legível, com
+  // comentários e nomes, a qualquer visitante. O padrão já é false; fica
+  // explícito para que ninguém ligue "só para depurar" e esqueça (P10).
+  // ❌ productionBrowserSourceMaps: true
+  productionBrowserSourceMaps: false,
+
+  async headers() {
+    return [{ source: '/:path*', headers: cabecalhosDeSeguranca }];
+  },
+
+  // ── R15: URL antiga nunca vira 404 ──────────────────────────────────────────
+  // statusCode: 301 é o que a skill padroniza para rota renomeada (rotas-e-urls.md).
+  // permanent: true também é permanente, mas responde 308, conferido em
+  // dist/lib/redirect-status.js e dist/client/components/redirect-status-code.js;
+  // as duas chaves são exclusivas (dist/lib/load-custom-routes.d.ts). O Google trata
+  // 301 e 308 como permanentes
+  // (developers.google.com/search/docs/crawling-indexing/301-redirects).
+  async redirects() {
+    return [
+      // ❌ a URL antiga some e quem tinha o link salvo cai num 404
+      // ✅ a URL antiga aponta para o nome novo, em português, sem detalhe técnico
+      {
+        source: '/users/new',
+        destination: '/cadastrar-novo-usuario',
+        statusCode: 301,
+      },
+      {
+        source: '/chamados/ver/:id',
+        destination: '/chamados/:id',
+        statusCode: 301,
+      },
+    ];
+  },
+};
+
+export default nextConfig;

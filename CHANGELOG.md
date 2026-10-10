@@ -10,9 +10,104 @@ exige dos aplicativos que ela ajuda a construir. "Quebrar" significa quebrar par
 alterado.
 
 A versão aqui é a de `.claude-plugin/plugin.json` → `version`, o arquivo de configuração é
-a fonte da verdade, do mesmo jeito que `app/version.php` ou `package.json` é para um app.
+a fonte da verdade, do mesmo jeito que o `package.json` é para um app.
 
 ## [Não publicado]
+
+## [2.0.0] - 2026-10-10
+
+A skill passa a ser dedicada **só a apps Next.js com Supabase, publicados na Vercel**, e
+passa a cobrir uma lista de 42 boas práticas de segurança para vibecoding. Versão MAJOR
+porque quem usava a trilha PHP perde as referências, os templates e duas regras que
+dependiam dela. Os identificadores das regras (`R1` a `R18`) foram mantidos: R9 e R10
+mudaram de conteúdo no mesmo número, para não quebrar referências cruzadas.
+
+### Removido
+
+- **A trilha HTML5 + PHP + MySQL na Hostinger**, inteira: a referência de stack, o Wizard de
+  instalação, o painel de atualização por pacote ZIP, os padrões PHP do
+  `scan-sql-injection.sh` e todos os exemplos de PHP nas outras referências.
+- **Três referências** (`stack-php-mysql.md`, `wizard-de-instalacao.md`,
+  `pacotes-de-atualizacao.md`) e **sete templates** (`Database.php`, `config.example.php`,
+  `gitignore.php`, `htaccess`, `install-wizard.php`, `updater.php`, `update-manifest.json`).
+- **A pergunta "Trilha"** do bootstrap, que passa a ter seis perguntas para todo projeto.
+- **Autenticação feita do zero** como caminho recomendado: o hash de senha com `scrypt`, a
+  tabela de sessões própria e o seed com hash local saem. Quem guarda a senha é o Supabase
+  Auth.
+
+### Alterado
+
+- **Supabase é o banco padrão**, contratado pelo Marketplace da Vercel: Postgres com RLS,
+  Supabase Auth para login e Supabase Storage com bucket privado para arquivos.
+- **R5** escrita para o cliente do Supabase (métodos tipados; a armadilha de montar string
+  em `.or()`/`.filter()`; `.rpc()` e funções `security definer`) e para SQL direto com o
+  driver `postgres`. O `scan-sql-injection.sh` passa a acusar `.or(`/`.filter(` com
+  interpolação.
+- **R7** passa a nomear o piso: login pelo Supabase Auth, RLS em toda tabela, Storage
+  privado, CORS restrito, debug desligado em produção, backup com restauração ensaiada,
+  teto de gasto em API paga e coleta mínima de dado pessoal.
+- **R9 redefinida: o ambiente é validado e o app sobe do zero.** `lib/env.ts` valida as
+  variáveis com Zod; `vercel env pull`, as migrações do Supabase CLI e `npm run db:seed`
+  deixam um clone limpo funcionando, com o administrador criado pelo Auth Admin API e o
+  papel em `app_metadata`. Referência nova: `bootstrap-do-ambiente.md`.
+- **R10 redefinida: toda migração é compatível com a versão anterior do código**, porque o
+  Instant Rollback da Vercel volta o código e não o banco. Migrações do Supabase CLI em
+  `supabase/migrations/`, aplicadas com `supabase db push` antes da promoção, em
+  expand → migrate → contract; preview por Supabase Branching; backup periódico e
+  restauração ensaiada. Referência nova: `migracoes-e-rollback.md`.
+- **R12** passa a cobrir o agente, não só o código: resumo legível do diff para a pessoa
+  antes do portão, recusa de solução que desliga proteção, pacote conferido antes de
+  instalar, pasta isolada, comandos revisados e prompt injection.
+- **R14** passa a descrever só a Vercel, com revisão humana no portão quando o app trata
+  pagamento ou dado sensível.
+- **R15** troca o exemplo negativo para `/users/new` e `/usuarios?acao=novo`: no App Router a
+  pasta é a URL, e a regra vale para o nome dela.
+- **R13 passa a tratar documentação como parte da entrega:** código sem documentação
+  adequada e atualizada não está concluído. `documentacao-do-projeto.md` ganha os princípios
+  (escrever para quem nunca viu o projeto, explicar o porquê, profundidade proporcional ao
+  porte, nenhum documento vazio), comentários no código, TSDoc nas funções públicas,
+  dependências com motivo registrado, API, banco de dados, arquitetura e decisões,
+  segurança, a verificação obrigatória depois de toda mudança (com busca no projeto pelo
+  nome do que mudou) e o relatório de documentação ao fim de cada entrega.
+- **`scan-doc-sync.sh`** passa a apontar `TODO` sem descrição, código comentado, exportação
+  sem TSDoc, variável lida no código e ausente do `.env.example` (e o contrário),
+  dependência sem registro no CHANGELOG, e rota, migração ou código de segurança mudados
+  sem o documento correspondente em `docs/`.
+- **Os templates TypeScript** da skill passam a seguir a própria regra: TSDoc nas
+  exportações e comentários só onde explicam o porquê.
+- **Hooks de pre-commit** passam a ser oferecidos e instalados com o sim do usuário, nos dois
+  lugares que antes se contradiziam.
+- **O roteiro do Cowork** deixa de pedir o segredo de bypass da Deployment Protection pela
+  conversa.
+- **`scan-secrets.sh`** passa a reconhecer as chaves do Supabase (`sb_secret_`) e variáveis
+  secretas com prefixo `NEXT_PUBLIC_`.
+- Referências atualizadas para **Next.js 16**: `proxy.ts` no lugar de `middleware.ts`, e
+  `next lint` e a chave `eslint` do `next.config` que deixaram de existir. Versões conferidas
+  em 2026-10-10: next 16.4.0, tailwindcss 4.3.3, vercel 63.1.2, supabase (CLI) 2.120.0,
+  @supabase/supabase-js 2.117.3, @supabase/ssr 0.12.7, zod 4.6.5.
+- `schema.sql` e `migration.sql` convertidos para Postgres no formato do Supabase CLI.
+
+### Adicionado
+
+- **Referência nova `agentes-e-ferramentas-de-ia.md`**: pasta isolada, revisão de comandos
+  antes de aprovar, prompt injection, e segredo que nunca passa pela conversa.
+- **Seções novas** nas referências existentes: antes de instalar um pacote, lockfile e
+  `npm ci`, commits pequenos a cada passo verde, proteções desligadas, RLS, Storage do
+  Supabase, CORS, teto de gasto, debug em produção, dados pessoais e LGPD, mapa do OWASP
+  Top 10, revisão humana para nível N3 ou acima, e o teste "como um estranho".
+- **Piso de segurança** com dois itens novos: P13 (RLS em toda tabela) e P14 (backup com
+  restauração ensaiada).
+- **Casos de teste novos:** CT-SEC-031 a 033 (RLS e Storage), CT-MIG-011 (restauração) e
+  CT-LGPD-001 a 004.
+- **Treze templates:** `env.ts` (validação das variáveis), `seed.ts` (administrador inicial),
+  `next.config.ts` (cabeçalhos de segurança e redirects 301), `supabase-server.ts` e
+  `supabase-browser.ts` (clientes do Supabase), `proxy.ts` (renovação de sessão),
+  `politicas-rls.sql` (RLS e Storage), `dependabot.yml`, e cinco documentos de `docs/`:
+  `arquitetura.md` (visão geral com diagrama Mermaid), `decisao.md` (registro de decisão:
+  contexto, decisão, alternativas, consequências), `seguranca.md` (autenticação, proteções
+  ativas, ações manuais fora do código, como reportar vulnerabilidade),
+  `banco-de-dados.md` (tabelas, relacionamentos, quem lê e altera cada dado, migrações) e
+  `api.md` (Route Handlers e Server Actions que mudam estado).
 
 ## [1.0.0] - 2026-09-06
 

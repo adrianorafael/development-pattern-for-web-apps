@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Hook de pre-commit: "Development Pattern for Web Apps", regras R1 e R5.
+# Hook de pre-commit: "Development Pattern for Web Apps", regras R1, R5, R9 e R17.
 #
-# Instalar:
+# Instalar: o agente OFERECE na Fase 0 e só instala com o sim do dono do projeto
+# (references/segredos-e-configuracao.md §5). Instalado, ele roda em todo commit:
 #   cp skills/development-pattern-for-web-apps/assets/templates/pre-commit.template .git/hooks/pre-commit
 #   chmod +x .git/hooks/pre-commit
 #
@@ -21,7 +22,7 @@ fi
 
 if [ -f "$BASE/scan-linguagem.sh" ]; then
   echo "✍️  pre-commit: procurando travessões e muletas nos arquivos staged…"
-  TEXTOS=$(git diff --cached --name-only --diff-filter=ACM | grep -Ei '\.(md|html|php|js|jsx|ts|tsx|txt|template)$' || true)
+  TEXTOS=$(git diff --cached --name-only --diff-filter=ACM | grep -Ei '\.(md|mdx|html|js|jsx|ts|tsx|txt|template)$' || true)
   if [ -n "$TEXTOS" ]; then
     # shellcheck disable=SC2086
     bash "$BASE/scan-linguagem.sh" $TEXTOS || FALHOU=1
@@ -32,7 +33,7 @@ fi
 
 if [ -f "$BASE/scan-sql-injection.sh" ]; then
   echo "💉 pre-commit: procurando SQL concatenado nos arquivos staged…"
-  ARQUIVOS=$(git diff --cached --name-only --diff-filter=ACM | grep -Ei '\.(php|js|jsx|ts|tsx)$' || true)
+  ARQUIVOS=$(git diff --cached --name-only --diff-filter=ACM | grep -Ei '\.(js|jsx|ts|tsx|mjs|cjs)$' || true)
   if [ -n "$ARQUIVOS" ]; then
     # shellcheck disable=SC2086
     bash "$BASE/scan-sql-injection.sh" $ARQUIVOS || FALHOU=1
@@ -47,12 +48,29 @@ if [ -f "$BASE/scan-doc-sync.sh" ]; then
   bash "$BASE/scan-doc-sync.sh" || true
 fi
 
-# Sintaxe dos arquivos PHP staged
-if command -v php >/dev/null 2>&1; then
-  for f in $(git diff --cached --name-only --diff-filter=ACM | grep -E '\.php$' || true); do
-    php -l "$f" >/dev/null || { echo "❌ Erro de sintaxe em $f"; FALHOU=1; }
-  done
+# .env.example e lib/env.ts andam juntos (R9, caso CT-BOOT-004): avisa quando só um mudou.
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+if printf '%s\n' "$STAGED" | grep -qxF 'lib/env.ts' && ! printf '%s\n' "$STAGED" | grep -qxF '.env.example'; then
+  echo "⚠️  lib/env.ts mudou e .env.example não: confira se as chaves continuam as mesmas."
 fi
+if printf '%s\n' "$STAGED" | grep -qxF '.env.example' && ! printf '%s\n' "$STAGED" | grep -qxF 'lib/env.ts'; then
+  echo "⚠️  .env.example mudou e lib/env.ts não: confira se as chaves continuam as mesmas."
+fi
+
+# Secret key do Supabase em código de cliente (R1): bloqueia.
+# Arquivo staged com 'use client' que cita a secret key ou o cliente administrativo.
+CLIENTES=$(printf '%s\n' "$STAGED" | grep -Ei '\.(js|jsx|ts|tsx)$' || true)
+for f in $CLIENTES; do
+  [ -f "$f" ] || continue
+  if grep -qE "^[[:space:]]*['\"]use client['\"]" "$f" \
+     && grep -qE 'SUPABASE_SECRET_KEY|SUPABASE_SERVICE_ROLE_KEY|criarClienteAdmin|lib/supabase/server' "$f"; then
+    echo "❌ $f é Client Component e cita a secret key ou lib/supabase/server: ela ignora a RLS."
+    FALHOU=1
+  fi
+done
+
+# Tipos: opcional, porque leva alguns segundos. Descomente se o projeto aguenta.
+# npx --no-install tsc --noEmit || FALHOU=1
 
 if [ "$FALHOU" -ne 0 ]; then
   echo

@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Development Pattern for Web Apps</title>
-<meta name="description" content="Agent Skill que mantém um agente de IA dentro das boas práticas ao construir apps web pessoais: SQL sempre parametrizado, segredos fora do repositório, repositório privado por padrão, URLs como rotas semânticas, Wizard de instalação, atualização por pacote ZIP e um roteiro de testes para o Claude Cowork. PHP+MySQL na Hostinger e Next.js+Tailwind na Vercel." />
+<meta name="description" content="Agent Skill que mantém um agente de IA dentro das boas práticas ao construir apps web pessoais em Next.js + Tailwind + Supabase na Vercel: SQL sempre parametrizado, RLS em toda tabela, segredos fora do repositório e fora do chat, repositório privado por padrão, URLs como rotas semânticas, ambiente validado que sobe do zero, migrações compatíveis com o rollback e um roteiro de testes para o Claude Cowork." />
 <meta name="color-scheme" content="light dark" />
 <link rel="icon" type="image/svg+xml" href="icon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -26,21 +26,22 @@
 
 <header class="sticky top-0 z-50 border-b border-gray-950/5 bg-white/85 backdrop-blur-md dark:border-white/10 dark:bg-gray-950/85">
   <div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6 sm:px-8 lg:px-12">
-    <a href="#" class="flex items-center gap-2.5 text-[0.9375rem] font-semibold tracking-tight text-gray-950 dark:text-white">
+    <a href="#" class="flex items-center gap-2.5 text-[0.9375rem] xl:whitespace-nowrap font-semibold tracking-tight text-gray-950 dark:text-white">
       <img src="icon.svg" alt="" width="28" height="28" class="h-7 w-7" />
       <span>Development Pattern <span class="text-gray-400 dark:text-gray-600">/</span> Web Apps</span>
     </a>
     <div class="flex items-center gap-6">
-      <nav aria-label="Seções" class="hidden items-center gap-6 text-sm/6 font-medium text-gray-600 xl:flex dark:text-gray-400">
+      <nav aria-label="Seções" class="hidden items-center gap-5 whitespace-nowrap text-sm/6 font-medium text-gray-600 xl:flex dark:text-gray-400">
         <a href="#uso" class="hover:text-gray-950 dark:hover:text-white">Como funciona</a>
         <a href="#regras" class="hover:text-gray-950 dark:hover:text-white">Regras</a>
         <a href="#sql" class="hover:text-gray-950 dark:hover:text-white">SQL</a>
         <a href="#rotas" class="hover:text-gray-950 dark:hover:text-white">Rotas</a>
-        <a href="#wizard" class="hover:text-gray-950 dark:hover:text-white">Wizard</a>
+        <a href="#ambiente" class="hover:text-gray-950 dark:hover:text-white">Ambiente</a>
         <a href="#qa" class="hover:text-gray-950 dark:hover:text-white">Testes</a>
         <a href="#build" class="hover:text-gray-950 dark:hover:text-white">Build</a>
         <a href="#linguagem" class="hover:text-gray-950 dark:hover:text-white">Texto</a>
         <a href="#documentacao" class="hover:text-gray-950 dark:hover:text-white">Docs</a>
+        <a href="#agente" class="hover:text-gray-950 dark:hover:text-white">Agente</a>
       </nav>
       <div class="flex items-center gap-1 border-l border-gray-950/10 pl-4 dark:border-white/10">
         <button id="alternar-tema" type="button" aria-pressed="false"
@@ -74,24 +75,26 @@
   </h1>
   <p class="prosa mt-6 max-w-2xl text-lg/8 text-gray-600 dark:text-gray-400">
     Dezoito regras que o agente cumpre por conta própria, sem você precisar pedir item por item:
-    SQL sempre parametrizado, segredos fora do repositório, URLs como rotas semânticas, Wizard de
-    instalação, atualização por pacote ZIP, documentação que anda junto com o código, e um roteiro
-    de testes que o Claude Cowork executa sozinho.
+    SQL sempre parametrizado, RLS em toda tabela, segredos fora do repositório e fora do chat, URLs
+    como rotas semânticas, um ambiente que sobe do zero com três comandos, migrações que sobrevivem ao
+    rollback, documentação que anda junto com o código, e um roteiro de testes que o Claude Cowork
+    executa sozinho. Por dentro delas, 42 boas práticas de segurança para vibecoding.
   </p>
   <div class="mt-8 flex flex-wrap items-center gap-3">
     <a href="#instalar" class="botao-primario">Instalar</a>
     <a href="https://github.com/adrianorafael/development-pattern-for-web-apps" class="botao-secundario">Ver no GitHub</a>
   </div>
   <div class="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm/6 text-gray-500 dark:text-gray-500">
-    <span><b class="font-semibold text-gray-950 dark:text-white">HTML5 + PHP 8 + MySQL</b> → Hostinger</span>
-    <span><b class="font-semibold text-gray-950 dark:text-white">Next.js + Tailwind</b> → Vercel</span>
+    <span><b class="font-semibold text-gray-950 dark:text-white">Next.js + TypeScript + Tailwind</b></span>
+    <span><b class="font-semibold text-gray-950 dark:text-white">Supabase</b> (Postgres, Auth, Storage)</span>
+    <span>→ <b class="font-semibold text-gray-950 dark:text-white">Vercel</b></span>
   </div>
 
   <dl class="mt-14 grid grid-cols-2 gap-x-8 gap-y-8 border-t border-gray-950/5 pt-8 sm:grid-cols-4 dark:border-white/10">
     <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">18</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">regras inegociáveis</dd></div>
     <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">8</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">fases, 3 portões duros</dd></div>
     <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">18</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">referências sob demanda</dd></div>
-    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">20</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">templates + 4 scanners</dd></div>
+    <div><dt class="text-3xl font-semibold tracking-tight text-gray-950 dark:text-white">26</dt><dd class="mt-1 text-sm/6 text-gray-600 dark:text-gray-400">templates + 4 scanners</dd></div>
   </dl>
 
   <p class="aviso prosa mt-10">
@@ -110,17 +113,17 @@
     anuncia; todas custam caro, e a primeira custa os dados de outras pessoas.</p>
   <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
     <div class="cartao cartao-realce"><span class="mb-3 block text-xl" aria-hidden="true">💉</span><h3>SQL concatenado</h3>
-      <p>Um <code>$_GET</code> dentro do <code>WHERE</code>. Funciona nos testes, e devolve a base inteira
-         para quem digitar <code>' OR '1'='1</code> no campo de busca.</p>
-      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R5</b>: prepared statements, allowlist e scanner</div></div>
+      <p>Um <code>searchParams</code> interpolado num <code>WHERE</code> ou num filtro <code>.or()</code>. Funciona
+         nos testes, e devolve a base inteira para quem digitar <code>' OR '1'='1</code> no campo de busca.</p>
+      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R5</b> e <b class="font-semibold text-gray-700 dark:text-gray-300">R7</b>: parâmetros vinculados, allowlist, scanner e RLS</div></div>
     <div class="cartao cartao-realce"><span class="mb-3 block text-xl" aria-hidden="true">🔑</span><h3>Credencial versionada</h3>
-      <p>A senha do MySQL da Hostinger em um <code>config.php</code> commitado. Continua legível no
-         histórico mesmo depois de apagada.</p>
-      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R1</b> e <b class="font-semibold text-gray-700 dark:text-gray-300">R2</b>: config ignorada, repo privado</div></div>
-    <div class="cartao cartao-realce"><span class="mb-3 block text-xl" aria-hidden="true">🧩</span><h3>Ninguém sabe instalar</h3>
-      <p>Falta uma extensão, falta permissão, ninguém sabe qual SQL rodar. A página abre em branco e não
-         há nada na tela dizendo por quê.</p>
-      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R9</b>. Wizard que diagnostica e corrige</div></div>
+      <p>A secret key do Supabase num <code>.env</code> commitado, colada no chat, ou com prefixo
+         <code>NEXT_PUBLIC_</code> no JavaScript do navegador. Continua legível no histórico mesmo depois de apagada.</p>
+      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R1</b> e <b class="font-semibold text-gray-700 dark:text-gray-300">R2</b>: variáveis na Vercel, repo privado</div></div>
+    <div class="cartao cartao-realce"><span class="mb-3 block text-xl" aria-hidden="true">🧩</span><h3>Ninguém consegue subir</h3>
+      <p>Clone novo, nenhuma variável documentada, nenhuma migração por script. O app quebra na primeira
+         requisição com <code>undefined</code> onde devia haver a URL do Supabase.</p>
+      <div class="cartao-nota">Resolvido por <b class="font-semibold text-gray-700 dark:text-gray-300">R9</b>: ambiente validado, três comandos</div></div>
     <div class="cartao cartao-realce"><span class="mb-3 block text-xl" aria-hidden="true">🧪</span><h3>"Testei, está funcionando"</h3>
       <p>Teste manual sem roteiro, sem resultado esperado escrito, sem caso de segurança. O bug corrigido
          volta três versões depois.</p>
@@ -137,7 +140,7 @@
 
   <div class="mt-10 grid gap-5 lg:grid-cols-3">
     <div class="cartao cartao-realce"><h3>Início</h3>
-      <p>As perguntas de bootstrap em um lote (seis na trilha PHP, sete na Next.js), a documentação oficial lida <b class="font-semibold text-gray-800 dark:text-gray-200">ao vivo</b>,
+      <p>As seis perguntas de bootstrap em um lote, a documentação oficial lida <b class="font-semibold text-gray-800 dark:text-gray-200">ao vivo</b>,
          e então uma spec com requisitos numerados e casos de teste, e uma parada para a sua aprovação.
          Nenhuma linha de implementação existe ainda.</p>
       <div class="cartao-nota">Conduzido pela skill</div></div>
@@ -155,37 +158,41 @@
   <div class="painel-codigo mt-8">
     <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>uma sessão de verdade</div>
 <pre class="bloco"><span class="c">1. Você pede</span>
-<span class="s">"Faz um sistema de controle de chamados em PHP e MySQL pra eu subir na Hostinger."</span>
+<span class="s">"Faz um sistema de controle de chamados em Next.js pra eu publicar na Vercel."</span>
 
-<span class="c">2. As perguntas de bootstrap, um lote</span>
-Trilha? Repositório (novo nasce privado)? Versão do PHP e acesso da hospedagem?
-Tem login, dado pessoal, pagamento, upload? Nome e versão inicial? Quem executa o QA?
-Na trilha Next.js, mais uma: posso me conectar à sua conta da Vercel?
+<span class="c">2. As seis perguntas de bootstrap, um lote</span>
+Repositório (novo nasce privado)? Projeto na Vercel, domínio, projeto e plano do Supabase?
+Preview com Supabase Branching ou projeto separado? Tem login, dado pessoal, pagamento,
+upload, API paga? Nome, slug e versão inicial? Quem executa o QA? Posso me conectar à sua
+conta da Vercel?   <span class="c"># e o agente confirma: pasta isolada do projeto</span>
 
 <span class="c">3. A documentação é lida, não lembrada</span>
-php.net · docs da Hostinger · MySQL · OWASP  <span class="p">→</span>  registro de evidências com data
+nextjs.org · docs da Vercel · Supabase · OWASP · o .d.ts instalado  <span class="p">→</span>  evidências com data
 
 <span class="c">4. Uma spec, depois uma parada</span>
 specs/0001-controle-de-chamados.md. RF-001…RF-012, modelo de dados com índices,
-rotas nomeadas, critérios de aceite (dado/quando/então), nível de segurança, 31 casos
+políticas de RLS, rotas nomeadas, dados pessoais com finalidade, critérios de aceite
+(dado/quando/então), nível de segurança, 31 casos
 <span class="k">⛔ "Aprova e eu construo?"</span>
 
 <span class="c">5. Agora o vibecoding</span>
 Você constrói. Ela segura três linhas e sai da frente.
 
 <span class="c">6. O código pronto é verificado</span>
-php -l · composer audit · scan-secrets.sh · scan-sql-injection.sh · scan-linguagem.sh
-· scan-doc-sync.sh · checklist de revisão
+lint · tsc · testes · vercel build · npm audit · teste de RLS com a publishable key
+· scan-secrets.sh · scan-sql-injection.sh · scan-linguagem.sh · scan-doc-sync.sh
+· checklist de revisão · resumo do diff, arquivo por arquivo, para você ler
 <span class="c">+ as sete perguntas adversariais ("qual linha deste diff eu atacaria primeiro?")</span>
 
-<span class="c">7. O roteiro de testes é gerado e executado</span>
+<span class="c">7. O roteiro de testes é gerado e executado no preview</span>
 Um caso por critério de aceite + um de SQL injection para CADA campo que chega ao banco
-+ XSS + IDOR + CSRF + upload + rotas + cabeçalhos    <span class="c"># o Cowork executa</span>
++ XSS + IDOR + CSRF + RLS pela API + Storage + upload + rotas + cabeçalhos
++ varredura de estranho: deslogado, outra conta, curl    <span class="c"># o Cowork executa</span>
 
 <span class="c">8. Versão, documentação, push, deploy</span>
 A matriz de documentos diz o que esta mudança obriga a atualizar; o commit sai sem
 atribuição de IA <span class="c">(R18)</span>
-<span class="k">⛔ "Publicar v1.0.0?"</span>   <span class="k">⛔ "Implantar em seu-dominio.com.br? Há 1 migração. Faço backup antes."</span></pre>
+<span class="k">⛔ "Publicar v1.0.0?"</span>   <span class="k">⛔ "Promover para seu-dominio.com.br? Há 1 migração. Faço backup antes."</span></pre>
   </div>
 </section>
 
@@ -199,21 +206,21 @@ atribuição de IA <span class="c">(R18)</span>
     <table class="tabela">
       <thead><tr><th scope="col">#</th><th scope="col">Regra</th></tr></thead>
       <tbody>
-        <tr><td class="id-regra">R1</td><td><b class="font-semibold text-gray-950 dark:text-white">Nenhum segredo entra no repositório.</b> Credenciais de banco, chaves de API, <code>.env</code>, dumps, dados pessoais: nunca. Placeholder no arquivo versionado; valor real só em variável de ambiente ou arquivo ignorado.</td></tr>
+        <tr><td class="id-regra">R1</td><td><b class="font-semibold text-gray-950 dark:text-white">Nenhum segredo entra no repositório.</b> Credenciais de banco, chaves de API, tokens, <code>.env*</code>, dados de cliente: nunca. Placeholder no arquivo versionado; valor real só nas variáveis de ambiente da Vercel ou em <code>.env.local</code> ignorado. Segredo nunca leva o prefixo <code>NEXT_PUBLIC_</code> (no navegador só vão a URL e a publishable key do Supabase) e nunca é colado no chat com a IA. Chave vazada é revogada e trocada.</td></tr>
         <tr><td class="id-regra">R2</td><td><b class="font-semibold text-gray-950 dark:text-white">Repositório privado por padrão.</b> Todo projeto nasce <code>--private</code>. Publicar é decisão explícita, e só depois de varrer o <b class="font-semibold">histórico inteiro</b>.</td></tr>
         <tr><td class="id-regra">R3</td><td><b class="font-semibold text-gray-950 dark:text-white">Especificação antes do código</b>, com requisitos numerados, critérios de aceite, casos de teste e portão de aprovação.</td></tr>
-        <tr><td class="id-regra">R4</td><td><b class="font-semibold text-gray-950 dark:text-white">Nunca invente uma API.</b> Função, extensão, prop, hook, classe do Tailwind: só depois de verificada em <code>vendor/</code>, <code>node_modules/</code> ou na doc lida na sessão.</td></tr>
-        <tr><td class="id-regra">R5</td><td><b class="font-semibold text-gray-950 dark:text-white">Todo SQL é parametrizado.</b> Zero concatenação. <code>ATTR_EMULATE_PREPARES =&gt; false</code>. Identificadores só por allowlist, com a exceção declarada na própria linha.</td></tr>
+        <tr><td class="id-regra">R4</td><td><b class="font-semibold text-gray-950 dark:text-white">Nunca invente uma API.</b> Prop, hook, função de pacote, classe do Tailwind, chave do <code>next.config.ts</code>, flag do CLI da Vercel: só depois de verificada em <code>node_modules/**/*.d.ts</code>, <code>package.json</code> ou na doc oficial lida na sessão.</td></tr>
+        <tr><td class="id-regra">R5</td><td><b class="font-semibold text-gray-950 dark:text-white">Todo SQL é parametrizado.</b> Zero interpolação de dado no texto do SQL. Métodos tipados do cliente do Supabase (<code>.eq</code>, <code>.in</code>, <code>.ilike</code>), nunca string montada em <code>.or()</code>/<code>.filter()</code>; no SQL direto, template tag do driver ou parâmetros posicionais; <code>.rpc()</code> sem <code>EXECUTE</code> concatenado. Identificadores só por allowlist, com a exceção declarada com <code>scan-sql:allow</code>.</td></tr>
         <tr><td class="id-regra">R6</td><td><b class="font-semibold text-gray-950 dark:text-white">Validar na entrada, escapar na saída</b>, no contexto correto de cada uma. Validação no cliente é usabilidade, nunca segurança.</td></tr>
-        <tr><td class="id-regra">R7</td><td><b class="font-semibold text-gray-950 dark:text-white">A linha de base de segurança é inegociável; acima dela, proporcional ao porte.</b> Doze itens de piso valem até no projeto de fim de semana.</td></tr>
-        <tr><td class="id-regra">R8</td><td><b class="font-semibold text-gray-950 dark:text-white">Interface por componentes.</b> Next.js: App Router, Server Components, Tailwind com tokens. PHP: front controller + partials, zero HTML concatenado.</td></tr>
-        <tr><td class="id-regra">R9</td><td><b class="font-semibold text-gray-950 dark:text-white">Todo app PHP+MySQL entrega um Wizard de instalação</b> que verifica dependências e cria, ou limpa e recria, o banco.</td></tr>
-        <tr><td class="id-regra">R10</td><td><b class="font-semibold text-gray-950 dark:text-white">Todo app PHP entrega um painel administrativo</b> que instala pacotes ZIP com arquivos e migrações SQL, com backup e rollback.</td></tr>
+        <tr><td class="id-regra">R7</td><td><b class="font-semibold text-gray-950 dark:text-white">A linha de base de segurança é inegociável; acima dela, proporcional ao porte.</b> Catorze itens de piso valem até no projeto de fim de semana: login pelo Supabase Auth, RLS em toda tabela, Storage privado, CORS restrito, debug desligado em produção, backup com restauração ensaiada, teto de gasto em API paga, só o dado pessoal necessário.</td></tr>
+        <tr><td class="id-regra">R8</td><td><b class="font-semibold text-gray-950 dark:text-white">Interface por componentes.</b> App Router, Server Components por padrão e <code>'use client'</code> só nas folhas, Tailwind com tokens do tema, um componente por responsabilidade, zero HTML montado em string.</td></tr>
+        <tr><td class="id-regra">R9</td><td><b class="font-semibold text-gray-950 dark:text-white">O ambiente é validado e o app sobe do zero com três comandos.</b> <code>lib/env.ts</code> valida toda variável com Zod na carga; <code>.env.example</code> lista todas; <code>vercel env pull</code> + migrações do Supabase CLI + <code>npm run db:seed</code> deixam um clone limpo funcionando; o seed cria o administrador pelo Auth Admin API, de forma idempotente, com o papel em <code>app_metadata</code> e a senha vinda de variável.</td></tr>
+        <tr><td class="id-regra">R10</td><td><b class="font-semibold text-gray-950 dark:text-white">Toda migração é compatível com a versão anterior do código.</b> O Instant Rollback da Vercel volta o código, não o banco. Migrações do Supabase CLI em <code>supabase/migrations/</code>, registradas em <code>supabase_migrations.schema_migrations</code>, aplicadas com <code>supabase db push</code> antes da promoção, em expand → migrate → contract. Preview usa Supabase Branching ou projeto separado, nunca o banco de produção. Backup periódico, restauração ensaiada.</td></tr>
         <tr><td class="id-regra">R11</td><td><b class="font-semibold text-gray-950 dark:text-white">Toda aplicação entrega um roteiro de testes</b> em Markdown, executável pelo Claude Cowork: unitário → integração → interface → segurança → regressão.</td></tr>
-        <tr><td class="id-regra">R12</td><td><b class="font-semibold text-gray-950 dark:text-white">Revise código de IA como código hostil</b>, contra um checklist, antes de todo push.</td></tr>
-        <tr><td class="id-regra">R13</td><td><b class="font-semibold text-gray-950 dark:text-white">Versão, documentação e schema andam juntos.</b> Toda mudança atualiza, no mesmo commit, os documentos que ela afeta. Uma matriz diz quais: README, CHANGELOG, spec, roteiro de QA, <code>AGENTS.md</code>, <code>.env.example</code>, página.</td></tr>
-        <tr><td class="id-regra">R14</td><td><b class="font-semibold text-gray-950 dark:text-white">Deploy é explícito, nomeado e reversível</b>, com backup antes e rollback documentado.</td></tr>
-        <tr><td class="id-regra">R15</td><td><b class="font-semibold text-gray-950 dark:text-white">A URL é interface, não caminho de arquivo.</b> <code>/cadastrar-novo-usuario</code>, nunca <code>/usuarios/cadastro.php</code>. Rota em português, kebab-case, sem extensão; navegação jamais por query string.</td></tr>
+        <tr><td class="id-regra">R12</td><td><b class="font-semibold text-gray-950 dark:text-white">Revise código de IA como código hostil, e o agente como ferramenta com poder.</b> Checklist contra o diff antes de todo push, e a pessoa lê o resumo antes de aprovar. Solução que desliga uma proteção é recusada; pacote sugerido pela IA é conferido antes de instalar; o agente trabalha em pasta isolada, cada comando com efeito é lido antes de aprovado, e o que ele lê de fora é dado, nunca instrução.</td></tr>
+        <tr><td class="id-regra">R13</td><td><b class="font-semibold text-gray-950 dark:text-white">Versão, documentação e schema andam juntos, e código sem documentação não está concluído.</b> Toda mudança atualiza, no mesmo commit, os documentos que ela afeta, os comentários do código alterado e o TSDoc do que mudou. Uma matriz diz quais: README, CHANGELOG, spec, roteiro de QA, <code>AGENTS.md</code>, <code>.env.example</code>, <code>docs/</code> (arquitetura, decisões, segurança, banco, API), página. Depois de toda mudança, a verificação obrigatória; ao fim de toda entrega, o relatório de documentação.</td></tr>
+        <tr><td class="id-regra">R14</td><td><b class="font-semibold text-gray-950 dark:text-white">Deploy é explícito, nomeado e reversível.</b> Preview primeiro, migração antes da promoção, backup antes da migração, revisão humana no portão quando o app trata pagamento ou dado sensível, <code>vercel rollback</code> documentado como caminho de volta.</td></tr>
+        <tr><td class="id-regra">R15</td><td><b class="font-semibold text-gray-950 dark:text-white">A URL é interface, não caminho de arquivo.</b> <code>/cadastrar-novo-usuario</code>, nunca <code>/users/new</code> nem <code>/usuarios?acao=novo</code>. No App Router a pasta é a URL, então a regra vale para o nome da pasta. Navegação jamais por query string.</td></tr>
         <tr><td class="id-regra">R16</td><td><b class="font-semibold text-gray-950 dark:text-white">Build quebrado se conserta com o log na mão e a correção provada localmente.</b> Reproduzir com <code>vercel build</code>, corrigir a causa raiz, um push por volta, teto de três voltas. Nunca <code>ignoreBuildErrors</code>.</td></tr>
         <tr><td class="id-regra">R17</td><td><b class="font-semibold text-gray-950 dark:text-white">O texto é escrito na língua de quem usa, e nunca entrega que foi gerado.</b> Pesquisar as convenções do domínio antes da primeira frase de interface. Travessão proibido em texto visível. Corpo de texto justificado, com hifenização.</td></tr>
         <tr><td class="id-regra">R18</td><td><b class="font-semibold text-gray-950 dark:text-white">Nenhuma atribuição de IA nos artefatos do projeto.</b> Nada de <code>Co-Authored-By</code>, "Generated with" ou link de sessão em commit, pull request, README, página ou comentário de código. O projeto é de quem o assina.</td></tr>
@@ -226,44 +233,80 @@ atribuição de IA <span class="c">(R18)</span>
   <p class="rotulo">R5</p>
   <h2 class="titulo-secao">A regra que mais importa</h2>
   <p class="texto-secao prosa">SQL injection é a única falha desta lista que transforma um projeto pessoal em um
-    incidente com dados de terceiros. Tem uma causa única e uma cura única.</p>
+    incidente com dados de terceiros. Tem uma causa única: dado do usuário virando parte do texto do comando,
+    seja SQL, seja o filtro que o cliente do Supabase manda para a API. E uma cura única.</p>
 
   <div class="painel-codigo mt-10">
-    <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>app/Controllers/PedidoController.php</div>
+    <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>app/chamados/dados.ts</div>
 <pre class="bloco"><span class="r">// ❌ NUNCA. Nem "só nesse caso". Nem "o campo é numérico". Nem "é área logada".</span>
-<span class="v">$sql</span> = <span class="s">"SELECT * FROM pedidos WHERE cliente_id = "</span> . <span class="v">$_GET</span>[<span class="s">'id'</span>];
+<span class="p">await</span> supabase.<span class="p">from</span>(<span class="s">'chamados'</span>).<span class="p">select</span>().<span class="p">or</span>(<span class="s">`titulo.ilike.%</span><span class="v">${busca}</span><span class="s">%,status.eq.</span><span class="v">${status}</span><span class="s">`</span>);
+<span class="p">await</span> sql.<span class="p">unsafe</span>(<span class="s">`SELECT * FROM chamados WHERE usuario_id = '</span><span class="v">${id}</span><span class="s">'`</span>);
+<span class="p">await</span> sql.<span class="p">unsafe</span>(<span class="s">"DELETE FROM logs WHERE dia &lt; '"</span> + <span class="v">dia</span> + <span class="s">"'"</span>);
 
-<span class="k">// ✅ SEMPRE. O dado viaja por um parâmetro, nunca pelo texto do comando.</span>
-<span class="v">$stmt</span> = <span class="v">$pdo</span>-&gt;<span class="p">prepare</span>(<span class="s">'SELECT * FROM pedidos WHERE cliente_id = :id AND usuario_id = :u'</span>);
-<span class="v">$stmt</span>-&gt;<span class="p">execute</span>([<span class="s">':id'</span> =&gt; <span class="v">$id</span>, <span class="s">':u'</span> =&gt; <span class="v">$_SESSION</span>[<span class="s">'usuario_id'</span>]]);</pre>
+<span class="k">// ✅ Cliente do Supabase: cada método tipado leva o valor separado da coluna.</span>
+<span class="p">const</span> { data } = <span class="p">await</span> supabase
+  .<span class="p">from</span>(<span class="s">'chamados'</span>)
+  .<span class="p">select</span>(<span class="s">'id, titulo, status'</span>)
+  .<span class="p">eq</span>(<span class="s">'status'</span>, <span class="v">status</span>)
+  .<span class="p">ilike</span>(<span class="s">'titulo'</span>, <span class="s">`%</span><span class="v">${escaparLike(busca)}</span><span class="s">%`</span>);   <span class="c">// o padrão é um valor, não um filtro</span>
+
+<span class="k">// ✅ SQL direto no servidor (driver `postgres`): a template tag vira $1, $2…</span>
+<span class="p">const</span> pedidos = <span class="p">await</span> sql<span class="s">`SELECT * FROM pedidos WHERE cliente_id = </span><span class="v">${id}</span><span class="s">`</span>;
+<span class="p">const</span> outros  = <span class="p">await</span> sql.<span class="p">unsafe</span>(<span class="s">'SELECT * FROM pedidos WHERE cliente_id = $1'</span>, [<span class="v">id</span>]);</pre>
   </div>
 
   <p class="prosa mt-8 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
+    O primeiro ❌ é o mais traiçoeiro: <code>.or()</code> recebe uma <b class="font-semibold text-gray-950 dark:text-white">string
+    de filtro</b> do PostgREST (<code>@supabase/postgrest-js</code> 2.117.3, <code>dist/index.d.cts:3328</code>). Uma
+    vírgula ou um parêntese na busca vira condição nova.</p>
+
+  <div class="mt-6 grid gap-5 lg:grid-cols-2">
+    <div class="cartao"><h3>RLS: a camada que segura o que escapar</h3>
+      <p>Toda tabela tem RLS ligada (R7). O cliente do Supabase leva o token do usuário, e a política
+         decide o que ele alcança, mesmo que um filtro saia errado.</p>
+      <div class="cartao-nota">A publishable key vai para o navegador de propósito: com ela, qualquer pessoa
+        chama a API REST do Supabase sem passar pelo seu app. Sem RLS, é a tabela inteira.</div></div>
+    <div class="cartao"><h3>SQL direto não passa pela RLS</h3>
+      <p>A conexão com <code>POSTGRES_URL</code> e a secret key ignoram as políticas do usuário. Ali a
+         autorização tem de estar na própria consulta, no servidor.</p>
+      <div class="cartao-nota">Funções <code>security definer</code> chamadas por <code>.rpc()</code> levam
+        <code>set search_path = ''</code> e conferem <code>auth.uid()</code> por dentro.</div></div>
+  </div>
+
+  <p class="prosa mt-6 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
     <b class="font-semibold text-gray-950 dark:text-white">O caso difícil</b>, o que não pode ser
     parametrizado: nome de coluna, nome de tabela, <code>ASC</code>/<code>DESC</code>. A resposta nunca é
     "concatena com cuidado". É <b class="font-semibold text-gray-950 dark:text-white">allowlist</b>, com a
-    exceção declarada na linha:</p>
+    exceção declarada:</p>
 
   <div class="painel-codigo mt-4">
-<pre class="bloco"><span class="v">$colunas</span> = [<span class="s">'nome'</span> =&gt; <span class="s">'p.nome'</span>, <span class="s">'data'</span> =&gt; <span class="s">'p.criado_em'</span>];
-<span class="v">$coluna</span>  = <span class="v">$colunas</span>[<span class="v">$_GET</span>[<span class="s">'ordenar'</span>] ?? <span class="s">''</span>] ?? <span class="s">'p.criado_em'</span>;
-<span class="v">$sql</span> = <span class="s">"SELECT * FROM pedidos p ORDER BY $coluna"</span>;   <span class="k">// scan-sql:allow: $colunas</span></pre>
+<pre class="bloco"><span class="k">// ✅ O valor que chega do usuário é uma CHAVE, não um fragmento de SQL.</span>
+<span class="p">const</span> COLUNAS = { nome: <span class="s">'p.nome'</span>, data: <span class="s">'p.criado_em'</span>, valor: <span class="s">'p.total'</span> } <span class="p">as const</span>;
+<span class="p">const</span> ORDENS  = { asc: <span class="s">'ASC'</span>, desc: <span class="s">'DESC'</span> } <span class="p">as const</span>;
+
+<span class="p">const</span> coluna = COLUNAS[<span class="v">ordenarPor</span> <span class="p">as keyof typeof</span> COLUNAS] ?? <span class="s">'p.criado_em'</span>;
+<span class="p">const</span> ordem  = ORDENS[<span class="v">direcao</span> <span class="p">as keyof typeof</span> ORDENS] ?? <span class="s">'DESC'</span>;
+
+<span class="k">// scan-sql:allow: coluna e ordem saem de COLUNAS/ORDENS</span>
+<span class="p">const</span> texto = <span class="s">`SELECT * FROM pedidos p WHERE p.cliente_id = $1 ORDER BY </span><span class="v">${coluna} ${ordem}</span><span class="s"> LIMIT $2`</span>;
+<span class="p">const</span> linhas = <span class="p">await</span> sql.<span class="p">unsafe</span>(texto, [<span class="v">id</span>, <span class="v">limite</span>]);</pre>
   </div>
 
   <p class="destaque prosa">
     O scanner acusa <b class="font-semibold">toda</b> interpolação em SQL. Para silenciá-la é preciso escrever
     o marcador citando a allowlist: na própria linha ou na linha imediatamente acima, onde cabe a
     justificativa por extenso. Isso transforma a exceção em algo visível na revisão, em vez de uma
-    concatenação silenciosa.
+    concatenação silenciosa. Com o cliente do Supabase a regra é a mesma: <code>.order(coluna)</code> recebe a
+    coluna da allowlist, nunca o texto cru da URL.
   </p>
 
   <div class="mt-6 grid gap-5 lg:grid-cols-2">
     <div class="cartao"><h3>O que o scanner também pega</h3>
       <ul class="setas">
-        <li><code>mysql_query</code> e <code>mysqli_real_escape_string</code> usado como defesa</li>
-        <li><code>$queryRawUnsafe</code>, <code>sql.unsafe</code>, <code>sql.raw</code>, <code>knex.raw</code></li>
+        <li><code>.or(</code>, <code>.filter(</code> e <code>.not(</code> do Supabase com template literal interpolado ou string concatenada</li>
+        <li><code>sql.unsafe</code>, <code>sql.raw</code>, <code>$queryRawUnsafe</code>, <code>$executeRawUnsafe</code>, <code>knex.raw</code></li>
         <li>Template literal com SQL e <code>${}</code> fora de tag parametrizada</li>
-        <li><code>ATTR_EMULATE_PREPARES =&gt; true</code>, e a ausência do <code>false</code> em projetos com <code>new PDO(</code></li>
+        <li>Query montada por concatenação de string com <code>+</code></li>
       </ul></div>
     <div class="cartao"><h3>E o que ele não pega</h3>
       <ul class="setas">
@@ -283,17 +326,18 @@ atribuição de IA <span class="c">(R18)</span>
     de implementação.</p>
 
   <div class="painel-codigo mt-10">
-<pre class="bloco"><span class="r">❌ https://seu-dominio.com.br/usuarios/cadastro.php</span>
+<pre class="bloco"><span class="r">❌ https://seu-dominio.com.br/users/new</span>
+<span class="r">❌ https://seu-dominio.com.br/usuarios?acao=novo</span>
 <span class="k">✅ https://seu-dominio.com.br/cadastrar-novo-usuario</span>
 
-<span class="r">❌ https://seu-dominio.com.br/app/views/chamados/detalhe.php?id=8</span>
+<span class="r">❌ https://seu-dominio.com.br/tickets/detail?id=8</span>
 <span class="k">✅ https://seu-dominio.com.br/chamados/8/impressora-nao-imprime</span></pre>
   </div>
 
   <p class="prosa mt-6 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
-    <code>/usuarios/cadastro.php</code> entrega de graça três coisas: a linguagem do servidor, a árvore de
-    pastas e o nome do arquivo. Quem está sondando começa por aí. E no dia em que você mover o arquivo,
-    todo link publicado quebra.</p>
+    <code>/users/new</code> fala a língua do framework, não a de quem usa o app. <code>/usuarios?acao=novo</code>
+    esconde a navegação numa query string que ninguém consegue ler, favoritar com sentido nem redirecionar
+    quando a tela mudar.</p>
 
   <div class="mt-8 grid gap-5 lg:grid-cols-2">
     <div class="cartao"><h3>As sete convenções</h3>
@@ -301,7 +345,7 @@ atribuição de IA <span class="c">(R18)</span>
         <li>Português, minúsculas, kebab-case: <code>/redefinir-senha</code></li>
         <li>Sem acento e sem cedilha: o percent-encoding deixa a URL ilegível ao ser copiada</li>
         <li>Sem extensão de arquivo</li>
-        <li>Sem estrutura de pastas do servidor</li>
+        <li>Sem detalhe técnico: <code>/api/</code>, id interno sem necessidade, inglês, camelCase</li>
         <li>Ação = verbo no infinitivo: <code>/cadastrar-novo-usuario</code></li>
         <li>Coleção = substantivo plural + identificador: <code>/chamados/8</code></li>
         <li>Navegação <b class="font-semibold text-gray-800 dark:text-gray-200">nunca</b> depende de query string</li>
@@ -314,23 +358,10 @@ atribuição de IA <span class="c">(R18)</span>
         <li><code>/produtos?busca=teclado</code>: busca</li>
       </ul>
       <div class="cartao-nota">A vantagem é concreta: <code>/chamados?status=fechado</code> é compartilhável e
-        favoritável. Já <code>/index.php?p=chamados</code> não significa nada fora da sua sessão.</div></div>
+        favoritável. Já <code>/painel?tela=chamados</code> não significa nada fora da sua sessão.</div></div>
   </div>
 
-  <div class="mt-5 grid gap-5 lg:grid-cols-2">
-    <div class="painel-codigo min-w-0">
-      <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>public_html/index.php</div>
-<pre class="bloco"><span class="v">$rotas</span> = [
-  <span class="s">'GET  /'</span>                       =&gt; [<span class="p">PaginaController</span>::class,  <span class="s">'inicio'</span>],
-  <span class="s">'GET  /entrar'</span>                 =&gt; [<span class="p">SessaoController</span>::class,  <span class="s">'formularioLogin'</span>],
-  <span class="s">'POST /entrar'</span>                 =&gt; [<span class="p">SessaoController</span>::class,  <span class="s">'autenticar'</span>],
-  <span class="s">'GET  /cadastrar-novo-usuario'</span> =&gt; [<span class="p">UsuarioController</span>::class, <span class="s">'formulario'</span>],
-  <span class="s">'GET  /chamados'</span>               =&gt; [<span class="p">ChamadoController</span>::class, <span class="s">'listar'</span>],
-  <span class="s">'GET  /abrir-chamado'</span>          =&gt; [<span class="p">ChamadoController</span>::class, <span class="s">'formulario'</span>],
-  <span class="s">'GET  /chamados/{id}/{slug}'</span>   =&gt; [<span class="p">ChamadoController</span>::class, <span class="s">'detalhe'</span>],
-  <span class="s">'POST /chamados/{id}/fechar'</span>   =&gt; [<span class="p">ChamadoController</span>::class, <span class="s">'fechar'</span>],
-];</pre>
-    </div>
+  <div class="mt-5 grid gap-5">
     <div class="painel-codigo min-w-0">
       <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>app/: a pasta <em class="not-italic text-gray-300">é</em> a URL</div>
 <pre class="bloco">app/
@@ -345,81 +376,147 @@ atribuição de IA <span class="c">(R18)</span>
   </div>
 
   <p class="destaque prosa">
-    <b class="font-semibold">Renomear uma rota é uma mudança MAJOR.</b> Links publicados quebram, e você não
-    controla quem os publicou. A antiga responde <b class="font-semibold">301</b> por pelo menos uma versão
-    maior, e a mudança entra no CHANGELOG. A referência traz o roteador completo com canonicalização, o
-    helper <code>rota()</code> que evita escrever a mesma URL duas vezes, a geração de slug, os redirects em
-    <code>next.config.ts</code>, uma tabela de tradução de URLs antigas e os treze casos de teste que vão
-    para o roteiro de QA.
+    <b class="font-semibold">Renomear uma pasta de rota é uma mudança MAJOR.</b> Links publicados quebram, e você
+    não controla quem os publicou. A antiga responde <b class="font-semibold">301</b> por <code>redirects()</code> em
+    <code>next.config.ts</code> por pelo menos uma versão maior, e a mudança entra no CHANGELOG. A referência traz
+    o helper <code>rota()</code> que evita escrever a mesma URL duas vezes, a geração de slug, uma tabela de
+    tradução de URLs antigas e os treze casos de teste que vão para o roteiro de QA.
   </p>
 </section>
 
-<section id="wizard" class="divisoria interno py-16 sm:py-20">
+<section id="ambiente" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">R9</p>
-  <h2 class="titulo-secao">Wizard de instalação em todo app PHP</h2>
-  <p class="texto-secao prosa">Instalar deve ser: subir os arquivos, abrir <code>/install/</code>, informar host,
-    banco, usuário e senha, e clicar em avançar. Nada é gravado antes do último passo: desistir no meio não
-    deixa resíduo.</p>
-  <ol class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-    <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">passo 1</div>
-      <h3 class="mt-2">Requisitos</h3>
-      <p>PHP, extensões, permissões, <code>mod_rewrite</code>, HTTPS: cada item com o valor encontrado, o
-         exigido e <b class="font-semibold text-gray-800 dark:text-gray-200">a instrução de correção no hPanel</b>.</p></li>
-    <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">passo 2</div>
-      <h3 class="mt-2">Banco</h3>
-      <p>Testa a conexão na hora e <b class="font-semibold text-gray-800 dark:text-gray-200">traduz o erro do
-         MySQL</b>: "1045" vira "usuário ou senha incorretos, confira em hPanel → Bancos de dados".</p></li>
-    <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">passo 3</div>
-      <h3 class="mt-2">Estrutura</h3>
-      <p>Detecta o estado da base: criar do zero, manter os dados, ou <b class="font-semibold text-gray-800 dark:text-gray-200">limpar
-         e recriar</b>: exigindo digitar <code>APAGAR</code>, com as tabelas e a contagem de linhas na tela.</p></li>
-    <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">passo 4</div>
-      <h3 class="mt-2">Administrador</h3>
-      <p>Primeiro admin com <code>password_hash</code>. Nunca um <code>admin/admin</code> "para facilitar": é
-         o primeiro alvo de qualquer varredura automática.</p></li>
-    <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">passo 5</div>
-      <h3 class="mt-2">Conclusão</h3>
-      <p>Grava a configuração fora do webroot, registra a versão do schema, <b class="font-semibold text-gray-800 dark:text-gray-200">se
-         tranca</b>, e manda apagar a pasta <code>install/</code>.</p></li>
-    <li class="cartao"><div class="font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">pronto para usar</div>
-      <h3 class="mt-2">Esqueleto executável</h3>
-      <p>Um arquivo único, adaptável: <code>assets/templates/install-wizard.php.template</code>.</p></li>
+  <h2 class="titulo-secao">O app sobe do zero com três comandos</h2>
+  <p class="texto-secao prosa">Um app pessoal costuma morrer no clone seguinte: ninguém lembra quais variáveis
+    existem, qual SQL rodar e em que ordem, nem como criar o primeiro usuário. Ou sobe em produção e quebra na
+    primeira requisição, com <code>undefined</code> onde devia haver a URL do Supabase. A R9 fecha as duas portas.</p>
+
+  <div class="painel-codigo mt-10">
+    <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>clone novo, terminal</div>
+<pre class="bloco"><span class="p">vercel</span> env pull .env.local    <span class="c"># as variáveis do ambiente Development, do painel da Vercel</span>
+<span class="p">npm</span> run db:migrate            <span class="c"># supabase db push: aplica supabase/migrations/ pendentes</span>
+<span class="p">npm</span> run db:seed               <span class="c"># cria o administrador no Supabase Auth, se ainda não existir</span></pre>
+  </div>
+
+  <ol class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">lib/env.ts</div>
+      <h3 class="mt-2">Validado na carga</h3>
+      <p>Toda variável passa por um esquema Zod. Faltou uma, o build quebra dizendo
+         <b class="font-semibold text-gray-800 dark:text-gray-200">qual e onde configurar</b>, em vez de o app subir e falhar em silêncio.</p></li>
+    <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">.env.example</div>
+      <h3 class="mt-2">Todas listadas</h3>
+      <p>Cada variável com placeholder óbvio, como <code>https://SEU-PROJETO.supabase.co</code>.
+         Nunca um valor que pareça funcionar.</p></li>
+    <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">db:migrate</div>
+      <h3 class="mt-2">Schema por script</h3>
+      <p><code>supabase db push</code> aplica as migrações pendentes, que o próprio banco registra em
+         <code class="break-all">supabase_migrations.schema_migrations</code>.</p></li>
+    <li class="cartao"><div class="font-mono text-xs font-semibold text-marca-600 dark:text-marca-400">db:seed</div>
+      <h3 class="mt-2">Administrador inicial</h3>
+      <p>Criado pelo Auth Admin API só se ainda não existir, com a senha vinda de variável e o papel em
+         <code>app_metadata</code>. Nunca um <code>admin/admin</code> "para facilitar".</p></li>
   </ol>
+
+  <div class="painel-codigo mt-6">
+    <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>lib/env.ts</div>
+<pre class="bloco"><span class="k">// ✅ falha cedo, com nome e endereço</span>
+<span class="p">import</span> <span class="s">'server-only'</span>;
+<span class="p">import</span> { z } <span class="p">from</span> <span class="s">'zod'</span>;
+
+<span class="p">const</span> Esquema = z.<span class="p">object</span>({
+  NEXT_PUBLIC_SUPABASE_URL: z.<span class="p">url</span>(),
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.<span class="p">string</span>().<span class="p">regex</span>(<span class="s">/^(sb_publishable_|eyJ)/</span>),
+  SUPABASE_SECRET_KEY: z.<span class="p">string</span>().<span class="p">regex</span>(<span class="s">/^(sb_secret_|eyJ)/</span>),   <span class="c">// nunca com NEXT_PUBLIC_</span>
+});
+
+<span class="p">const</span> resultado = Esquema.<span class="p">safeParse</span>(process.env);
+<span class="p">if</span> (!resultado.success) {
+  <span class="p">const</span> faltando = resultado.error.issues.<span class="p">map</span>((i) =&gt; i.path.<span class="p">join</span>(<span class="s">'.'</span>)).<span class="p">join</span>(<span class="s">', '</span>);
+  <span class="p">throw new</span> Error(<span class="s">`Variável ausente ou inválida: </span><span class="v">${faltando}</span><span class="s">. Configure em Vercel → Settings → Environment Variables.`</span>);
+}
+
+<span class="p">export const</span> env = resultado.data;</pre>
+  </div>
+  <div class="painel-codigo mt-6">
+    <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>scripts/seed.ts</div>
+<pre class="bloco"><span class="k">// ✅ Auth Admin API, só quando o e-mail ainda não existe</span>
+<span class="p">await</span> supabase.auth.admin.<span class="p">createUser</span>({
+  email,
+  password: cfg.ADMIN_SENHA_INICIAL,                          <span class="c">// de variável, nunca fixa</span>
+  email_confirm: <span class="v">true</span>,
+  app_metadata: { papel: <span class="s">'admin'</span>, deve_trocar_senha: <span class="v">true</span> },  <span class="c">// nunca em user_metadata</span>
+});</pre>
+  </div>
+  <p class="destaque prosa">O papel vai em <code>app_metadata</code>, que só o servidor altera: o
+    <code>user_metadata</code> o próprio usuário edita, e política que confia nele deixa qualquer um se promover.
+    Esqueletos prontos em <code>env.ts.template</code>, <code>env.example.template</code>, <code>seed.ts.template</code>
+    e <code>supabase-server.ts.template</code>. Quem prefere o Supabase inteiro na própria máquina usa
+    <code>supabase start</code> e <code>npm run db:reset:local</code>. O roteiro de QA ganha um caso que faz
+    exatamente isto num clone limpo: se os três comandos não deixam o app funcionando, o release não sai.</p>
 </section>
 
-<section id="updates" class="divisoria interno py-16 sm:py-20">
+<section id="migracoes" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">R10</p>
-  <h2 class="titulo-secao">Atualização por pacote ZIP, pelo painel</h2>
-  <p class="texto-secao prosa">Atualizar por FTP é onde os projetos pessoais morrem: um arquivo esquecido, um SQL
-    que ninguém rodou, e o app fica meio atualizado: o pior estado possível.</p>
-  <div class="painel-codigo mt-10">
-    <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>meu-app-1.3.0.zip</div>
-<pre class="bloco">├── <span class="k">manifest.json</span>      <span class="c"># app, versão, versão mínima, PHP mínimo, extensões, sha256 por arquivo</span>
-├── files/             <span class="c"># árvore espelhando a raiz do app</span>
-├── migrations/        <span class="c"># SQL ordenado por nome e idempotente</span>
-└── remove.txt         <span class="c"># arquivos a apagar</span></pre>
+  <h2 class="titulo-secao">Migrações que sobrevivem ao rollback</h2>
+  <p class="texto-secao prosa">O Instant Rollback da Vercel volta o <b class="font-semibold text-gray-950 dark:text-white">código</b>
+    em segundos. O <b class="font-semibold text-gray-950 dark:text-white">banco</b> fica onde estava. Se a migração do
+    release novo apagou a coluna que o código antigo lê, o rollback devolve um código que quebra procurando o que
+    não existe mais.</p>
+
+  <div class="tabela-caixa mt-10">
+    <table class="tabela">
+      <thead><tr><th scope="col">Release</th><th scope="col">Fase</th><th scope="col">Exemplo: renomear <code>nome</code> para <code>nome_completo</code></th></tr></thead>
+      <tbody>
+        <tr><td>N</td><td><b class="font-semibold text-gray-950 dark:text-white">Expand</b></td><td><code>ADD COLUMN nome_completo</code>; o código novo escreve nas duas e lê da nova.</td></tr>
+        <tr><td>N</td><td><b class="font-semibold text-gray-950 dark:text-white">Migrate</b></td><td>Copia os dados antigos para a coluna nova, em lote.</td></tr>
+        <tr><td>N+1</td><td><b class="font-semibold text-gray-950 dark:text-white">Contract</b></td><td><code>DROP COLUMN nome</code>, só quando nenhum código em produção lê mais dela.</td></tr>
+      </tbody>
+    </table>
   </div>
+
   <div class="mt-6 grid gap-5 lg:grid-cols-2">
-    <div class="cartao"><h3>Valida antes de escrever um byte</h3>
+    <div class="painel-codigo min-w-0">
+      <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>a ordem do deploy</div>
+<pre class="bloco"><span class="p">1 PREVIEW</span>   branch do Supabase Branching (ou projeto
+            separado), nunca produção
+<span class="p">2 BACKUP</span>    backup conferido antes de tocar produção
+<span class="p">3 MIGRAR</span>    supabase db push (--dry-run antes),
+            antes da promoção
+<span class="p">4 PROMOVER</span>  <span class="k">⛔ com aprovação: merge em main
+            ou vercel promote</span>
+<span class="p">5 VOLTAR?</span>   vercel rollback: seguro, porque o
+            schema ainda serve ao código anterior</pre>
+    </div>
+    <div class="cartao"><h3>O que torna isso verificável</h3>
       <ul class="setas">
-        <li>É deste app? A sequência de versões faz sentido?</li>
-        <li>O servidor atende ao PHP e às extensões exigidas?</li>
-        <li>O <code>sha256</code> de cada arquivo confere?</li>
-        <li>Há entrada no ZIP que o manifesto não declara?</li>
-        <li>Algum caminho tenta sair das pastas permitidas? <b class="font-semibold text-gray-800 dark:text-gray-200">(zip slip)</b></li>
-      </ul></div>
-    <div class="cartao"><h3>Aplica com caminho de volta</h3>
+        <li><code>supabase migration new &lt;nome&gt;</code> cria <code class="break-all">supabase/migrations/&lt;timestamp&gt;_&lt;nome&gt;.sql</code></li>
+        <li>Cada uma registrada em <code class="break-all">supabase_migrations.schema_migrations</code>: o próprio banco diz o que já rodou</li>
+        <li>Migração destrutiva <b class="font-semibold text-gray-800 dark:text-gray-200">nunca</b> no mesmo release que deixou de usar a coluna</li>
+        <li>Preview com banco de produção é defeito, não atalho</li>
+      </ul>
+      <div class="cartao-nota">Referência: <code>migracoes-e-rollback.md</code>. Template: <code>migration.sql.template</code>.</div></div>
+  </div>
+
+  <div class="mt-5 grid gap-5 lg:grid-cols-2">
+    <div class="painel-codigo min-w-0">
+      <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>Supabase CLI</div>
+<pre class="bloco"><span class="p">npx</span> supabase migration new adiciona_anexos
+<span class="p">npx</span> supabase db reset --local   <span class="c"># reaplica tudo, só local</span>
+<span class="p">npx</span> supabase migration list     <span class="c"># o que já rodou</span>
+<span class="p">npx</span> supabase db push --dry-run  <span class="c"># o que vai rodar</span>
+<span class="p">npx</span> supabase db push
+
+<span class="r"># ❌ apaga o banco REMOTO do projeto linkado</span>
+<span class="p">npx</span> supabase db reset --linked</pre>
+    </div>
+    <div class="cartao"><h3>Backup sem restauração ensaiada não é backup</h3>
+      <p>O plano Free do Supabase não tem backup automático: a R10 passa a exigir <code>supabase db dump</code>
+         agendado e guardado fora. Nos planos pagos, os backups diários ficam em Database → Backups.</p>
       <ul class="setas">
-        <li>Prévia com os arquivos que mudam e as migrações: <b class="font-semibold text-gray-800 dark:text-gray-200">as destrutivas em destaque</b></li>
-        <li>Backup do banco e dos arquivos que serão sobrescritos</li>
-        <li>Modo manutenção com <b class="font-semibold text-gray-800 dark:text-gray-200">expiração automática</b>, para o site não ficar preso</li>
-        <li>Migrações em ordem, registradas em <code>schema_migrations</code></li>
-        <li><b class="font-semibold text-gray-800 dark:text-gray-200">Rollback automático</b> se qualquer etapa falhar</li>
+        <li>Restauração ensaiada num projeto ou branch descartável antes do primeiro lançamento (CT-MIG-011)</li>
+        <li>O branch do preview aplica migrações e seed, e não copia dado de produção</li>
       </ul></div>
   </div>
-  <p class="destaque prosa">O pacote nunca escreve em <code>config/</code> nem em <code>storage/</code>: essas pastas
-    são do usuário, não do aplicativo. É assim que uma atualização não sobrescreve a configuração de quem
-    instalou.</p>
 </section>
 
 <section id="qa" class="divisoria interno py-16 sm:py-20">
@@ -454,9 +551,9 @@ atribuição de IA <span class="c">(R18)</span>
       <tbody>
         <tr><td><b class="font-semibold text-gray-950 dark:text-white">Fumaça</b></td><td>5 a 10 casos. Se falhar, o resto não roda: o ambiente ou o build estão errados.</td></tr>
         <tr><td><b class="font-semibold text-gray-950 dark:text-white">Funcional</b></td><td>Um caso por critério de aceite, mais validação, fronteira, os quatro estados de tela, persistência, concorrência e formatos.</td></tr>
-        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Integração</b></td><td>Formulário → banco → tela, upload → download, e-mail, webhook idempotente, o Wizard e o painel de atualização.</td></tr>
-        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Segurança</b></td><td>Payloads de SQL injection em <b class="font-semibold">cada</b> campo que chega ao banco; XSS refletido e armazenado; IDOR; CSRF; sessão; upload; cabeçalhos; acesso a <code>/config/</code>, <code>/.env</code>, <code>/.git/config</code>, <code>/install/</code>.</td></tr>
-        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Interface</b></td><td>375/768/1440 px, só teclado, rótulos, contraste AA, zoom 200%, estado vazio, duplo clique, e as rotas: 301 de canonicalização, 404 real, F5 e Voltar.</td></tr>
+        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Integração</b></td><td>Formulário → banco → tela, upload → download, e-mail, webhook idempotente, migração e seed num banco vazio, restauração do backup (CT-MIG-011).</td></tr>
+        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Segurança</b></td><td>Payloads de SQL injection em <b class="font-semibold">cada</b> campo que chega ao banco; XSS refletido e armazenado; IDOR; CSRF; sessão; upload; cabeçalhos; RLS pela API REST do Supabase com a publishable key e com o token de outro usuário (CT-SEC-031, CT-SEC-032); arquivo de bucket privado e URL assinada expirada (CT-SEC-033); LGPD (CT-LGPD-001 a 004); varredura de estranho: cada rota, Route Handler e Server Action deslogado, com outra conta e por <code>curl</code>; nenhum segredo no JavaScript enviado ao navegador; acesso a <code>/.env</code> e <code>/.git/config</code>.</td></tr>
+        <tr><td><b class="font-semibold text-gray-950 dark:text-white">Interface</b></td><td>375/768/1440 px, só teclado, rótulos, contraste AA, zoom 200%, estado vazio, duplo clique, e as rotas: redirecionamento permanente de canonicalização, 404 real, F5 e Voltar.</td></tr>
         <tr><td><b class="font-semibold text-gray-950 dark:text-white">Regressão</b></td><td>Cresce a cada defeito corrigido. Roda inteira antes de todo release: é a memória do projeto.</td></tr>
       </tbody>
     </table>
@@ -470,6 +567,7 @@ atribuição de IA <span class="c">(R18)</span>
         <li>Caso não executado é <b class="font-semibold text-gray-800 dark:text-gray-200">BLOQUEADO</b>, nunca FALHOU</li>
         <li>Console e rede fazem parte do resultado</li>
         <li>Restaure o estado inicial antes de cada suíte</li>
+        <li>O segredo de bypass da Deployment Protection não passa pela conversa</li>
       </ul></div>
     <div class="cartao"><h3>E o roteiro fecha em números</h3>
       <ul class="setas">
@@ -521,17 +619,23 @@ atribuição de IA <span class="c">(R18)</span>
     E o que ele <b class="font-semibold text-gray-950 dark:text-white">nunca</b> faz para ficar verde:</p>
   <div class="painel-codigo mt-4">
     <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>next.config.ts</div>
-<pre class="bloco"><span class="r">// ❌ proibidos pela regra: o erro continua lá, agora invisível</span>
+<pre class="bloco"><span class="r">// ❌ proibido pela regra: o erro continua lá, agora invisível</span>
 <span class="p">export default</span> {
   typescript: { ignoreBuildErrors: <span class="v">true</span> },
-  eslint:     { ignoreDuringBuilds: <span class="v">true</span> },
-};</pre>
+};
+
+<span class="k">// ✅ o build falha quando o código está errado, e o erro é corrigido</span>
+<span class="p">export default</span> {};</pre>
   </div>
+  <p class="prosa mt-6 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
+    No Next 15 a mesma amputação aparecia também como <code>eslint: { ignoreDuringBuilds: true }</code>. No Next 16
+    a chave <code>eslint</code> nem existe mais no tipo <code>NextConfig</code>, e o lint roda por <code>eslint .</code>
+    no script do <code>package.json</code>.</p>
   <p class="destaque prosa">Também proibidos: apagar o teste que falha, <code>@ts-ignore</code> num erro real,
     <code>any</code> para atravessar uma incompatibilidade, e commit vazio para reprocessar. Se a única
     saída for uma dessas, é <b class="font-semibold">decisão sua</b>: o agente apresenta o trade-off e espera.
     O acesso é por servidor MCP da Vercel (detectado antes de perguntar), CLI com <code>VERCEL_TOKEN</code>
-    ou API REST; o token vive em <code>.env</code>, com escopo mínimo, nunca versionado.</p>
+    ou API REST; o token vive em <code>.env.local</code>, com escopo mínimo, nunca versionado e nunca colado no chat.</p>
 </section>
 
 <section id="linguagem" class="divisoria interno py-16 sm:py-20">
@@ -630,8 +734,9 @@ atribuição de IA <span class="c">(R18)</span>
     "antes do release". Se o commit que muda o comportamento não muda o texto que descreve o
     comportamento, os dois nunca mais se encontram. A cada modificação o agente reabre o inventário de
     documentos do projeto e decide quais merecem atualização, com uma matriz no lugar da memória.
-    Esta é a versão curta, com as linhas mais comuns; a referência traz as catorze e mais a coluna
-    do <code>AGENTS.md</code>, onde entram as armadilhas que você já descobriu no projeto:
+    Esta é a versão curta, com as linhas mais comuns; a referência traz a matriz completa, a coluna
+    do <code>AGENTS.md</code>, onde entram as armadilhas que você já descobriu no projeto, e uma
+    segunda matriz para comentários, TSDoc e os documentos de <code>docs/</code>:
   </p>
 
   <div class="tabela-caixa mt-8">
@@ -677,11 +782,50 @@ atribuição de IA <span class="c">(R18)</span>
         por causa desta mudança?</div></div>
     <div class="cartao"><h3><code>scan-doc-sync.sh</code></h3>
       <p>Lê o que está no staging e aponta o que a matriz pede e você não tocou: CHANGELOG parado com
-         código novo, <code>.env.example</code> intocado quando apareceu variável de ambiente no diff,
-         versão parada, roteiro de QA parado com migração nova.</p>
+         código novo, variável lida no código e ausente do <code>.env.example</code>, versão parada,
+         pacote novo sem registro, <code>TODO</code> sem descrição, exportação sem TSDoc, e rota,
+         migração ou código de segurança mudados sem o documento de <code>docs/</code>.</p>
       <div class="cartao-nota">Marca <code>[PEDE]</code> quando a matriz é clara e <code>[OLHE]</code>
         quando depende de julgamento. Roda no <code>pre-commit</code> em modo aviso, sem travar o
         commit: quem decide é você.</div></div>
+  </div>
+
+  <h3 class="mt-14 text-xl font-semibold tracking-tight text-gray-950 sm:text-2xl dark:text-white">
+    Código sem documentação não está concluído
+  </h3>
+  <p class="prosa mt-4 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
+    A documentação faz parte da entrega, escrita para alguém que nunca viu o projeto, inclusive um
+    iniciante, e explica o <b class="font-semibold text-gray-950 dark:text-white">porquê</b>: o código
+    já mostra o quê. A profundidade acompanha o porte. Um script pequeno precisa de README e
+    comentários; um sistema com API e banco, de tudo o que se aplica. Nenhum documento nasce vazio só
+    para cumprir lista.
+  </p>
+  <div class="mt-8 grid gap-5 lg:grid-cols-2">
+    <div class="cartao"><h3>Comentários e TSDoc</h3>
+      <p>Comentário para decisão não óbvia, regra de negócio, contorno de bug e trecho de segurança;
+         nunca para o óbvio. <code>TODO: &lt;o que falta e por quê&gt;</code>, nunca a palavra sozinha.
+         Código comentado morto é apagado. Toda exportação pública leva TSDoc com o que faz,
+         <code>@param</code>, <code>@returns</code>, <code>@throws</code> e exemplo quando ajuda.</p>
+      <div class="cartao-nota">Os templates TypeScript da própria skill seguem a regra.</div></div>
+    <div class="cartao"><h3>Os documentos de <code>docs/</code></h3>
+      <p><code>arquitetura.md</code> com um diagrama Mermaid; <code>decisoes/</code> com contexto,
+         decisão, alternativas e consequências; <code>banco-de-dados.md</code> dizendo quem lê e quem
+         altera cada dado; <code>api.md</code> com cada Route Handler e cada Server Action que muda
+         estado.</p>
+      <div class="cartao-nota">Cada um só existe quando o projeto precisa dele.</div></div>
+    <div class="cartao"><h3><code>docs/seguranca.md</code></h3>
+      <p>Como autenticação e autorização funcionam, quais proteções estão ativas, e as
+         <b class="font-semibold text-gray-950 dark:text-white">ações manuais fora do código</b>:
+         Redirect URLs do Supabase Auth, teto de gasto, Deployment Protection, rotação de chave. E
+         como reportar uma vulnerabilidade.</p>
+      <div class="cartao-nota">É o que some primeiro quando o projeto troca de conta.</div></div>
+    <div class="cartao"><h3>Verificação obrigatória e relatório</h3>
+      <p>Depois de qualquer mudança: comentários do código alterado e de quem o chama, TSDoc,
+         README, <code>.env.example</code>, dependências com motivo, API, banco, segurança,
+         arquitetura, CHANGELOG, e uma busca no projeto pelo nome do que mudou. A entrega termina
+         com o relatório: o que foi criado, atualizado ou removido, o que não se aplicava e o que
+         ficou sem documentar.</p>
+      <div class="cartao-nota">"Documentação atualizada" sem a lista não vale.</div></div>
   </div>
 
   <h3 class="mt-14 text-xl font-semibold tracking-tight text-gray-950 sm:text-2xl dark:text-white">
@@ -739,28 +883,89 @@ atribuição de IA <span class="c">(R18)</span>
         <tr><td><b class="font-semibold text-gray-950 dark:text-white">Piso</b>
             <span class="ml-1 inline-block rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">sempre</span></td>
             <td>Todo projeto, inclusive o de fim de semana</td>
-            <td>SQL parametrizado · nenhum segredo versionado · <code>password_hash</code> · CSRF · saída escapada · cookie <code>HttpOnly</code>/<code>Secure</code>/<code>SameSite</code> · HTTPS · cabeçalhos · autorização por registro · erros logados e nunca exibidos · upload restrito · dependências auditadas</td></tr>
+            <td>SQL parametrizado · nenhum segredo versionado nem em <code>NEXT_PUBLIC_</code> · senha nunca guardada pelo app: quem guarda é o Supabase Auth · CSRF · saída escapada · cookie de sessão <code>SameSite=Lax</code> só por HTTPS · HTTPS · cabeçalhos · autorização por registro · erros logados e nunca exibidos, debug desligado em produção · upload restrito, privado e conferido pelos bytes · dependências auditadas e vigiadas pelo Dependabot · <b class="font-semibold text-gray-950 dark:text-white">RLS em toda tabela</b> · backup com restauração ensaiada</td></tr>
         <tr><td><b class="font-semibold text-gray-950 dark:text-white">N1</b> Vitrine</td><td>Sem login, sem dado pessoal</td>
             <td>Captcha/honeypot, rate limit simples, e-mail sem injeção de cabeçalho</td></tr>
         <tr><td><b class="font-semibold text-gray-950 dark:text-white">N2</b> App com login</td><td>Dados dos próprios usuários</td>
-            <td>Bloqueio progressivo, recuperação com token de uso único, auditoria, sessão regenerada, expiração por inatividade</td></tr>
+            <td>Bloqueio progressivo, recuperação pelo fluxo do Supabase Auth, auditoria, sessão nova a cada login, expiração por inatividade</td></tr>
         <tr><td><b class="font-semibold text-gray-950 dark:text-white">N3</b> Dados de terceiros</td><td>CPF, endereço, saúde, financeiro</td>
-            <td>Criptografia em repouso, retenção e exclusão, exportação do titular, backup criptografado e testado, registro de acesso</td></tr>
+            <td>Criptografia de campo sensível, retenção e exclusão, exportação do titular, restauração ensaiada a cada trimestre, registro de acesso, <b class="font-semibold">revisão humana</b> de autenticação e dado sensível</td></tr>
         <tr><td><b class="font-semibold text-gray-950 dark:text-white">N4</b> Pagamento</td><td>Checkout, assinatura, saldo</td>
-            <td>Cartão nunca no seu servidor, webhook assinado, idempotência, conciliação, MFA no painel</td></tr>
+            <td>Cartão nunca no seu servidor, webhook assinado, idempotência, conciliação, MFA no painel e nas contas da Vercel e do Supabase, <b class="font-semibold">revisão humana</b> também de pagamento e webhook</td></tr>
       </tbody>
     </table>
   </div>
   <p class="prosa mt-6 max-w-3xl text-base/7 text-gray-600 dark:text-gray-400">
     <b class="font-semibold text-gray-950 dark:text-white">Regra de escada: você pode subir de nível, nunca
-    descer.</b> Um app que começou N2 e passou a guardar CPF virou N3 no mesmo commit em que a coluna foi criada.</p>
+    descer.</b> Um app que começou N2 e passou a guardar CPF virou N3 no mesmo commit em que a coluna foi criada.
+    A revisão humana de N3 e N4 é de uma pessoa que lê o diff, não de outra IA, e o nome dela fica na spec.</p>
+
+  <div class="mt-6 grid gap-5 lg:grid-cols-3">
+    <div class="cartao"><h3>RLS e servidor, os dois</h3>
+      <p>A RLS segura o que o servidor deixar escapar; o servidor segura o que uma política frouxa deixar
+         passar. A secret key ignora a RLS e vive só no servidor.</p>
+      <div class="cartao-nota">Storage em bucket privado, com política em <code>storage.objects</code> e URL assinada curta.</div></div>
+    <div class="cartao"><h3>O que protege a conta</h3>
+      <p>Rate limiting e <b class="font-semibold text-gray-800 dark:text-gray-200">teto de gasto</b> em toda API paga.
+         CORS sem <code>Access-Control-Allow-Origin</code>, ou com allowlist escrita no código.</p>
+      <div class="cartao-nota">Cada categoria do OWASP Top 10:2025 aponta para a regra que a trata.</div></div>
+    <div class="cartao"><h3>LGPD no piso técnico</h3>
+      <p>Só o dado pessoal com finalidade escrita na spec, política de privacidade aberta sem login, exclusão
+         de conta que alcança perfil, arquivos e usuário do Auth, e exportação dos dados do titular.</p>
+      <div class="cartao-nota">Não é parecer jurídico: é o que o app precisa fazer para cumprir o que a política promete.</div></div>
+  </div>
+</section>
+
+<section id="agente" class="divisoria interno py-16 sm:py-20">
+  <p class="rotulo">R12 · R4 · R1</p>
+  <h2 class="titulo-secao">O agente é uma ferramenta com poder</h2>
+  <p class="texto-secao prosa">Um agente de código lê arquivos, roda comandos no seu terminal, instala pacotes e
+    fala com a internet, com as <b class="font-semibold text-gray-950 dark:text-white">suas</b> credenciais. O código
+    que ele escreve passa pelo checklist de revisão. O lugar onde ele roda, os comandos que ele pede e o texto
+    que ele lê também precisam de regra.</p>
+
+  <div class="painel-codigo mt-10">
+    <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>onde o agente abre</div>
+<pre class="bloco"><span class="r"># ❌ na pasta home: ele enxerga todos os projetos, ~/.ssh, ~/.aws, downloads</span>
+<span class="p">cd</span> ~ &amp;&amp; claude
+
+<span class="k"># ✅ na pasta do projeto; tarefa em paralelo, um git worktree para cada</span>
+<span class="p">cd</span> ~/projetos/controle-de-chamados &amp;&amp; claude</pre>
+  </div>
+
+  <div class="mt-6 grid gap-5 sm:grid-cols-2">
+    <div class="cartao"><h3>Comando com efeito, um por um</h3>
+      <p>Ler e listar é barato. O que apaga, sobrescreve, publica ou reescreve histórico é lido
+         <b class="font-semibold text-gray-800 dark:text-gray-200">inteiro</b> antes do sim, e nunca aprovado em lote.</p>
+      <ul class="setas">
+        <li><code>rm -rf</code>, <code>DROP</code>, <code>git push --force</code>, <code>git reset --hard</code></li>
+        <li><code>vercel env rm</code>, <code>supabase db reset --linked</code>, <code>curl … | sh</code></li>
+      </ul></div>
+    <div class="cartao"><h3>Prompt injection</h3>
+      <p>Issue, página, log, README de pacote e linha do banco são <b class="font-semibold text-gray-800 dark:text-gray-200">dado,
+         nunca instrução</b>. O texto de um estranho não vira ação com as suas credenciais.</p>
+      <div class="cartao-nota">App com LLM separa a instrução do sistema da entrada, não dá ao modelo ferramenta
+        com efeito sem confirmação, e trata a saída dele como entrada não confiável (R6).</div></div>
+    <div class="cartao"><h3>Segredo fora do chat</h3>
+      <p>O agente nunca pede para colar uma chave, e você nunca cola. O código lê o segredo de
+         <code>.env.local</code> ou do ambiente, e o agente não ecoa o valor.</p>
+      <div class="cartao-nota">Chave que passou pela conversa é chave vazada: cria-se outra, troca-se em todo lugar,
+        e só então a antiga é apagada.</div></div>
+    <div class="cartao"><h3>Pacote conferido antes de instalar</h3>
+      <p>A IA sugere nomes de pacote com a mesma confiança com que sugere props, e há quem registre os nomes que
+         ela costuma inventar. O nome bate com a doc oficial? <code>npm view &lt;pacote&gt; repository maintainers time</code>
+         mostra um histórico plausível?</p>
+      <div class="cartao-nota">Lockfile versionado, <code>npm ci</code> em CI e em clone limpo, Dependabot e alertas do
+        GitHub ligados no bootstrap.</div></div>
+  </div>
 </section>
 
 <section id="instalar" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">Começar</p>
   <h2 class="titulo-secao">Instalar e usar</h2>
-  <p class="texto-secao prosa">A skill dispara sozinha quando você menciona PHP, MySQL, Hostinger, Next.js, Vercel,
-    Tailwind, SQL injection, wizard de instalação, rotas amigáveis ou roteiro de testes.</p>
+  <p class="texto-secao prosa">A skill dispara sozinha quando você menciona Next.js, Vercel, Tailwind, Supabase,
+    RLS, Postgres, LGPD, prompt injection, SQL injection, migração, rollback, variável de ambiente, rotas
+    amigáveis ou roteiro de testes.</p>
 
   <div class="mt-10 grid gap-5 lg:grid-cols-2">
     <div class="min-w-0 space-y-5">
@@ -784,7 +989,7 @@ atribuição de IA <span class="c">(R18)</span>
       <div class="cartao"><h3>Depois é só pedir</h3>
         <div class="painel-codigo mt-3">
 <pre class="bloco"><span class="s">"Faz um sistema de controle de chamados
- em PHP e MySQL pra eu subir na Hostinger."</span></pre>
+ em Next.js pra eu publicar na Vercel."</span></pre>
         </div>
         <div class="cartao-nota">Copie <code>AGENTS.template.md</code> para o repositório do app como
           <code>AGENTS.md</code>: assim a próxima sessão herda o padrão e as armadilhas que você já encontrou.</div></div>
@@ -795,8 +1000,8 @@ atribuição de IA <span class="c">(R18)</span>
 <span class="p">bash</span> .../scan-linguagem.sh
 <span class="p">bash</span> .../scan-doc-sync.sh</pre>
         </div>
-        <div class="cartao-nota">O <code>pre-commit</code> e o <code>commit-msg</code> do pacote de
-          templates chamam os quatro sozinhos, a cada commit.</div></div>
+        <div class="cartao-nota">O agente oferece os hooks <code>pre-commit</code> e <code>commit-msg</code> no
+          bootstrap e só instala com o seu sim. Instalados, rodam a cada commit.</div></div>
     </div>
   </div>
 </section>
@@ -804,33 +1009,35 @@ atribuição de IA <span class="c">(R18)</span>
 <section id="estrutura" class="divisoria interno py-16 sm:py-20">
   <p class="rotulo">Conteúdo</p>
   <h2 class="titulo-secao">O que vem na caixa</h2>
-  <p class="texto-secao prosa">Um <code>SKILL.md</code>, dezoito referências carregadas sob demanda, vinte
+  <p class="texto-secao prosa">Um <code>SKILL.md</code>, 18 referências carregadas sob demanda, 26
     templates e quatro scanners, e nenhuma cópia da documentação de terceiros.</p>
   <div class="painel-codigo mt-10">
     <div class="barra-arquivo"><span class="pontos"><span></span><span></span><span></span></span>skills/development-pattern-for-web-apps/</div>
 <pre class="bloco">├── <span class="k">SKILL.md</span>                          <span class="c"># 18 regras, 8 fases, 3 portões, roteamento</span>
 ├── references/
-│   ├── segredos-e-configuracao.md    <span class="c"># R1: .env, config fora do webroot, Vercel, rotação</span>
-│   ├── git-e-publicacao.md           <span class="c"># R2: privado por padrão, commits, publicação</span>
+│   ├── segredos-e-configuracao.md    <span class="c"># R1: .env, variáveis da Vercel, chaves do Supabase</span>
+│   ├── git-e-publicacao.md           <span class="c"># R2, R18: privado por padrão, commits, lockfile</span>
 │   ├── fluxo-spec-driven.md          <span class="c"># R3: fases, portões, anatomia da spec</span>
-│   ├── protocolo-de-verificacao.md   <span class="c"># R4: hierarquia de fontes, comandos, armadilhas</span>
-│   ├── sql-e-acesso-a-dados.md       <span class="c"># R5. PDO, LIKE, IN, ORDER BY, transações, Next.js</span>
-│   ├── entrada-e-saida-seguras.md    <span class="c"># R6: validação, escape, CSRF, upload, traversal</span>
-│   ├── linha-de-base-de-seguranca.md <span class="c"># R7: o piso de 12 itens e os níveis N1 a N4</span>
-│   ├── stack-php-mysql.md            <span class="c"># R8: layout, front controller, partials, Hostinger</span>
-│   ├── stack-nextjs-vercel.md        <span class="c"># R8. App Router, Server Actions, Tailwind, Vercel</span>
-│   ├── wizard-de-instalacao.md       <span class="c"># R9: os cinco passos e o que testar</span>
-│   ├── pacotes-de-atualizacao.md     <span class="c"># R10: manifesto, zip slip, migrações, rollback</span>
+│   ├── protocolo-de-verificacao.md   <span class="c"># R4: fontes, pacotes antes de instalar</span>
+│   ├── sql-e-acesso-a-dados.md       <span class="c"># R5: cliente do Supabase, $1, LIKE, RLS, .rpc()</span>
+│   ├── entrada-e-saida-seguras.md    <span class="c"># R6: validação, escape, CSRF, Storage, traversal</span>
+│   ├── linha-de-base-de-seguranca.md <span class="c"># R7: piso de 14 itens, N1 a N4, LGPD, OWASP</span>
+│   ├── stack-nextjs-vercel.md        <span class="c"># R8: App Router, Server Actions, proxy.ts, Tailwind</span>
+│   ├── bootstrap-do-ambiente.md      <span class="c"># R9: lib/env.ts, .env.example, Supabase CLI, seed</span>
+│   ├── migracoes-e-rollback.md       <span class="c"># R10: expand → migrate → contract, Branching, backup</span>
 │   ├── roteiro-de-testes-cowork.md   <span class="c"># R11: as seis suítes, payloads, rastreabilidade</span>
 │   ├── checklist-de-revisao.md       <span class="c"># R12: checklist + 7 perguntas adversariais</span>
+│   ├── agentes-e-ferramentas-de-ia.md <span class="c"># R12: pasta isolada, comandos, prompt injection</span>
 │   ├── documentacao-do-projeto.md    <span class="c"># R13: inventário e matriz mudança → documento</span>
-│   ├── release-e-deploy.md           <span class="c"># R13, R14. SemVer, CHANGELOG, deploy, rollback</span>
-│   ├── rotas-e-urls.md               <span class="c"># R15: convenções, roteador, 301, 404, tradução</span>
+│   ├── release-e-deploy.md           <span class="c"># R13, R14: SemVer, CHANGELOG, promoção, rollback</span>
+│   ├── rotas-e-urls.md               <span class="c"># R15: convenções, pastas, 301, 404, tradução</span>
 │   ├── vercel-build-e-correcao.md    <span class="c"># R16: conectar, ler log, reproduzir, corrigir</span>
 │   └── linguagem-e-texto-da-interface.md <span class="c"># R17: domínio, travessão, microcopy, tipografia</span>
 └── assets/
-    ├── templates/                    <span class="c"># wizard, updater, Database.php, db.ts, schema,</span>
-    │                                 <span class="c">#   migração, manifesto, .htaccess, hooks, spec…</span>
+    ├── templates/                    <span class="c"># 26: env.ts, supabase-server.ts, proxy.ts, seed.ts,</span>
+    │                                 <span class="c">#   schema, políticas RLS, migração, dependabot,</span>
+    │                                 <span class="c">#   next.config.ts, hooks, spec, roteiro, e os</span>
+    │                                 <span class="c">#   docs/ de arquitetura, decisão, segurança, banco, API</span>
     └── scripts/                      <span class="c"># scan-secrets.sh · scan-sql-injection.sh</span>
                                       <span class="c">#   · scan-linguagem.sh · scan-doc-sync.sh</span></pre>
   </div>
@@ -847,9 +1054,9 @@ atribuição de IA <span class="c">(R18)</span>
             <td>Não. Eles pegam padrões conhecidos. Um segredo que pareça texto comum passa; uma consulta
                 montada em várias linhas pode escapar da varredura por linha. Varredura limpa é
                 <b class="font-semibold text-gray-950 dark:text-white">necessária, não suficiente</b>: leia o seu próprio diff.</td></tr>
-        <tr><td>Funciona com Laravel, WordPress, Django?</td>
-            <td>Não foi feita para eles. As regras de segurança (R1, R5, R6, R7) valem em qualquer stack, mas
-                as trilhas, os templates e os scanners assumem PHP puro + MySQL ou Next.js.</td></tr>
+        <tr><td>Funciona fora de Next.js na Vercel?</td>
+            <td>Não foi feita para isso. As regras de segurança (R1, R5, R6, R7) valem em qualquer stack, mas
+                desde a 2.0.0 as referências, os templates e os scanners assumem Next.js, Supabase e Vercel.</td></tr>
         <tr><td>Ela executa os testes?</td>
             <td>Ela <b class="font-semibold text-gray-950 dark:text-white">gera</b> o roteiro e pode executá-lo. A ideia é o Claude
                 Cowork executar navegando pela aplicação, ou você mesmo seguir o documento.</td></tr>
@@ -865,14 +1072,17 @@ atribuição de IA <span class="c">(R18)</span>
                 uma decisão consciente, tomada depois de varrer o histórico completo, não o estado atual
                 dos arquivos.</td></tr>
         <tr><td>URL amigável não é só estética?</td>
-            <td>Não. <code>/usuarios/cadastro.php</code> entrega a linguagem, a árvore de pastas e o nome do
-                arquivo do servidor, e acopla todo link publicado à sua organização em disco. Mover o
-                arquivo quebra o link de quem compartilhou.</td></tr>
-        <tr><td>Preciso do Wizard mesmo em um app minúsculo?</td>
-            <td>Se ele usa MySQL, sim. O Wizard é justamente o que transforma "a página está em branco e não
-                sei por quê" em "falta a extensão <code>mbstring</code>, ative em hPanel → Configuração PHP".</td></tr>
+            <td>Não. A URL vai para favoritos, mensagens e o índice do Google. <code>/users/new</code> fala a língua
+                do framework, e no App Router renomear a pasta quebra o link de quem compartilhou, a menos que
+                a antiga responda 301.</td></tr>
+        <tr><td>Preciso de <code>lib/env.ts</code> e seed mesmo em um app minúsculo?</td>
+            <td>Sim. É o que transforma "a página está em branco e não sei por quê" em "falta
+                <code>SUPABASE_SECRET_KEY</code> em Preview, configure em Vercel → Settings → Environment Variables".</td></tr>
+        <tr><td>Por que RLS se o servidor já confere a permissão?</td>
+            <td>Porque a publishable key está no navegador de propósito, e com ela qualquer pessoa chama a API REST
+                do Supabase sem passar pelo seu app. O roteiro de QA prova isso tabela por tabela (CT-SEC-031).</td></tr>
         <tr><td>Isso é ferramenta oficial de alguém?</td>
-            <td>Não. É um projeto independente, sem vínculo com Hostinger, Vercel, Anthropic ou qualquer
+            <td>Não. É um projeto independente, sem vínculo com Vercel, Supabase, Anthropic ou qualquer
                 outra empresa citada.</td></tr>
       </tbody>
     </table>
@@ -884,7 +1094,7 @@ atribuição de IA <span class="c">(R18)</span>
 <footer class="divisoria interno py-10">
   <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <p class="text-sm/6 text-gray-500 dark:text-gray-500">
-      Feito por <a href="https://github.com/adrianorafael" class="link">@adrianorafael</a>
+      Feito por <a href="https://github.com/adrianorafael" class="link">@adrianorafael</a> · versão 2.0.0
     </p>
     <nav aria-label="Links do rodapé" class="flex flex-wrap gap-x-5 gap-y-2 text-sm/6">
       <a href="https://github.com/adrianorafael/development-pattern-for-web-apps" class="link">Código no GitHub</a>
@@ -892,7 +1102,7 @@ atribuição de IA <span class="c">(R18)</span>
     </nav>
   </div>
   <p class="mt-6 max-w-2xl text-xs/5 text-gray-500 dark:text-gray-600">Projeto independente, sem vínculo com
-    Hostinger, Vercel, Anthropic ou qualquer outra empresa mencionada. Fornecido "como está", para estudo e
+    Vercel, Supabase, Anthropic ou qualquer outra empresa mencionada. Fornecido "como está", para estudo e
     uso pessoal. Marcas citadas pertencem a seus respectivos donos.</p>
 </footer>
 

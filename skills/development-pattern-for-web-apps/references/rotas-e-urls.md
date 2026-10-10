@@ -1,39 +1,44 @@
-# Rotas e URLs: a URL é interface, não caminho de arquivo
+# Rotas e URLs: a URL é interface, não detalhe de implementação
 
-> Regra **R15**. Toda URL descreve a ação ou o recurso em linguagem humana. Nunca revela a
-> estrutura de pastas do servidor, nunca carrega extensão de arquivo, nunca depende de query
-> string para navegar.
+> Regra **R15**. Toda URL descreve a ação ou o recurso em linguagem humana, em português:
+> `/cadastrar-novo-usuario`, nunca `/users/new` nem `/usuarios?acao=novo`. Detalhe técnico
+> (`/api/`, id interno sem necessidade, inglês, camelCase) não aparece em URL de página, e a
+> navegação nunca depende de query string.
 
 ```
-❌ https://seu-dominio.com.br/usuarios/cadastro.php
+❌ https://seu-dominio.com.br/users/new
+❌ https://seu-dominio.com.br/usuarios?acao=novo
 ✅ https://seu-dominio.com.br/cadastrar-novo-usuario
 
-❌ https://seu-dominio.com.br/app/views/chamados/detalhe.php?id=8
+❌ https://seu-dominio.com.br/tickets/detail?id=8
 ✅ https://seu-dominio.com.br/chamados/8/impressora-nao-imprime
 ```
 
 A URL é a parte da aplicação que **sai dela**: vai para o histórico do navegador, para os
-favoritos, para o WhatsApp de quem compartilha, para o índice do Google, para o log do
-servidor. Ela é a única parte da interface que sobrevive a uma reescrita do front-end: e
-por isso é a única que não pode ser um detalhe de implementação.
+favoritos, para o WhatsApp de quem compartilha, para o índice do Google, para o log da
+Vercel. Ela é a única parte da interface que sobrevive a uma reescrita do front-end: e por
+isso é a única que não pode ser um detalhe de implementação.
 
-`/usuarios/cadastro.php` entrega três coisas de graça: a linguagem do servidor, a árvore de
-pastas e o nome do arquivo. Quem está sondando começa por aí. E no dia em que você mover o
-arquivo, todo link publicado quebra.
+**No App Router a pasta é a URL.** `app/users/new/page.tsx` publica `/users/new`. Não existe
+um mapa de rotas separado onde corrigir isso depois: **a regra de URL é a regra de nome de
+pasta**. Quem cria a pasta decide a URL pública, e renomear a pasta mais tarde quebra todo
+link publicado.
 
 ---
 
 ## 1. As sete convenções
 
+Valem para o nome de cada pasta dentro de `app/` que vira segmento de URL.
+
 | # | Convenção | Sim | Não |
 | --- | --- | --- | --- |
-| 1 | **Português, minúsculas, kebab-case** | `/redefinir-senha` | `/redefinirSenha`, `/redefinir_senha`, `/ResetPassword` |
-| 2 | **Sem acento e sem cedilha**: o percent-encoding torna a URL ilegível ao ser copiada | `/manutencao` | `/manutenção` → `/manuten%C3%A7%C3%A3o` |
-| 3 | **Sem extensão de arquivo** | `/contato` | `/contato.php`, `/contato.html` |
-| 4 | **Sem estrutura de pastas do servidor** | `/chamados` | `/app/views/chamados/lista.php` |
-| 5 | **Ação = verbo no infinitivo** | `/cadastrar-novo-usuario`, `/recuperar-acesso` | `/user-new`, `/form2` |
-| 6 | **Coleção = substantivo plural; item = coleção + identificador** | `/chamados`, `/chamados/8` | `/chamado?id=8`, `/listarChamados` |
-| 7 | **Navegação nunca depende de query string** | `/chamados/8/anexos` | `/index.php?p=chamados&acao=anexos&id=8` |
+| 1 | **Português, minúsculas, kebab-case** | `app/redefinir-senha/` | `app/redefinirSenha/`, `app/redefinir_senha/`, `app/reset-password/` |
+| 2 | **Sem acento e sem cedilha**: o percent-encoding torna a URL ilegível ao ser copiada | `app/manutencao/` | `app/manutenção/` → `/manuten%C3%A7%C3%A3o` |
+| 3 | **Sem extensão e sem detalhe técnico** em URL de página | `/contato` | `/contato.html`, `/api/contato` como página, `/pages/contato` |
+| 4 | **Sem estrutura interna do projeto** | `/chamados` | `/app/chamados`, `/components/lista-chamados` |
+| 5 | **Ação = verbo no infinitivo** | `app/cadastrar-novo-usuario/`, `app/recuperar-acesso/` | `app/users/new/`, `app/signup/`, `app/form2/` |
+| 6 | **Coleção = substantivo plural; item = coleção + identificador** | `app/chamados/`, `app/chamados/[id]/` | `/chamado?id=8`, `/listarChamados` |
+| 7 | **Navegação nunca depende de query string** | `app/chamados/[id]/anexos/` | `/chamados?acao=anexos&id=8`, `/usuarios?acao=novo` |
 
 ### O que a query string pode fazer
 
@@ -44,12 +49,19 @@ roteamento:
 ✅ /chamados?status=fechado&ordenar=data&pagina=2      filtro, ordenação, paginação
 ✅ /produtos?busca=teclado+mecanico                     busca
 ❌ /?pagina=chamados                                    roteamento disfarçado
-❌ /index.php?acao=excluir&id=8                         roteamento E efeito colateral
+❌ /chamados?acao=excluir&id=8                          roteamento E efeito colateral
 ```
 
 A vantagem é concreta: `/chamados?status=fechado` é compartilhável e favoritável: o
-destinatário vê exatamente a mesma tela. Já `/index.php?p=...` não significa nada fora da
-sua sessão.
+destinatário vê exatamente a mesma tela. Já `/?pagina=chamados` não significa nada que a
+própria pasta não pudesse dizer melhor.
+
+### `/api/` é para máquina, não para gente
+
+Route Handlers (`app/api/**/route.ts`) servem webhook, integração e chamada de cliente. Eles
+podem ficar em inglês se o contrato externo exigir. Mas **nenhuma tela** mora sob `/api/`, e
+nenhum link que o usuário vê aponta para lá. Formulário de tela chama Server Action, não
+`fetch('/api/...')`. → [stack-nextjs-vercel.md](stack-nextjs-vercel.md)
 
 ---
 
@@ -57,25 +69,20 @@ sua sessão.
 
 **Um recurso, uma URL canônica.** Se `/chamados/8` e `/chamados/8/` respondem 200 com o
 mesmo conteúdo, você tem duas URLs para uma coisa: histórico dividido, SEO dividido, cache
-dividido. Escolha uma forma e responda **301** na outra. O mesmo vale para maiúsculas:
-`/Chamados` → 301 → `/chamados`.
+dividido. Escolha uma forma e responda com **redirecionamento permanente** na outra. O Next
+já faz isso com a barra final: com `trailingSlash` no padrão (`false`), `/chamados/` recebe
+308 para `/chamados` (`next@16.4.0`, `dist/lib/load-custom-routes.js`). Maiúsculas não são
+tratadas sozinhas: `/Chamados` → permanente → `/chamados` fica a cargo do `proxy.ts` (§4).
 
 **`GET` nunca tem efeito colateral.** `/chamados/8/excluir` como link é um convite ao
-desastre: o pré-carregamento do navegador, o robô de indexação ou um antivírus corporativo
-abrem links sozinhos. Excluir é `POST` (ou `DELETE`) com token CSRF.
-→ [entrada-e-saida-seguras.md](entrada-e-saida-seguras.md)
+desastre: o pré-carregamento do navegador (e o prefetch do `<Link>`), o robô de indexação
+ou um antivírus corporativo abrem links sozinhos. Excluir é Server Action (que é `POST`) ou
+Route Handler `DELETE`, nunca uma página. → [entrada-e-saida-seguras.md](entrada-e-saida-seguras.md)
 
-**Renomear uma rota é uma mudança MAJOR.** Links publicados quebram, e você não controla
-quem os publicou. Ao renomear, mantenha a antiga respondendo **301** por pelo menos uma
-versão maior, e registre no CHANGELOG. → [release-e-deploy.md](release-e-deploy.md)
-
-```php
-// app/rotas-legadas.php: tabela de redirecionamentos permanentes
-const REDIRECIONAMENTOS = [
-    '/usuarios/cadastro.php' => '/cadastrar-novo-usuario',
-    '/novo-chamado'          => '/abrir-chamado',
-];
-```
+**Renomear uma pasta de rota é uma mudança MAJOR.** Links publicados quebram, e você não
+controla quem os publicou. Ao renomear, mantenha a antiga respondendo **301** por pelo menos
+uma versão maior, em `redirects()` do `next.config.ts`, e registre no CHANGELOG.
+→ [release-e-deploy.md](release-e-deploy.md)
 
 **Cuidado com o ID sequencial exposto.** `/chamados/8` diz ao mundo que existem pelo menos 8
 chamados, e convida a testar `/chamados/9`. Isso não é uma falha por si só: a defesa contra
@@ -92,174 +99,56 @@ O identificador continua sendo validado e a autorização continua entrando na c
 `WHERE`. URL bonita não é controle de acesso.
 
 **404 é 404.** Uma página "não encontrado" servida com status 200 confunde navegador, cache,
-robô de indexação e o seu próprio roteiro de QA. Devolva o status certo.
+robô de indexação e o seu próprio roteiro de QA. Devolva o status certo: `notFound()`.
 
 ---
 
-## 3. PHP: o mapa de rotas
+## 3. A pasta é a URL
 
-Um único ponto de entrada (`public_html/index.php`) e um mapa escrito à mão. O `.htaccess`
-já manda tudo que não é arquivo real para lá: ver
-[`../assets/templates/htaccess.template`](../assets/templates/htaccess.template).
-
-```php
-// public_html/index.php
-$rotas = [
-    'GET  /'                          => [PaginaController::class,  'inicio'],
-    'GET  /entrar'                    => [SessaoController::class,  'formularioLogin'],
-    'POST /entrar'                    => [SessaoController::class,  'autenticar'],
-    'POST /sair'                      => [SessaoController::class,  'encerrar'],
-
-    'GET  /cadastrar-novo-usuario'    => [UsuarioController::class, 'formulario'],
-    'POST /cadastrar-novo-usuario'    => [UsuarioController::class, 'criar'],
-    'GET  /recuperar-acesso'          => [SenhaController::class,   'formulario'],
-    'POST /recuperar-acesso'          => [SenhaController::class,   'enviarLink'],
-    'GET  /redefinir-senha/{token}'   => [SenhaController::class,   'formularioNova'],
-    'POST /redefinir-senha/{token}'   => [SenhaController::class,   'redefinir'],
-
-    'GET  /chamados'                  => [ChamadoController::class, 'listar'],
-    'GET  /abrir-chamado'             => [ChamadoController::class, 'formulario'],
-    'POST /abrir-chamado'             => [ChamadoController::class, 'criar'],
-    'GET  /chamados/{id}'             => [ChamadoController::class, 'detalhe'],
-    'GET  /chamados/{id}/{slug}'      => [ChamadoController::class, 'detalhe'],
-    'POST /chamados/{id}/fechar'      => [ChamadoController::class, 'fechar'],
-    'POST /chamados/{id}/anexos'      => [AnexoController::class,   'enviar'],
-    'GET  /anexos/{id}'               => [AnexoController::class,   'baixar'],
-
-    'GET  /administracao'             => [AdminController::class,   'painel'],
-    'GET  /administracao/atualizacoes'=> [AdminController::class,   'atualizacoes'],
-];
-```
-
-O mapa é **escrito por você**. Nunca `include $_GET['pagina'] . '.php'`: isso é inclusão de
-arquivo arbitrário com outro nome. → [entrada-e-saida-seguras.md](entrada-e-saida-seguras.md)
-
-### Um roteador que cabe em uma tela
-
-```php
-final class Router
-{
-    public function __construct(private array $rotas) {}
-
-    public function despachar(string $metodo, string $caminho): void
-    {
-        // Canonicalização: minúsculas e sem barra final, com 301 na forma divergente.
-        $canonico = rtrim(strtolower($caminho), '/');
-        if ($canonico === '') { $canonico = '/'; }
-        if ($canonico !== $caminho) {
-            header('Location: ' . $canonico, true, 301);
-            return;
-        }
-
-        if ($metodo === 'GET' && isset(REDIRECIONAMENTOS[$canonico])) {
-            header('Location: ' . REDIRECIONAMENTOS[$canonico], true, 301);
-            return;
-        }
-
-        foreach ($this->rotas as $chave => [$classe, $acao]) {
-            [$metodoRota, $padrao] = preg_split('/\s+/', $chave, 2);
-            if ($metodoRota !== $metodo) { continue; }
-
-            // {id} vira um grupo nomeado; a validação real acontece no controller.
-            $regex = '#^' . preg_replace('/\{([a-z_]+)\}/', '(?P<$1>[^/]+)', $padrao) . '$#';
-            if (preg_match($regex, $canonico, $m)) {
-                $params = array_filter($m, 'is_string', ARRAY_FILTER_USE_KEY);
-                (new $classe())->$acao($params);
-                return;
-            }
-        }
-
-        http_response_code(404);
-        require __DIR__ . '/app/Views/erros/404.php';
-    }
-}
-```
-
-Dois pontos que o roteador **não** faz, de propósito:
-
-- **Não valida o `{id}`.** Ele entrega a string; quem valida é o controller, com
-  `filter_var(..., FILTER_VALIDATE_INT)` (R6), e o dono entra na consulta (R7).
-- **Não descobre a classe pela URL.** `new ($_GET['c'])()` é execução de código arbitrário.
-  O mapa é literal.
-
-### Gerando URLs no código
-
-Nunca escreva a URL à mão duas vezes. Um helper, e o dia da renomeação tem um lugar só:
-
-```php
-function rota(string $nome, array $params = []): string {
-    $modelos = [
-        'chamados'        => '/chamados',
-        'chamado'         => '/chamados/{id}',
-        'chamado.slug'    => '/chamados/{id}/{slug}',
-        'abrir-chamado'   => '/abrir-chamado',
-        'cadastrar'       => '/cadastrar-novo-usuario',
-    ];
-    $url = $modelos[$nome] ?? '/';
-    foreach ($params as $chave => $valor) {
-        $url = str_replace('{' . $chave . '}', rawurlencode((string)$valor), $url);
-    }
-    return $url;
-}
-```
-
-```php
-<a href="<?= e(rota('chamado.slug', ['id' => $c['id'], 'slug' => $c['slug']])) ?>">
-  <?= e($c['titulo']) ?>
-</a>
-```
-
-### Gerando o slug
-
-```php
-function slugify(string $texto): string {
-    $t = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $texto) ?: $texto;   // remove acentos
-    $t = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', $t) ?? '');
-    return trim($t, '-') ?: 'sem-titulo';
-}
-```
-
-O slug é **decorativo**: quem identifica o registro é o `{id}`. Assim, mudar o título não
-quebra o link antigo: ele apenas redireciona para o slug novo, se você quiser.
-
----
-
-## 4. Next.js: a pasta é a URL
-
-No App Router, o caminho da pasta **é** a rota. Isso significa que a convenção de nomes de
-pasta é a convenção de URLs, e não há um mapa separado para manter em sincronia.
+No App Router, o caminho da pasta **é** a rota. A convenção de nomes de pasta é a convenção
+de URLs, e não há um mapa separado para manter em sincronia.
 
 ```
 app/
 ├── page.tsx                                  →  /
+├── not-found.tsx                             →  404 de verdade, com a cara do app
 ├── entrar/page.tsx                           →  /entrar
 ├── cadastrar-novo-usuario/page.tsx           →  /cadastrar-novo-usuario
 ├── recuperar-acesso/page.tsx                 →  /recuperar-acesso
-├── redefinir-senha/[token]/page.tsx          →  /redefinir-senha/abc123
+├── redefinir-senha/[token]/page.tsx          →  /redefinir-senha/SEU-TOKEN
+├── politica-de-privacidade/page.tsx          →  /politica-de-privacidade (pública, link no rodapé)
 ├── (painel)/                                 →  grupo: NÃO entra na URL
 │   ├── layout.tsx                            →  verifica a sessão do grupo inteiro
 │   ├── chamados/page.tsx                     →  /chamados
+│   ├── chamados/[id]/page.tsx                →  /chamados/8
+│   ├── chamados/[id]/[slug]/page.tsx         →  /chamados/8/impressora-nao-imprime
 │   ├── abrir-chamado/page.tsx                →  /abrir-chamado
-│   └── chamados/[id]/page.tsx                →  /chamados/8
-└── administracao/atualizacoes/page.tsx       →  /administracao/atualizacoes
+│   └── administracao/page.tsx                →  /administracao
+└── api/webhooks/pagamento/route.ts           →  POST /api/webhooks/pagamento (máquina)
 ```
 
-- **Pastas em português, kebab-case.** `cadastrar-novo-usuario`, nunca `signup` ou `NewUser`.
+- **Pastas em português, kebab-case.** `cadastrar-novo-usuario`, nunca `signup`, `users/new`
+  ou `NewUser`.
 - **Grupos de rota `(painel)` não aparecem na URL**: use-os para compartilhar layout e
   verificação de sessão sem poluir o caminho.
-- **`[id]` é dinâmico**; `[...slug]` captura o resto. No Next 15, `params` é uma `Promise`:
-  `const { id } = await params;`
+- **`[id]` é dinâmico**; `[...slug]` captura o resto. `params` é uma `Promise` (desde o
+  Next 15, e continua no 16): `const { id } = await params;`
 - **Arquivos especiais não viram rota:** `layout.tsx`, `loading.tsx`, `error.tsx`,
   `not-found.tsx`. Use `not-found.tsx` + `notFound()` para devolver **404 de verdade**.
+- **Pasta com `_` na frente é privada** (`_componentes/`) e não vira rota: útil para colocar
+  código ao lado da página sem criar URL acidental.
 
 ```tsx
 // app/(painel)/chamados/[id]/page.tsx
 import { notFound } from 'next/navigation';
+import { exigirSessao } from '@/lib/auth';
+import { buscarChamado } from '@/lib/db';
+import { DetalheChamado } from '@/components/chamados/detalhe-chamado';
 
 export default async function Pagina({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const numero = Number(id);
-  if (!Number.isInteger(numero) || numero < 1) notFound();      // 404 real
+  if (!Number.isInteger(numero) || numero < 1) notFound();      // 404 real (R6)
 
   const sessao = await exigirSessao();
   const chamado = await buscarChamado(numero, sessao.usuarioId); // o dono no WHERE (R7)
@@ -269,82 +158,187 @@ export default async function Pagina({ params }: { params: Promise<{ id: string 
 }
 ```
 
-Redirecionamentos de rotas antigas ficam em `next.config.ts`, versionados junto com o código:
+O `[id]` chega como **texto**: a página valida antes de usar (R6), e o dono entra na consulta
+(R7). A pasta dinâmica não valida nada por você.
+
+### Canonicalização de caixa no `proxy.ts`
+
+No Next 16 a convenção `middleware.ts` virou **`proxy.ts`** (`next@16.4.0`,
+`dist/lib/constants.js`: `PROXY_FILENAME = 'proxy'`). O arquivo exporta uma função `proxy`
+(ou `default`):
 
 ```ts
-export default {
-  async redirects() {
-    return [
-      { source: '/usuarios/cadastro.php', destination: '/cadastrar-novo-usuario', permanent: true },
-      { source: '/signup',                destination: '/cadastrar-novo-usuario', permanent: true },
-    ];
-  },
+// proxy.ts (na raiz, ou em src/)
+import { NextResponse, type NextRequest } from 'next/server';
+
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const minusculo = pathname.toLowerCase();
+  if (pathname !== minusculo) {
+    const url = request.nextUrl.clone();
+    url.pathname = minusculo;
+    return NextResponse.redirect(url, 308);   // permanente, preserva o método
+  }
+  return NextResponse.next();
+}
+
+export const config = {
+  // páginas apenas: fora _next/, api/ e arquivos com extensão
+  matcher: ['/((?!_next/|api/|.*\\..*).*)'],
 };
 ```
 
-`permanent: true` emite 301. Use `false` (307) só enquanto a mudança for reversível.
+Se a rota tiver segmento que precisa de maiúscula (um token, por exemplo), exclua-o do
+`matcher` em vez de deixar o redirect estragar o valor.
+
+### Gerando URLs no código: o helper `rota()`
+
+Nunca escreva a URL à mão duas vezes. Um helper, e o dia da renomeação tem um lugar só:
+
+```ts
+// lib/rotas.ts
+const MODELOS = {
+  'chamados':      '/chamados',
+  'chamado':       '/chamados/[id]',
+  'chamado.slug':  '/chamados/[id]/[slug]',
+  'abrir-chamado': '/abrir-chamado',
+  'cadastrar':     '/cadastrar-novo-usuario',
+} as const;
+
+export function rota(
+  nome: keyof typeof MODELOS,
+  params: Record<string, string | number> = {},
+): string {
+  return MODELOS[nome].replace(/\[(\w+)\]/g, (_, chave: string) => {
+    const valor = params[chave];
+    if (valor === undefined) throw new Error(`rota('${nome}'): falta o parâmetro ${chave}`);
+    return encodeURIComponent(String(valor));
+  });
+}
+```
+
+```tsx
+import Link from 'next/link';
+import { rota } from '@/lib/rotas';
+
+<Link href={rota('chamado.slug', { id: c.id, slug: c.slug })}>{c.titulo}</Link>
+```
+
+Com `typedRoutes: true` no `next.config.ts` (chave de topo e estável no Next 16,
+`dist/server/config-shared.d.ts`), o TypeScript também recusa `href` para rota que não
+existe. As duas coisas se somam: o tipo pega o erro, o helper concentra a mudança.
+
+### Gerando o slug
+
+```ts
+// lib/slug.ts
+export function slugify(texto: string): string {
+  const s = texto
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')      // remove acentos: "ção" → "cao"
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return s || 'sem-titulo';
+}
+```
+
+O slug é **decorativo**: quem identifica o registro é o `[id]`. Assim, mudar o título não
+quebra o link antigo: a página compara o slug recebido com o atual e, se divergir,
+`permanentRedirect(rota('chamado.slug', { id, slug: atual }))` (de `next/navigation`).
+
+### Redirecionamentos de rotas antigas
+
+Ficam em `next.config.ts`, versionados junto com o código. Ponto de partida pronto em
+[`next.config.ts.template`](../assets/templates/next.config.ts.template).
+
+```ts
+// next.config.ts
+import type { NextConfig } from 'next';
+
+const config: NextConfig = {
+  async redirects() {
+    return [
+      { source: '/signup',        destination: '/cadastrar-novo-usuario', statusCode: 301 },
+      { source: '/users/new',     destination: '/cadastrar-novo-usuario', statusCode: 301 },
+      { source: '/novo-chamado',  destination: '/abrir-chamado',          permanent: true },
+    ];
+  },
+};
+
+export default config;
+```
+
+Atenção ao número (`next@16.4.0`, `dist/lib/redirect-status.js`): `permanent: true` emite
+**308**, não 301; `permanent: false` emite 307. Para 301 literal use `statusCode: 301` (as
+duas chaves são mutuamente exclusivas no tipo `Redirect`). Navegadores e buscadores tratam
+301 e 308 como permanentes; o 308 também preserva o método. Escolha um e use sempre o mesmo.
+Use 307 só enquanto a mudança for reversível.
+
+A query string **não** casa no `source`: para redirecionar `/usuarios?acao=novo`, use `has`
+com `type: 'query'` no mesmo objeto.
 
 ---
 
-## 5. Tabela de tradução
+## 4. Tabela de tradução
 
-Use como referência ao converter um projeto antigo:
+Use como referência ao renomear pastas de um projeto que nasceu com nomes técnicos:
 
 | Antes | Depois |
 | --- | --- |
-| `/index.php` | `/` |
-| `/usuarios/cadastro.php` | `/cadastrar-novo-usuario` |
-| `/usuarios/lista.php` | `/usuarios` |
-| `/usuarios/editar.php?id=8` | `/usuarios/8/editar` |
-| `/login.php` | `/entrar` |
-| `/logout.php` | `POST /sair` |
-| `/esqueci.php` | `/recuperar-acesso` |
-| `/reset.php?token=abc` | `/redefinir-senha/abc` |
-| `/chamados/ver.php?id=8` | `/chamados/8` |
-| `/chamados/novo.php` | `/abrir-chamado` |
-| `/chamados/excluir.php?id=8` | `POST /chamados/8/excluir` |
-| `/admin/index.php` | `/administracao` |
-| `/admin/update.php` | `/administracao/atualizacoes` |
-| `/api/get_chamados.php` | `GET /api/chamados` |
-| `/relatorio.php?tipo=mensal&ano=2026` | `/relatorios/mensal/2026` |
+| `/home` | `/` |
+| `/signup`, `/users/new`, `/usuarios?acao=novo` | `/cadastrar-novo-usuario` |
+| `/users` | `/usuarios` |
+| `/users/8/edit` | `/usuarios/8/editar` |
+| `/login` | `/entrar` |
+| `/logout` | Server Action `sair()`, nunca um `GET` |
+| `/forgot-password` | `/recuperar-acesso` |
+| `/privacy`, `/privacy-policy` | `/politica-de-privacidade` |
+| `/reset-password?token=SEU-TOKEN` | `/redefinir-senha/SEU-TOKEN` |
+| `/tickets/detail?id=8` | `/chamados/8` |
+| `/tickets/new` | `/abrir-chamado` |
+| `/tickets/delete?id=8` | Server Action `excluirChamado(8)`, nunca um `GET` |
+| `/admin` | `/administracao` |
+| `/api/tickets` usado como página | página `/chamados`; `/api/` fica só para máquina |
+| `/report?type=monthly&year=2026` | `/relatorios/mensal/2026` |
 
 Note o último: o que identifica o recurso vira caminho; o que filtra a visualização continua
 em query string.
 
 ---
 
-## 6. Checklist
+## 5. Checklist
 
-- [ ] Nenhuma URL da aplicação contém `.php`, `.html` ou nome de pasta do servidor
-- [ ] Todas em português, minúsculas, kebab-case, sem acento e sem underscore
+- [ ] Toda pasta de rota em `app/` em português, minúsculas, kebab-case, sem acento e sem underscore
 - [ ] Ações são verbos no infinitivo; coleções são substantivos plurais
+- [ ] Nenhuma tela sob `/api/`; nenhuma URL de página com extensão ou nome de pasta interna
 - [ ] Nenhuma navegação depende de query string; ela só carrega filtro, ordenação e paginação
-- [ ] Nenhum `GET` com efeito colateral
-- [ ] Forma canônica definida (barra final, caixa) e a divergente responde 301
-- [ ] Rotas renomeadas mantêm 301 da antiga, registrado no CHANGELOG
-- [ ] Página inexistente responde **404**, não 200
-- [ ] URLs geradas por helper/`rota()`, nunca escritas à mão duas vezes
-- [ ] O `{id}` é validado no controller, e o dono entra na cláusula `WHERE` (R6, R7)
-- [ ] Nenhuma classe, arquivo ou caminho é resolvido a partir da URL
-- [ ] `mod_rewrite` confirmado no servidor (o Wizard verifica. R9)
-- [ ] Casos de rota no roteiro de QA (R11), incluindo os 301 e o 404
+- [ ] Nenhum `GET` com efeito colateral: excluir, fechar e sair são Server Actions
+- [ ] Forma canônica definida (barra final pelo Next, caixa pelo `proxy.ts`) e a divergente redireciona de forma permanente
+- [ ] Pastas renomeadas mantêm 301 da antiga em `next.config.ts`, registrado no CHANGELOG
+- [ ] Página inexistente responde **404** (`not-found.tsx` + `notFound()`), não 200
+- [ ] URLs geradas por `rota()`, nunca escritas à mão duas vezes; `typedRoutes` ligado
+- [ ] O `[id]` é validado na página (`await params`), e o dono entra na cláusula `WHERE` (R6, R7)
+- [ ] `proxy.ts`, não `middleware.ts` (Next 16)
+- [ ] Casos de rota no roteiro de QA (R11), incluindo os redirecionamentos e o 404
 
 ---
 
-## 7. O que testar (entra no roteiro de QA, R11)
+## 6. O que testar (entra no roteiro de QA, R11)
 
-| Caso | Resultado esperado |
-| --- | --- |
-| Cada rota do mapa, acessada diretamente pela barra de endereço | 200 e a tela correta: nada depende de ter vindo de outra página |
-| Recarregar (F5) em qualquer rota interna | A mesma tela, sem perder estado nem reenviar formulário |
-| Botão Voltar depois de navegar por três telas | Volta na ordem certa |
-| URL com barra final (`/chamados/`) | 301 para `/chamados` |
-| URL com maiúsculas (`/Chamados`) | 301 para `/chamados` |
-| Rota antiga da tabela de redirecionamentos | 301 para a nova |
-| URL inexistente (`/pagina-que-nao-existe`) | **404** com a página de erro do app |
-| `/chamados/abc` (id não numérico) | 404, sem erro 500 e sem mensagem do banco |
-| `/chamados/999999` (id inexistente) | 404 |
-| `/chamados/{id de outro usuário}` | 404, não 403 (R7) |
-| Compartilhar `/chamados?status=fechado&pagina=2` em outra sessão | A mesma visualização filtrada |
-| Qualquer URL da aplicação | Não contém `.php`, `.html` nem nome de pasta interna |
-| `/app/`, `/config/`, `/storage/`, `/vendor/` | 403 ou 404, nunca listagem ou conteúdo |
+Os identificadores são os do [`roteiro-de-testes.template.md`](../assets/templates/roteiro-de-testes.template.md),
+seção 6.1, mais dois da suíte de segurança.
+
+| ID | Caso | Resultado esperado |
+| --- | --- | --- |
+| CT-UI-020 | Cada pasta de rota, acessada diretamente pela barra de endereço | 200 e a tela correta: nada depende de ter vindo de outra página |
+| CT-UI-021 | Recarregar (F5) em qualquer rota interna | A mesma tela, sem perder estado nem reenviar formulário |
+| CT-UI-022 | Botão Voltar depois de navegar por três telas | Volta na ordem certa |
+| CT-UI-023 | URL com barra final (`/chamados/`) e com maiúsculas (`/Chamados`) | Redirecionamento permanente (308 pelo Next e pelo `proxy.ts`) para `/chamados` |
+| CT-UI-024 | Rota antiga da tabela de redirecionamentos (`/signup`) | 301 para a nova |
+| CT-UI-025 | URL inexistente (`/pagina-que-nao-existe`) | **404** com a página de erro do app, não 200 |
+| CT-UI-026 | `/chamados/abc` (id não numérico) e `/chamados/999999` (inexistente) | 404, sem erro 500 e sem mensagem do banco |
+| CT-SEC-009 | `/chamados/{id de outro usuário}` | 404, não 403 (R7) |
+| CT-UI-027 | Compartilhar `/chamados?status=fechado&pagina=2` em outra sessão | A mesma visualização filtrada |
+| CT-UI-028 | Qualquer URL de página da aplicação | Em português, sem `/api/`, sem extensão, sem nome de pasta interna |
+| CT-SEC-028 | `/.env`, `/.env.local`, `/.git/config` | 404, nunca conteúdo |

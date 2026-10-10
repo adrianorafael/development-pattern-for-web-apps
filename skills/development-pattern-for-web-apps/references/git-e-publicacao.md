@@ -31,7 +31,7 @@ O erro mais comum não é escolher "público": é dar o primeiro `git add .` ant
 
 ```bash
 git init
-cp .../gitignore.php.template .gitignore      # 1. ignorar ANTES de adicionar
+cp .../gitignore.nextjs.template .gitignore   # 1. ignorar ANTES de adicionar
 cp .../env.example.template   .env.example    # 2. o par de configuração
 bash .../scan-secrets.sh                      # 3. varrer o que existe em disco
 git add -A && git status --short              # 4. LER a lista antes de commitar
@@ -70,6 +70,14 @@ Antes de mudar a visibilidade de qualquer repositório:
 6. Depois de público: ligue *Settings → Code security → Secret scanning* e *Push protection*
    (gratuitos em repositório público).
 
+Não espere o repositório virar público para ter push protection. Em repositório privado,
+a push protection do repositório "requires GitHub Secret Protection to be enabled"
+(docs.github.com/en/code-security/secret-scanning/introduction/about-push-protection,
+conferido em 2026-10-10): se o plano da conta ou da organização tiver, ligue desde o
+primeiro push. Ela bloqueia o push que contém um segredo reconhecido; quem tem permissão
+de escrita pode contornar o bloqueio informando um motivo, e cada contorno gera um alerta.
+É uma camada a mais, não substitui o `scan-secrets.sh` no hook.
+
 ---
 
 ## 3. Mensagens de commit
@@ -81,8 +89,8 @@ feat(chamados): permitir anexar arquivo ao chamado
 fix(login): rejeitar sessão expirada antes de renderizar o painel
 fix(sql): parametrizar filtro de busca da listagem de pedidos
 chore(deps): atualizar dependências com vulnerabilidade reportada
-docs: descrever a instalação na Hostinger passo a passo
-refactor(db): extrair a fábrica de conexão PDO para src/Database.php
+docs: descrever como subir o app do zero com vercel env pull
+refactor(db): concentrar o acesso ao Postgres em lib/db.ts
 test(qa): adicionar casos de regressão CT-REG-004 a CT-REG-007
 ```
 
@@ -91,15 +99,43 @@ O corpo responde **por quê**, não *o quê*: o diff já mostra o quê:
 ```
 fix(sql): parametrizar filtro de busca da listagem de pedidos
 
-O filtro concatenava $_GET['q'] direto no WHERE. Com aspa simples no termo,
-a query quebrava; com ' OR '1'='1, retornava a base inteira, inclusive
-pedidos de outros usuários.
+O filtro concatenava searchParams.q direto no WHERE, numa consulta com
+sql.unsafe(). Com aspa simples no termo, a query quebrava; com ' OR '1'='1,
+retornava a base inteira, inclusive pedidos de outros usuários.
 
-Reescrito com prepared statement e escape dos curingas de LIKE.
+Reescrito com a template tag sql`...` e escape dos curingas de LIKE.
 Casos CT-SEC-011 e CT-SEC-012 cobrem o cenário no roteiro de QA.
 ```
 
 **Um commit, um assunto.** "várias correções" é um commit que ninguém consegue reverter.
+
+### Passos pequenos, um commit a cada passo verde
+
+Com um agente escrevendo código, o risco não é só o commit grande: é a sessão longa em que
+quarenta arquivos mudam antes de alguém olhar. Quando algo quebra no meio, não existe ponto
+de volta, e o diff é grande demais para ser lido de verdade (R12).
+
+- **Fatie a tarefa antes de começar.** Cada fatia cabe num commit que se descreve numa
+  linha: a migração, depois a Server Action, depois a tela, depois os casos de teste.
+- **Commite a cada passo verde.** Passo verde é `npm run build` e os testes da fatia
+  passando. Esse commit é o ponto de volta: se o próximo passo der errado,
+  `git restore .` (descarta o que não foi commitado) ou `git revert <hash>` (desfaz um
+  commit já feito) devolvem o projeto a um estado que funcionava.
+- **Não acumule.** Se o diff não commitado passou de algumas centenas de linhas ou de um
+  punhado de arquivos, pare, verifique e commite o que está verde antes de seguir.
+- **Ramo de trabalho, não `main`.** Os commits pequenos vivem em `feat/<slug>` e chegam a
+  `main` pelo merge, depois da validação (§4).
+
+```
+❌ Uma sessão inteira, um commit no fim:
+   feat: anexos, ajustes no login, refatoração do db e correções diversas
+
+✅ Fatias, cada uma verde e reversível sozinha:
+   feat(db): criar tabela anexos com RLS por dono
+   feat(anexos): Server Action que envia ao Storage com tipo e tamanho validados
+   feat(anexos): lista de anexos na tela do chamado
+   test(qa): casos CT-SEC-033 e CT-REG-012 para anexos
+```
 
 ### Atribuição de IA: nenhuma
 
@@ -203,21 +239,46 @@ fix/<slug>      uma correção
 ## 5. O que nunca é versionado
 
 ```
-.env, .env.local, .env.production, config.local.php     credenciais
+.env, .env.local, .env*.local, .env.production          credenciais
 *.sql, *.sql.gz, dumps/, backups/                       dados reais de usuários
-node_modules/, vendor/                                  reprodutível pelo lockfile
-.next/, out/, dist/, build/                             artefato de build
-uploads/, storage/, public/uploads/                     conteúdo enviado por usuários
-*.log, error_log                                        pode conter dado sensível
-.ftpconfig, sftp.json, .vscode/sftp.json                credencial de FTP
+node_modules/                                           reprodutível pelo lockfile
+.next/, out/, dist/, build/, .vercel/                   artefato de build e vínculo local
+uploads/, public/uploads/                               conteúdo enviado por usuários
+*.log                                                   pode conter dado sensível
 .DS_Store, Thumbs.db                                    lixo de sistema
 ```
 
-**Versione os lockfiles** (`composer.lock`, `package-lock.json`): eles são o que torna a
+**Versione o lockfile** (`package-lock.json`, ou o do gerenciador que o projeto usa): eles são o que torna a
 instalação reproduzível e o que permite auditar dependências.
 
-**`uploads/` ignorado, mas a pasta precisa existir** no servidor. Versione um
-`uploads/.gitkeep` e documente as permissões no README.
+### O lockfile é contrato
+
+O `package.json` diz "qualquer `^16.4.0`"; o `package-lock.json` diz "exatamente esta
+versão, com este hash de integridade". Sem ele, cada instalação pode trazer uma versão
+diferente, inclusive uma publicada ontem por quem tomou a conta de um mantenedor.
+
+- **`package-lock.json` sempre versionado**, no mesmo commit que mudou o `package.json`.
+- **`npm ci` em CI, em scripts e em clone limpo.** Ele instala exatamente o que está no
+  lockfile e falha se o lockfile e o `package.json` não baterem (`npm help ci`). `npm
+  install` fica para quando você **quer** mudar dependência.
+- **Nunca apague o lockfile para "resolver" um conflito.** Apagar e reinstalar troca
+  silenciosamente dezenas de versões transitivas que ninguém revisou.
+
+```bash
+# ❌ conflito no lockfile resolvido apagando
+rm package-lock.json && npm install
+
+# ✅ resolva o package.json, depois deixe o npm regenerar a partir dele e do lockfile de main
+git checkout --theirs package-lock.json   # ou --ours: o lado cujo package.json venceu
+npm install                               # reconcilia com o package.json resolvido
+git diff --stat package-lock.json         # leia o que mudou antes de commitar
+npm ci && npm run build                   # prova que o lockfile resultante instala e compila
+```
+
+**Upload não vai para o disco.** Na Vercel o sistema de arquivos da função é efêmero: o
+arquivo enviado some no próximo deploy ou na próxima instância. Use o Supabase Storage, em
+bucket privado ([entrada-e-saida-seguras.md](entrada-e-saida-seguras.md)). `uploads/` no
+`.gitignore` é só proteção contra o teste local que gravou em disco.
 
 ---
 
@@ -227,7 +288,10 @@ instalação reproduzível e o que permite auditar dependências.
 - [ ] `git diff --cached` lido pelo agente, não só rodado
 - [ ] `scan-secrets.sh --stdin` limpo sobre o conteúdo staged
 - [ ] `scan-sql-injection.sh` limpo
+- [ ] `package-lock.json` no mesmo commit que mudou o `package.json`; nunca apagado e
+      regenerado do zero
+- [ ] Commits pequenos, um assunto cada, cada um com o build verde
 - [ ] Checklist de revisão (R12) executado
-- [ ] Versão subida, CHANGELOG e README atualizados no mesmo commit (R13)
+- [ ] Versão subida no `package.json`, CHANGELOG e README atualizados no mesmo commit (R13)
 - [ ] Visibilidade do repositório confirmada como privada (ou público consciente)
 - [ ] ⛔ Aprovação do usuário obtida, com a versão nomeada

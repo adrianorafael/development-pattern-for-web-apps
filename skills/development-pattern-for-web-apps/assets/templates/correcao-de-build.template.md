@@ -39,7 +39,7 @@ tail -60 /tmp/build.log
 | | |
 | --- | --- |
 | **Categoria** | de **código** · de **ambiente** |
-| **Tipo** | `<erro de tipo / módulo não encontrado / caixa de arquivo / lockfile / prerender / variável ausente / …>` |
+| **Tipo** | `<erro de tipo / módulo não encontrado / caixa de arquivo / lockfile / prerender / variável ausente em lib/env.ts / migração pendente / …>` |
 | **Arquivo e linha** | `<caminho:linha>` |
 
 > Se for **de ambiente**: pare aqui. Nomeie a variável e o ambiente, escreva o pedido ao
@@ -48,8 +48,8 @@ tail -60 /tmp/build.log
 ### 3. Reproduzido localmente?
 
 ```bash
-vercel pull --environment=preview
-vercel build
+vercel pull --environment=preview      # falhou em produção? --environment=production
+vercel build                           # e aqui, vercel build --prod
 ```
 
 | | |
@@ -59,7 +59,8 @@ vercel build
 
 > ❌ **Não reproduziu?** A diferença é de ambiente, não de código. Não altere nada:
 > investigue a divergência (variáveis, versão do Node, gerenciador de pacotes, caixa do
-> sistema de arquivos) e registre na seção "Escalonamento".
+> sistema de arquivos, versão do Next entre lockfile e `package.json`) e registre na seção
+> "Escalonamento".
 
 ### 4. Causa raiz
 
@@ -76,8 +77,9 @@ vercel build
 
 **Arquivos tocados:** `<n>` · **Linhas:** `+<n>/-<n>`
 
-Nada de: `ignoreBuildErrors`, `ignoreDuringBuilds`, `@ts-ignore`, teste apagado, dependência
-fixada sem justificativa, commit vazio para reprocessar.
+Nada de: `typescript.ignoreBuildErrors`, tirar `eslint .` do script ou do CI, `@ts-ignore`,
+teste apagado, dependência fixada sem justificativa, commit vazio para reprocessar.
+(`eslint.ignoreDuringBuilds` era do Next 15; no 16 a chave nem existe.)
 
 ### 6. Provado antes do push
 
@@ -125,7 +127,7 @@ causa: reabra o passo 4 em vez de tentar outra coisa.)*
 
 **O que eu preciso de você:** <um pedido concreto e verificável, não "dá uma olhada">
 
-> Exemplo: confirmar se `DATABASE_URL` existe no ambiente **Preview** em
+> Exemplo: confirmar se `SUPABASE_SECRET_KEY` existe no ambiente **Preview** em
 > Vercel → Settings → Environment Variables. Ela existe em Production; o log da Volta 1
 > mostra a variável indefinida só nos deploys de preview.
 

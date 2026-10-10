@@ -20,12 +20,20 @@
 
 | | |
 | --- | --- |
-| **URL** | `https://<url-do-ambiente-de-teste>` |
-| **⚠️ Isto é** | **AMBIENTE DE TESTE**, não é produção. Dados podem ser apagados. |
+| **URL** | `https://<url-do-preview-na-vercel>` |
+| **⚠️ Isto é** | **PREVIEW DA VERCEL**, com branch de preview próprio do Supabase. Não é produção. Dados podem ser apagados. |
+| **Acesso** | `<navegador já logado na Vercel com conta do time / bypass de proteção configurado no ambiente do executor, nunca colado na conversa / sem proteção>` |
 | **Versão testada** | `<1.3.0>`, confira no rodapé antes de começar |
 | **Navegador** | Chromium atual, 1440×900 (e 375×812 na suíte de interface) |
 | **Console** | Mantenha aberto. Erro em vermelho é resultado de teste. |
 | **Rede** | Mantenha aberta. Resposta 4xx/5xx inesperada é resultado de teste. |
+
+> Se a URL abre a tela de login da Vercel em vez do app, a Deployment Protection está
+> ligada. Não tente contorná-la: use o acesso indicado acima, que segue o bypass de
+> proteção documentado em https://vercel.com/docs/deployment-protection. O segredo do
+> bypass nunca é escrito neste arquivo nem colado na conversa (R1): fica configurado no
+> ambiente de quem executa. Se ele passou pela conversa, trate como vazado e peça um novo.
+> Sem acesso, a execução inteira é `BLOQUEADO`.
 
 ### Credenciais
 
@@ -43,12 +51,12 @@ Sempre os mesmos registros, os mesmos IDs, as mesmas datas.
 
 | Entidade | Quantidade | Detalhe |
 | --- | --- | --- |
-| Usuários | 3 | A (id 1), B (id 2), admin (id 3) |
+| Usuários | 3 | A, B e admin, criados no Supabase Auth pelo seed (o `id` é o `uuid` do Auth) |
 | Chamados do usuário A | 5 | ids 1 a 5: três `aberto`, dois `fechado` |
 | Chamados do usuário B | 2 | ids 6 a 7, ambos `aberto` |
 | Anexos | 1 | id 1, pertencente ao chamado 6 (do usuário B) |
 
-**Como restaurar:** `<comando ou passo. Ex.: aplicar qa/seed.sql, ou usar "limpar e recriar" do Wizard>`
+**Como restaurar:** `<comando ou passo. Ex.: local, npx supabase db reset e depois npm run db:seed; no preview, apagar e recriar o branch de preview do Supabase, que nasce aplicando migrações e seed, e depois npm run db:seed contra ele>`
 Restaure **antes de cada suíte**.
 
 ### Regras de execução: leia antes de começar
@@ -171,8 +179,41 @@ da saída), truncado, ou interpretado como HTML na exibição.
 - Ação que dispara e-mail (com captura em ambiente de teste; **nunca envio real**).
 - Webhook: assinatura válida aceita · inválida recusada · entrega duplicada não duplica efeito.
 - Tarefa agendada produz o efeito esperado.
-- **Wizard de instalação** (R9): a tabela de casos da referência `wizard-de-instalacao.md`.
-- **Painel de atualização** (R10): a tabela de casos da referência `pacotes-de-atualizacao.md`.
+
+### 4.1 Bootstrap do ambiente, `CT-BOOT-nnn` (R9)
+
+> Os casos marcados com 🖥 rodam num terminal, por quem desenvolve. Os marcados com 🌐 o
+> Cowork executa na URL de preview.
+
+| Caso | Aprovado quando |
+| --- | --- |
+| CT-BOOT-001 🖥 · Clone limpo + `vercel link`, `vercel env pull .env.local`, `npm ci`, `npx supabase start`, `npx supabase db reset`, `npm run db:seed`, `npm run dev` | 200 em `http://localhost:3000`, sem passo fora do README |
+| CT-BOOT-002 🖥 · Remover uma variável obrigatória de `.env.local` e rodar `npm run build` | Falha nomeando a variável e onde configurá-la |
+| CT-BOOT-003 🖥 · Variável com formato inválido | Falha com mensagem clara, sem imprimir o valor |
+| CT-BOOT-004 🖥 · Chaves de `.env.example` contra as de `lib/env.ts` | Conjuntos idênticos |
+| CT-BOOT-005 🖥 · `npm run db:seed` duas vezes | Contagens iguais; um único administrador |
+| CT-BOOT-006 🖥 · Seed sem a variável da senha inicial do administrador | Recusa; nenhum administrador com senha padrão |
+| CT-BOOT-007 🌐 · Login com o administrador do seed | Entra com a senha da variável |
+| CT-BOOT-008 🌐 · Procurar segredos no JavaScript servido (aba de rede) | Nenhuma ocorrência |
+| CT-BOOT-009 🌐 · Depois de trocar a senha, rodar o seed de novo e entrar com a senha **inicial** | Recusado; a senha nova continua valendo |
+| CT-BOOT-010 🖥 · `npm run db:seed:exemplos` com `VERCEL_ENV=production` | Recusa; nenhum chamado sintético |
+
+### 4.2 Migração e rollback, `CT-MIG-nnn` (R10)
+
+> Sempre num banco descartável (Supabase local ou branch de preview), nunca no banco de produção.
+
+| Caso | Aprovado quando |
+| --- | --- |
+| CT-MIG-001 🖥 · `npx supabase db reset` num banco local vazio | Todas aplicadas em ordem; cada uma uma vez em `supabase_migrations.schema_migrations` |
+| CT-MIG-002 🖥 · Restaurar um dump de produção num projeto descartável e aplicar as migrações novas com `npx supabase db push` | Aplicadas sem erro; contagem de linhas preservada |
+| CT-MIG-003 🖥 · `npx supabase db push --dry-run` depois de aplicar | Nenhuma migração pendente; nada falha |
+| CT-MIG-004 🌐 · Deployment **anterior**, ligado ao banco já migrado: rodar a suíte de fumaça | Fumaça inteira passa |
+| CT-MIG-005 🖥 · Migração com erro proposital | Não registrada; nenhuma alteração pela metade; as seguintes não rodam |
+| CT-MIG-006 🖥 · `git diff --name-status <tag-do-release-anterior> -- supabase/migrations/` | Só linhas `A` (arquivo novo); nenhuma migração já aplicada foi editada |
+| CT-MIG-007 🖥 · Antes de migrar produção | Backup do dia existe (painel do Supabase em Database > Backups, ou `supabase db dump` guardado fora); caminho de volta escrito |
+| CT-MIG-008 🌐 · Criar registro no preview, procurar em produção (só leitura) | Não aparece; produção não tem a migração nova em `supabase_migrations.schema_migrations` |
+| CT-MIG-009 🖥 · Ler as migrações do release | Nenhum `DROP`/`RENAME` de algo que a versão anterior usa |
+| CT-MIG-011 🖥 · Restaurar o último backup (ou o `supabase db dump`) num projeto descartável e rodar a suíte de fumaça contra ele | Restaura sem erro, a fumaça passa, e o tempo da restauração fica anotado no registro de execução |
 
 ---
 
@@ -194,10 +235,10 @@ Para **cada** campo de entrada da aplicação, executar a tabela abaixo. Liste o
 | c | `1' UNION SELECT NULL,NULL,NULL--` | Erro tratado ou 404; nunca dado extra na tela |
 | d | `1; DROP TABLE usuarios--` | Nenhum efeito; a tabela continua existindo |
 | e | `%' OR 1=1 --` | Retorna 0 ou o literal; nunca a base inteira |
-| f | `1 AND SLEEP(5)` | Resposta imediata (sem injeção cega por tempo) |
+| f | `1 AND (SELECT 1 FROM pg_sleep(5)) = 1` | Resposta imediata (sem injeção cega por tempo) |
 | g | `çãé'"\` | Salvo e exibido corretamente, sem erro |
 
-**Reprovado imediatamente** se aparecer na tela: mensagem do MySQL, nome de tabela, stack
+**Reprovado imediatamente** se aparecer na tela: mensagem do Postgres, nome de tabela, stack
 trace, ou dado que o usuário não deveria ver.
 
 **Depois de cada rodada:** conferir no banco que nenhuma tabela sumiu e nenhum registro
@@ -231,8 +272,8 @@ Para cada campo cujo valor é exibido em alguma tela:
 
 | Caso | Aprovado quando |
 | --- | --- |
-| CT-SEC-016 · `POST` sem o token `_csrf` | Recusado (419/403) |
-| CT-SEC-017 · `POST` com token de outra sessão | Recusado |
+| CT-SEC-016 · `POST` num Route Handler que muda estado, com `Origin` de outro domínio | Recusado (403) |
+| CT-SEC-017 · Server Action disparada de outra origem | Recusada |
 | CT-SEC-018 · Inspecionar o cookie de sessão | `HttpOnly`, `Secure`, `SameSite` presentes |
 | CT-SEC-019 · ID de sessão antes e depois do login | Diferentes (regeneração) |
 | CT-SEC-020 · 10 tentativas de login erradas | Bloqueio ou atraso a partir do limite |
@@ -243,14 +284,53 @@ Para cada campo cujo valor é exibido em alguma tela:
 
 | Caso | Aprovado quando |
 | --- | --- |
-| CT-SEC-023 · `teste.php` renomeado para `teste.jpg` | Recusado pela checagem de tipo real |
+| CT-SEC-023 · `teste.html` renomeado para `teste.jpg` | Recusado pela checagem de tipo real |
 | CT-SEC-024 · Arquivo acima do limite | Recusado com mensagem clara, sem erro 500 |
 | CT-SEC-025 · Acessar o arquivo enviado pela URL direta, deslogado | Recusado |
-| CT-SEC-026 · `?arquivo=../../config/app.config.php` | 404; nada vazado |
+| CT-SEC-026 · `?arquivo=../../.env.local` | 404; nada vazado |
 | CT-SEC-027 · `curl -sI https://<url>` | Os cinco cabeçalhos de segurança presentes |
-| CT-SEC-028 · Acessar `/config/`, `/storage/`, `/.env`, `/.git/config` | 403 ou 404 |
-| CT-SEC-029 · Acessar `/install/` com o app instalado | 403 (R9) |
+| CT-SEC-028 · Acessar `/.env`, `/.env.local`, `/.git/config` | 404 |
+| CT-SEC-029 · Procurar rota HTTP que rode seed ou migração (`/api/seed`, `/api/migrar`) | 404: seed e migração só por script (R9, R10) |
 | CT-SEC-030 · Provocar erro de servidor | Página genérica, sem stack trace |
+
+### 5.6 Supabase: RLS e Storage vistos de fora (R7)
+
+> A URL do projeto e a publishable key estão no JavaScript servido ao navegador: qualquer
+> visitante pode chamar a API REST direto, sem passar pelo app. Os valores vêm do
+> `.env.local` do executor, nunca colados aqui (R1).
+
+| Caso | Aprovado quando |
+| --- | --- |
+| CT-SEC-031 🌐 · Chamar a API REST do Supabase (`https://<ref>.supabase.co/rest/v1/<tabela>?select=*`) só com a publishable key no cabeçalho `apikey`, sem login, para **cada** tabela do schema `public` | Nenhuma linha devolvida (`[]`) ou erro de permissão; nunca dado |
+| CT-SEC-032 🌐 · Com o token de sessão do usuário A, ler e alterar pela API REST uma linha do usuário B (`GET` e `PATCH` com `?id=eq.<id-do-B>`) | Nenhuma linha devolvida, nenhuma linha afetada; a linha de B continua igual |
+| CT-SEC-033 🌐 · Abrir a URL pública (`/storage/v1/object/public/<bucket>/<caminho>`) de um arquivo do bucket privado; abrir uma URL assinada depois de expirada | As duas recusadas; nenhum byte do arquivo entregue |
+
+Tabelas do schema `public` cobertas pelo CT-SEC-031: `<perfis · chamados · anexos · ...>`
+
+### 5.7 Varredura de estranho, rota por rota
+
+> Gerada do mapa de rotas e do código, não da memória: toda página (`page.tsx`), todo
+> Route Handler (`route.ts`) e toda Server Action (`'use server'`). Item sem as três
+> colunas preenchidas é cobertura faltando, declarada na matriz (seção 1).
+
+| Item | Deslogado | Logado como B, recurso de A | Chamada direta (`curl` ou `POST` reenviado sem cookie / com outro cookie) |
+| --- | --- | --- | --- |
+| `/painel` (página) | Redireciona para `/entrar` | 404 no chamado de A | n/a |
+| `/chamados/[id]` (página) | Redireciona para `/entrar` | 404 | n/a |
+| `app/api/<recurso>/route.ts` | 401 ou 404, nunca dado | 404 | A mesma resposta que a interface daria |
+| Server Action `<nome>` | Recusada | Recusada; nenhum registro de A alterado | Recusada; nenhuma ação executada |
+| `<...>` | | | |
+
+### 5.8 Dados pessoais e LGPD, `CT-LGPD-nnn`
+
+> Piso técnico, não parecer jurídico. Só se o app trata dado pessoal.
+
+| Caso | Aprovado quando |
+| --- | --- |
+| CT-LGPD-001 🌐 · Deslogado, abrir a política de privacidade pelo link do rodapé | Abre em rota própria (ex.: `/politica-de-privacidade`), sem pedir login |
+| CT-LGPD-002 🌐 · Excluir a conta do usuário de teste e tentar entrar de novo | Perfil, arquivos no Storage e usuário do Auth removidos; o login posterior falha |
+| CT-LGPD-003 🌐 · Logado como A, exportar os dados do titular | O arquivo contém só os dados de A; nenhum dado de B |
+| CT-LGPD-004 🖥 · Comparar cada campo pessoal dos formulários com a seção "Dados pessoais" da spec | Nenhum formulário pede campo pessoal sem finalidade registrada na spec |
 
 ---
 
@@ -278,12 +358,12 @@ Para cada campo cujo valor é exibido em alguma tela:
 | CT-UI-020 · Cada rota do mapa, colada direto na barra de endereço | 200 e a tela correta: nada depende de ter vindo de outra página |
 | CT-UI-021 · F5 em qualquer rota interna | A mesma tela, sem perder estado nem reenviar formulário |
 | CT-UI-022 · Botão Voltar depois de três telas | Volta na ordem certa |
-| CT-UI-023 · `/chamados/` (barra final) e `/Chamados` (maiúscula) | 301 para a forma canônica |
+| CT-UI-023 · `/chamados/` (barra final) e `/Chamados` (maiúscula) | Redirecionamento permanente (308) para a forma canônica |
 | CT-UI-024 · Rota antiga da tabela de redirecionamentos | 301 para a nova |
 | CT-UI-025 · `/pagina-que-nao-existe` | **404** com a página de erro do app, não 200 |
 | CT-UI-026 · `/chamados/abc` (id não numérico) | 404, sem erro 500 e sem mensagem do banco |
 | CT-UI-027 · Compartilhar `/chamados?status=fechado&pagina=2` em outra sessão | A mesma visualização filtrada |
-| CT-UI-028 · Inspecionar todas as URLs navegadas | Nenhuma contém `.php`, `.html` ou nome de pasta interna |
+| CT-UI-028 · Inspecionar todas as URLs de página navegadas | Nenhuma contém extensão de arquivo, `/api/`, inglês ou nome de pasta interna |
 
 ---
 
@@ -308,7 +388,7 @@ Para cada campo cujo valor é exibido em alguma tela:
 - Nenhuma mensagem de erro de SQL na tela.
 - Nenhum 500 na aba de rede.
 
-**Falha se**: qualquer 500, mensagem do MySQL, ou tela em branco.
+**Falha se**: qualquer 500, mensagem do Postgres, ou tela em branco.
 
 ---
 
@@ -318,7 +398,7 @@ Para cada campo cujo valor é exibido em alguma tela:
 | --- | --- |
 | Data | `<AAAA-MM-DD>` |
 | Versão testada | `<1.3.0>` |
-| Ambiente | `<URL>` |
+| Ambiente | `<URL do preview>` |
 | Executado por | `<Claude Cowork / nome>` |
 | Navegador | `<Chromium 129, 1440×900>` |
 | Seed restaurado antes de cada suíte | `<sim/não>` |
@@ -328,7 +408,10 @@ Para cada campo cujo valor é exibido em alguma tela:
 | Fumaça | | | | |
 | Funcional | | | | |
 | Integração | | | | |
+| Bootstrap | | | | |
+| Migração | | | | |
 | Segurança | | | | |
+| LGPD | | | | |
 | Interface | | | | |
 | Regressão | | | | |
 | **Total** | | | | |
@@ -366,7 +449,7 @@ Para cada campo cujo valor é exibido em alguma tela:
 **Esperado:** 404.
 **Obtido:** o chamado é exibido, com título e descrição.
 **Evidência:** `CT-SEC-009-falha.png`
-**Causa provável:** a consulta filtra por `id`, sem `AND usuario_id = :sessao`.
+**Causa provável:** a consulta filtra por `id`, sem `AND usuario_id = ${sessao}`.
 **Correção sugerida:** incluir o dono na cláusula `WHERE` (R7).
 **Regressão a criar após corrigir:** CT-REG-008.
 

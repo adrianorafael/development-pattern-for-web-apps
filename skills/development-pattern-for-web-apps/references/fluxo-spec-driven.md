@@ -24,7 +24,7 @@ numerados que a spec definiu antes de existir código.
 | Qualquer coisa que grave no banco | Renomear variável local |
 | Login, permissão, recuperação de senha | Adicionar um estado de carregamento óbvio |
 | Upload de arquivo, integração com API externa | Atualização de patch de dependência |
-| Wizard de instalação, painel de atualização | Corrigir um typo em comentário |
+| Variável de ambiente nova, seed, migração destrutiva | Corrigir um typo em comentário |
 | Qualquer coisa que trate dado pessoal ou pagamento | |
 
 **Na dúvida, escreva a spec.** Sai mais barato que o retrabalho.
@@ -37,15 +37,25 @@ dessas.
 
 As seis perguntas do `SKILL.md`, **em um único lote**:
 
-1. Trilha. PHP+MySQL na Hostinger, ou Next.js na Vercel?
-2. Repositório: existe, ou crio novo (privado)?
-3. Hospedagem e ambiente: versão do PHP / projeto Vercel / qual banco?
-4. Dados e usuários: login? dado pessoal? pagamento? upload? escala?
-5. Identidade: nome, slug, versão inicial (`0.1.0`)
-6. QA: quem executa o roteiro: você, o Claude Cowork, ou os dois?
+1. Repositório: existe, ou crio novo (privado)?
+2. Projeto Vercel e banco: nome do projeto, projeto Supabase (pelo Marketplace da Vercel), domínio.
+3. Dados e usuários: login? dado pessoal (LGPD)? pagamento? upload? há API paga? escala?
+4. Identidade do app: nome, slug, versão inicial (`0.1.0`).
+5. Testes: quem executa o roteiro: você, o Claude Cowork, ou os dois?
+6. Acesso à Vercel: MCP da Vercel, ou CLI com token?
 
-Depois: armar `.gitignore`, criar o par `.env`/`.env.example`, rodar a primeira varredura,
-confirmar que o repositório é privado.
+Depois: armar `.gitignore`, criar `.env.example` e `lib/env.ts` (R9), rodar `vercel link` e
+`vercel env pull .env.local`, rodar a primeira varredura, confirmar que o repositório é
+privado. Detalhes: [bootstrap-do-ambiente.md](bootstrap-do-ambiente.md).
+
+"Há API paga?" não é curiosidade: toda API cobrada por uso (modelo de linguagem, envio de
+e-mail ou SMS, mapas) ganha teto e alerta de gasto no painel do provedor antes do primeiro
+deploy, e entra no rate limiting. Detalhes em
+[linha-de-base-de-seguranca.md](linha-de-base-de-seguranca.md).
+
+Antes de abrir o agente, isole o ambiente de trabalho: uma pasta ou um `git worktree` por
+tarefa, nunca a pasta home. Detalhes em
+[agentes-e-ferramentas-de-ia.md](agentes-e-ferramentas-de-ia.md).
 
 ---
 
@@ -56,14 +66,22 @@ página. Nunca responda só de memória.
 
 | Assunto | Fonte primária |
 | --- | --- |
-| Funções, extensões, comportamento do PHP | https://www.php.net/manual/pt_BR/ |
 | App Router, Server Actions, cache, rotas | https://nextjs.org/docs |
 | Classes, tokens, tema, diferenças v3/v4 | https://tailwindcss.com/docs |
-| MySQL: tipos, índices, `ON DUPLICATE KEY`, `EXPLAIN` | https://dev.mysql.com/doc/refman/8.0/en/ |
-| Limites da hospedagem, PHP disponível, cron | Documentação e hPanel da Hostinger |
-| Variáveis de ambiente, funções, limites | https://vercel.com/docs |
-| Riscos e defesas por categoria | https://owasp.org/www-project-top-ten/ e as OWASP Cheat Sheets |
-| O que já está instalado neste projeto | `composer show`, `npm ls`, `php -m` |
+| Postgres: tipos, índices, `ON CONFLICT`, `EXPLAIN` | https://www.postgresql.org/docs/current/ |
+| Auth, RLS, Storage, CLI, Branching, chaves de API | https://supabase.com/docs |
+| Variáveis de ambiente, funções, limites, rollback | https://vercel.com/docs |
+| Riscos e defesas por categoria | https://owasp.org/Top10/2025/ e as OWASP Cheat Sheets (https://cheatsheetseries.owasp.org/) |
+| O que já está instalado neste projeto | `npm ls`, `npm view <pacote> version`, `node -v` |
+
+**Nível N2 ou acima (R7): leia as categorias do OWASP Top 10 que se aplicam.** A edição
+vigente é a de 2025 (https://owasp.org/Top10/2025/, conferido em 2026-10-10). A tabela que
+liga cada categoria a uma regra e a uma referência desta skill está em
+[linha-de-base-de-seguranca.md](linha-de-base-de-seguranca.md). Para cada categoria que a
+funcionalidade toca (login toca A07, Authentication Failures; listagem por dono toca A01,
+Broken Access Control; dependência nova toca A03, Software Supply Chain Failures), anote na
+seção **Segurança** da spec qual é o risco e qual requisito o cobre. Categoria que não se
+aplica recebe uma linha dizendo por quê.
 
 Saída da fase: um **registro de evidências** no formato afirmação → fonte → verificado. Ele vai
 inteiro para a spec.
@@ -89,7 +107,8 @@ Escreva `specs/<nnnn>-<slug>.md` a partir de
 | **Telas e rotas** | As URLs exatas (R15), os componentes, e os estados (carregando/vazio/erro/sucesso) de cada tela. |
 | **Linguagem** | Quem lê, o vocabulário canônico do domínio, o tom, e as fontes consultadas (R17). |
 | **Regras de negócio** | O que é válido, o que é proibido, o que acontece no limite. |
-| **Segurança** | Quem pode ver e fazer o quê. Superfície de ataque nova. Nível exigido (R7). |
+| **Segurança** | Quem pode ver e fazer o quê. Superfície de ataque nova. Nível exigido (R7). Categorias do OWASP Top 10 aplicáveis (N2 ou acima). Revisor humano (N3 ou acima). |
+| **Dados pessoais** | Cada campo pessoal, a finalidade e o prazo de retenção. Campo sem finalidade não entra. |
 | **Critérios de aceite** | Um por RF, em formato observável: dado / quando / então. |
 | **Casos de teste** | `CT-001`… derivados dos critérios. Alimentam o roteiro de QA (R11). |
 | **Evidências** | Afirmação → fonte → verificado. (R4) |
@@ -125,10 +144,12 @@ Implemente a spec, e nada além dela. Descobertas que mudam o desenho voltam par
 uma linha de nota; não são absorvidas silenciosamente pelo código.
 
 Toda linha respeita as invariantes: SQL parametrizado (R5), entrada validada e saída
-escapada (R6), nenhum segredo em arquivo versionado (R1), nenhuma API inventada (R4).
+escapada (R6), nenhum segredo em arquivo versionado (R1), nenhuma API inventada (R4),
+ambiente validado e migrações compatíveis com a versão anterior do código (R9, R10).
 
-Estrutura por trilha: [stack-php-mysql.md](stack-php-mysql.md) ·
-[stack-nextjs-vercel.md](stack-nextjs-vercel.md).
+Estrutura: [stack-nextjs-vercel.md](stack-nextjs-vercel.md) ·
+[bootstrap-do-ambiente.md](bootstrap-do-ambiente.md) ·
+[migracoes-e-rollback.md](migracoes-e-rollback.md).
 
 ---
 
@@ -136,24 +157,25 @@ Estrutura por trilha: [stack-php-mysql.md](stack-php-mysql.md) ·
 
 Nada aqui é opcional. Nesta ordem: os testes baratos primeiro.
 
-**Next.js**
+**Código**
 
 ```bash
 npx tsc --noEmit
-npm run lint
-npm test               # unitários (Vitest/Jest)
-npm run build          # tem que construir de verdade
+npm run lint           # eslint . (o Next 16 não tem mais `next lint`)
+npm test               # unitários (Vitest)
+npm run build          # tem que construir de verdade, e falha se faltar variável (R9)
+vercel build           # reproduz o build da Vercel localmente (R16)
 ```
 
-**PHP**
+**Banco** (no Supabase local ou num branch de preview, nunca no banco de produção)
 
 ```bash
-find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l   # sintaxe
-composer exec phpstan analyse    # se instalado
-composer exec phpunit            # unitários
+npx supabase start       # Postgres, Auth e Storage locais, em contêiner
+npx supabase db reset    # reaplica todas as migrações e o supabase/seed.sql no banco LOCAL
+npm run db:seed          # rodar duas vezes não pode duplicar nada (R9)
 ```
 
-**Sempre, nas duas trilhas**
+**Sempre**
 
 ```bash
 bash skills/development-pattern-for-web-apps/assets/scripts/scan-secrets.sh
@@ -186,11 +208,22 @@ Versão e documentação são **parte da mudança**, não trabalho posterior (R1
 
 1. Subir a versão no arquivo de configuração, e justificar o nível SemVer.
 2. Entrada datada no `CHANGELOG.md`, escrita para quem usa o app.
-3. README atualizado: instalação, configuração, o que mudou.
-4. Versão do schema registrada na tabela `schema_migrations` se houve migração.
+3. README atualizado: como subir do zero, variáveis de ambiente, o que mudou.
+4. Versão do schema registrada em `supabase_migrations.schema_migrations` se houve migração, e a
+   migração conferida contra a versão anterior do código (R10).
 5. Sanitização + `scan-secrets.sh` sobre o conteúdo staged (R1).
 6. Mostrar ao usuário o diff de sanitização, a lista de arquivos e **a versão**.
 7. Commit único e coerente. Push para o repositório combinado na Fase 0.
+
+**Nível N3 ou acima (R7): o ⛔ cita o revisor humano.** Todo código de pagamento, webhook,
+autenticação e dado sensível foi lido por uma pessoa, e o nome dela está na seção
+**Segurança** da spec. Sem esse nome, o portão não abre:
+
+> Pronto para fechar **v1.3.0**. A mudança toca o webhook de pagamento, então é N4: a
+> revisão humana foi feita por `<NOME-DO-REVISOR>` em `<DATA>`, registrada na spec 0012.
+> Arquivos: `<lista>`. Aprova o commit?
+
+O agente não preenche o nome por conta própria nem aceita "eu reviso depois".
 
 ---
 
@@ -199,9 +232,12 @@ Versão e documentação são **parte da mudança**, não trabalho posterior (R1
 Nunca por iniciativa própria, sempre nomeando o alvo:
 
 > Pronto para publicar **Controle de Chamados v1.2.0** em
-> **`https://seu-dominio.com.br`** (Hostinger, `public_html/`). Há 1 migração pendente
-> (`0007_adiciona_anexos.sql`), que altera a tabela `chamados`. Faço backup do banco antes.
-> Confirma?
+> **`https://seu-dominio.com.br`** (Vercel, projeto `controle-de-chamados`, Production).
+> Há 1 migração pendente (`20261010120000_adiciona_anexos.sql`), que só acrescenta uma
+> coluna anulável à tabela `chamados`, então a versão atual continua funcionando com ela
+> (R10). Confiro o backup do dia (ou gero um `supabase db dump`), aplico a migração com
+> `supabase db push` e só depois promovo o deploy.
+> Se algo der errado, `vercel rollback` volta o código. Confirma?
 
 Detalhes e rollback: [release-e-deploy.md](release-e-deploy.md).
 
@@ -212,7 +248,7 @@ Detalhes e rollback: [release-e-deploy.md](release-e-deploy.md).
 A próxima sessão começa sem nada disso na memória. Dois arquivos resolvem, e valem o minuto
 que custam:
 
-- **`AGENTS.md`** na raiz: regras específicas do projeto: qual stack, qual banco, quais
+- **`AGENTS.md`** na raiz: regras específicas do projeto: qual projeto Vercel, qual banco, quais
   convenções, quais armadilhas você já encontrou. Aponte-o para esta skill.
   → [`../assets/templates/AGENTS.template.md`](../assets/templates/AGENTS.template.md)
 - **`specs/`**: o registro do projeto. Quando o comportamento muda, a spec muda no mesmo

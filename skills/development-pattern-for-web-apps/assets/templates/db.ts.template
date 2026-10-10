@@ -1,124 +1,411 @@
 /**
  * lib/db.ts: acesso a dados, só no servidor.
  *
- * Parte de "Development Pattern for Web Apps": regras R1 e R5.
+ * Parte de "Development Pattern for Web Apps": regras R1, R5 e R7.
+ * Detalhes: references/sql-e-acesso-a-dados.md
+ *
+ * DUAS VIAS, AMBAS PARAMETRIZADAS (conferido em 2026-10-10):
+ *
+ *   1. PADRÃO: cliente do Supabase (@supabase/supabase-js 2.117.3, via
+ *      @supabase/ssr 0.12.7 em lib/supabase/server.ts). Leva o token do
+ *      usuário logado, então a RLS (politicas-rls.sql.template) decide o que
+ *      ele alcança, mesmo que um filtro daqui saia errado.
+ *
+ *   2. SQL DIRETO: `sql`, do driver `postgres` 3.4.9, com POSTGRES_URL (criada
+ *      pela integração Supabase da Vercel). Para relatório, limite de taxa,
+ *      transação. ATENÇÃO: conecta como o papel dono do banco, que NÃO passa
+ *      pela RLS. A autorização tem de estar escrita na própria consulta.
+ *
+ * As colunas abaixo batem com schema.sql.template.
  *
  * `server-only` transforma um import acidental a partir de um Client Component
  * em erro de build, em vez de vazar a string de conexão para o navegador.
+ *
+ * Importar este módulo sem POSTGRES_URL definida lança Error na carga, com a
+ * mensagem dizendo onde configurar: falha cedo, no build ou na primeira
+ * requisição, nunca no meio de uma consulta.
  */
 
 import 'server-only';
-import { neon } from '@neondatabase/serverless';
+import postgres from 'postgres';
+import { criarClienteServidor } from '@/lib/supabase/server';
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL não configurada. Defina no painel da Vercel (por ambiente).');
+// ─────────────────────────────────────────────────────────────
+// Via 2: SQL direto
+//
+// prepare: false porque a conexão de pooler em modo transação não aceita
+// prepared statements (supabase.com/docs/guides/database/connecting-to-postgres).
+// A mesma documentação avisa que o postgres.js faz pipelining por padrão e
+// que isso, no pooler em modo transação, pode travar consultas: evite
+// disparar consultas em paralelo (Promise.all) por esta via.
+// lib/env.ts confere o FORMATO de POSTGRES_URL na carga (R9), mas lá ela é
+// opcional: a PRESENÇA, que só esta via exige, é conferida logo abaixo.
+// ─────────────────────────────────────────────────────────────
+
+if (!process.env.POSTGRES_URL) {
+  throw new Error(
+    'POSTGRES_URL não configurada. A integração Supabase da Vercel cria a variável; ' +
+      'localmente, rode `vercel env pull .env.local`.',
+  );
 }
 
 /**
- * A template tag transforma cada ${} em parâmetro vinculado ($1, $2…).
+ * Cliente SQL direto (driver `postgres`), para relatório, limite de taxa e
+ * transação. Conecta como o papel dono do banco: NÃO passa pela RLS, então a
+ * autorização vai escrita na própria consulta e quem chama confere a sessão
+ * antes (R7).
  *
- *   ✅ sql`SELECT * FROM u WHERE email = ${email}`     → parametrizado
- *   ❌ sql(`SELECT * FROM u WHERE email = '${email}'`)  → concatenação
- *   ❌ sql.unsafe(...) / sql.raw(...) com interpolação   → concatenação
+ * Identificador dinâmico (coluna de ORDER BY): sql(coluna), com `coluna`
+ * saída de uma allowlist. O helper cita o nome; não impede ordenar por uma
+ * coluna que você não queria expor.
+ *
+ * @example
+ *   ✅ sql`SELECT ... WHERE email = ${email}`               template tag: ${} vira $1
+ *   ✅ sql.unsafe('SELECT ... WHERE email = $1', [email])   placeholder explícito
+ *   ❌ sql.unsafe(`SELECT ... WHERE email = '${email}'`)    concatenação disfarçada
  */
-export const sql = neon(process.env.DATABASE_URL);
+export const sql = postgres(process.env.POSTGRES_URL, { prepare: false });
 
 // ─────────────────────────────────────────────────────────────
 // Tipos de domínio: fonte única, importada por página e por action
+//
+// Pela API do Supabase (JSON), bigint chega como NUMBER e uuid como string.
+// Pelo driver `postgres`, bigint chega como STRING (o README do pacote
+// explica: o valor pode passar de 2^53). timestamptz chega como string ISO
+// pela API e como Date pelo driver.
 // ─────────────────────────────────────────────────────────────
 
+/**
+ * Os únicos status que a coluna `chamados.status` aceita (o `check` do
+ * schema.sql.template). Também é a allowlist de qualquer filtro de status que
+ * chegue pela URL: mude os dois juntos.
+ */
+export const STATUS_VALIDOS = ['aberto', 'andamento', 'fechado'] as const;
+
+/** Um status de chamado. Derivado de STATUS_VALIDOS para tipo e allowlist nunca divergirem. */
+export type Status = (typeof STATUS_VALIDOS)[number];
+
+/** Um chamado como a API do Supabase o devolve, com as colunas de `COLUNAS`. */
 export type Chamado = {
   id: number;
   titulo: string;
-  status: 'aberto' | 'andamento' | 'fechado';
-  usuario_id: number;
+  status: Status;
+  /** De 1 a 5 (o `check` do schema); o padrão do banco é 3. */
+  prioridade: number;
+  /** Dono do chamado: o uuid do usuário em auth.users. */
+  usuario_id: string;
+  /** timestamptz em texto ISO 8601, como a API devolve. */
   criado_em: string;
 };
 
-// ─────────────────────────────────────────────────────────────
-// Consultas
-//
-// Regra: o `usuarioId` vem SEMPRE da sessão, nunca de searchParams.
-// É a diferença entre autorização e uma URL editável (R7).
-// ─────────────────────────────────────────────────────────────
+const COLUNAS = 'id, titulo, status, prioridade, usuario_id, criado_em';
 
-const STATUS_VALIDOS = ['aberto', 'andamento', 'fechado'] as const;
-type Status = (typeof STATUS_VALIDOS)[number];
-
-export async function listarChamadosDoUsuario(
-  usuarioId: number,
-  status?: string,
-): Promise<Chamado[]> {
-  const filtro = STATUS_VALIDOS.includes(status as Status) ? (status as Status) : undefined;
-
-  if (filtro) {
-    return (await sql`
-      SELECT id, titulo, status, usuario_id, criado_em
-      FROM chamados
-      WHERE usuario_id = ${usuarioId} AND status = ${filtro}
-      ORDER BY criado_em DESC
-      LIMIT 100
-    `) as Chamado[];
-  }
-
-  return (await sql`
-    SELECT id, titulo, status, usuario_id, criado_em
-    FROM chamados
-    WHERE usuario_id = ${usuarioId}
-    ORDER BY criado_em DESC
-    LIMIT 100
-  `) as Chamado[];
-}
-
-export async function buscarChamado(id: number, usuarioId: number): Promise<Chamado | null> {
-  // O dono faz parte da consulta. Sem isso, trocar o id na URL lê o registro alheio.
-  const linhas = (await sql`
-    SELECT id, titulo, status, usuario_id, criado_em
-    FROM chamados
-    WHERE id = ${id} AND usuario_id = ${usuarioId}
-  `) as Chamado[];
-  return linhas[0] ?? null;
-}
-
-export async function inserirChamado(dados: {
-  titulo: string;
-  descricao?: string;
-  usuarioId: number;
-}): Promise<number> {
-  const linhas = (await sql`
-    INSERT INTO chamados (titulo, descricao, usuario_id, status, criado_em)
-    VALUES (${dados.titulo}, ${dados.descricao ?? null}, ${dados.usuarioId}, 'aberto', NOW())
-    RETURNING id
-  `) as { id: number }[];
-  return linhas[0].id;
+/**
+ * Escapa \, % e _ para que o termo do usuário seja procurado como TEXTO num
+ * .ilike()/.like(), e não vire curinga ("%" listaria tudo).
+ *
+ * O PostgREST troca todo `*` do padrão por `%` sem exceção (código-fonte,
+ * src/library/PostgREST/Query/SqlFragment.hs), então um `*` não tem como
+ * ser literal por esta via: ele vira `_` (exatamente um caractere qualquer).
+ * Busca que precisa achar `*` literal vai por .rpc('buscar_chamados').
+ *
+ * Testado contra PostgREST 16.4 (imagem oficial do Docker) e Postgres 17:
+ * "100%" acha só "100% pronto", "a_b" acha só "a_b".
+ *
+ * @param termo - O texto digitado pelo usuário, sem tratamento prévio.
+ * @returns O termo pronto para ir entre os `%` do padrão. Os `%` de fora são
+ *   de quem chama.
+ *
+ * @example
+ *   supabase.from('chamados').select().ilike('titulo', `%${escaparLike(busca)}%`)
+ */
+export function escaparLike(termo: string): string {
+  return termo.replace(/[\\%_]/g, (c) => `\\${c}`).replace(/\*/g, '_');
 }
 
 /**
- * ORDER BY dinâmico: o valor do usuário é uma CHAVE de um mapa que você
- * controla, nunca um fragmento de SQL. Um identificador não pode ser
- * parametrizado, por isso a allowlist é a única defesa correta.
+ * Registra o erro completo no log do servidor e lança outro, genérico, para
+ * quem chamou. O erro do banco cita tabela, coluna e restrição: na tela, isso
+ * é mapa para quem ataca.
+ *
+ * @param contexto - Nome da operação, só para achar a linha no log.
+ * @param erro - O erro original, que vai inteiro para o log e nunca para a resposta.
+ * @throws Error com a mensagem "Não foi possível concluir a operação.", sempre.
+ */
+function falhou(contexto: string, erro: unknown): never {
+  console.error(`[db] ${contexto}`, erro);
+  throw new Error('Não foi possível concluir a operação.');
+}
+
+// ─────────────────────────────────────────────────────────────
+// Via 1: cliente do Supabase
+//
+// Regra: o `usuarioId` vem SEMPRE da sessão (getClaims() no servidor), nunca
+// de searchParams nem do corpo da requisição. O filtro por dono aqui é a
+// primeira camada; a RLS é a segunda (R7). As duas, nunca só uma.
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Lista os chamados de um usuário, do mais novo para o mais antigo, até 100.
+ *
+ * @param usuarioId - Id do dono (uuid de auth.users), lido da sessão no servidor.
+ * @param status - Filtro opcional, normalmente vindo da URL. Valor fora de
+ *   STATUS_VALIDOS é ignorado sem erro: a lista volta sem filtro.
+ * @returns Os chamados encontrados, ou lista vazia.
+ * @throws Error genérico (ver `falhou`) se a consulta falhar.
+ *
+ * @example
+ *   const supabase = await criarClienteServidor();
+ *   const { data } = await supabase.auth.getClaims();
+ *   if (!data) redirect('/entrar');
+ *   const abertos = await listarChamadosDoUsuario(data.claims.sub, 'aberto');
+ */
+export async function listarChamadosDoUsuario(
+  usuarioId: string,
+  status?: string,
+): Promise<Chamado[]> {
+  const supabase = await criarClienteServidor();
+  let consulta = supabase
+    .from('chamados')
+    .select(COLUNAS)
+    .eq('usuario_id', usuarioId)
+    .order('criado_em', { ascending: false })
+    .limit(100);
+
+  // Filtro opcional: só valor da allowlist; fora dela, nenhum filtro.
+  if (STATUS_VALIDOS.includes(status as Status)) consulta = consulta.eq('status', status as Status);
+
+  const { data, error } = await consulta;
+  if (error) falhou('listarChamadosDoUsuario', error);
+  return data as Chamado[];
+}
+
+/**
+ * Busca um chamado pelo id, desde que seja do usuário.
+ *
+ * @param id - Id do chamado, normalmente da URL: valide como inteiro antes.
+ * @param usuarioId - Id do dono, lido da sessão no servidor.
+ * @returns O chamado, ou null quando ele não existe OU é de outra pessoa. As
+ *   duas respostas são iguais de propósito: a página devolve o mesmo 404 e
+ *   não confirma que o id existe.
+ * @throws Error genérico (ver `falhou`) se a consulta falhar.
+ */
+export async function buscarChamado(id: number, usuarioId: string): Promise<Chamado | null> {
+  const supabase = await criarClienteServidor();
+  // O dono faz parte da consulta. Sem isso, trocar o id na URL tentaria ler o
+  // registro alheio, e só a RLS estaria entre o usuário e o dado.
+  const { data, error } = await supabase
+    .from('chamados')
+    .select(COLUNAS)
+    .eq('id', id)
+    .eq('usuario_id', usuarioId)
+    .maybeSingle();
+  if (error) falhou('buscarChamado', error);
+  return data as Chamado | null;
+}
+
+/**
+ * Cria um chamado para o usuário da sessão atual.
+ *
+ * @param dados - Título e descrição já validados pelo esquema Zod da action.
+ *   Não existe campo de dono: ele vem do token, nunca do formulário.
+ * @returns O id do chamado criado.
+ * @throws Error genérico (ver `falhou`) se o insert falhar, inclusive quando a
+ *   política de INSERT o recusa (por exemplo, sem sessão).
+ */
+export async function inserirChamado(dados: { titulo: string; descricao?: string }): Promise<number> {
+  const supabase = await criarClienteServidor();
+  // usuario_id NÃO vai no insert: o default auth.uid() do schema preenche, e
+  // a política de INSERT recusa qualquer outro dono.
+  const { data, error } = await supabase
+    .from('chamados')
+    .insert({ titulo: dados.titulo, descricao: dados.descricao ?? null })
+    .select('id')
+    .single();
+  if (error) falhou('inserirChamado', error);
+  return data.id as number;
+}
+
+/**
+ * Busca por texto com método tipado: o padrão é UM valor, não um filtro.
+ *
+ *   ❌ .or(`titulo.ilike.%${busca}%,descricao.ilike.%${busca}%`)
+ *      A string do .or() é usada como está: "x%,id.gt.0,titulo.ilike.%x"
+ *      vira condição nova e devolve tudo o que a RLS deixa ver.
+ *   ✅ .ilike('titulo', `%${escaparLike(busca)}%`)
+ *
+ * @param usuarioId - Id do dono, lido da sessão no servidor.
+ * @param termo - Texto livre do usuário. É escapado aqui dentro.
+ * @returns Até 50 chamados do usuário cujo título contém o termo, do mais novo
+ *   para o mais antigo.
+ * @throws Error genérico (ver `falhou`) se a consulta falhar.
+ */
+export async function buscarPorTitulo(usuarioId: string, termo: string): Promise<Chamado[]> {
+  const supabase = await criarClienteServidor();
+  const { data, error } = await supabase
+    .from('chamados')
+    .select(COLUNAS)
+    .eq('usuario_id', usuarioId)
+    .ilike('titulo', `%${escaparLike(termo)}%`)
+    .order('criado_em', { ascending: false })
+    .limit(50);
+  if (error) falhou('buscarPorTitulo', error);
+  return data as Chamado[];
+}
+
+/**
+ * A mesma busca, pela função SQL `buscar_chamados` (schema.sql.template). O
+ * termo vai como argumento, e a função roda como quem chama: a RLS decide
+ * quais chamados entram. Use quando o termo pode conter `*` literal.
+ *
+ * @param termo - Texto livre do usuário. A função SQL escapa os curingas.
+ * @returns Até 50 chamados visíveis para o usuário da sessão.
+ * @throws Error genérico (ver `falhou`) se a chamada falhar.
+ */
+export async function buscarPorTituloViaRpc(termo: string): Promise<Chamado[]> {
+  const supabase = await criarClienteServidor();
+  const { data, error } = await supabase.rpc('buscar_chamados', { termo });
+  if (error) falhou('buscarPorTituloViaRpc', error);
+  return data as Chamado[];
+}
+
+/**
+ * Busca vários chamados do usuário de uma vez. `.in()` leva o array como
+ * valor: nada de ids.join(',') num filtro.
+ *
+ * @param usuarioId - Id do dono, lido da sessão no servidor.
+ * @param ids - Ids em texto, como chegam da URL. Os que não são inteiros
+ *   positivos de até 15 dígitos são descartados sem erro.
+ * @returns Os chamados encontrados. Lista vazia, sem ir ao banco, se nenhum id
+ *   for válido.
+ * @throws Error genérico (ver `falhou`) se a consulta falhar.
+ */
+export async function listarPorIds(usuarioId: string, ids: string[]): Promise<Chamado[]> {
+  const validos = ids.filter((id) => /^\d{1,15}$/.test(id)).map(Number);
+  if (validos.length === 0) return [];
+  const supabase = await criarClienteServidor();
+  const { data, error } = await supabase
+    .from('chamados')
+    .select(COLUNAS)
+    .eq('usuario_id', usuarioId)
+    .in('id', validos);
+  if (error) falhou('listarPorIds', error);
+  return data as Chamado[];
+}
+
+/**
+ * ORDER BY dinâmico e paginação: o valor do usuário é uma CHAVE de um mapa
+ * que você controla. .order() põe o nome da coluna como está no parâmetro
+ * `order` da URL do PostgREST, por isso ele também só recebe allowlist.
  */
 const COLUNAS_ORDENAVEIS = {
   titulo: 'titulo',
   data: 'criado_em',
-  status: 'status',
+  prioridade: 'prioridade',
 } as const;
 
+/**
+ * Lista os chamados do usuário em páginas de 20, na ordem pedida.
+ *
+ * @param usuarioId - Id do dono, lido da sessão no servidor.
+ * @param ordenarPor - Chave de COLUNAS_ORDENAVEIS ('titulo', 'data' ou
+ *   'prioridade'). Qualquer outro valor ordena por data de criação.
+ * @param direcao - 'asc' para crescente; qualquer outro valor é decrescente.
+ * @param pagina - Começa em 1. Fora de 1 a 500, ou não numérica, é trazida
+ *   para dentro do intervalo.
+ * @returns Até 20 chamados.
+ * @throws Error genérico (ver `falhou`) se a consulta falhar.
+ *
+ * @example
+ *   // página 2, maior prioridade primeiro
+ *   const chamados = await listarOrdenado(data.claims.sub, 'prioridade', 'desc', 2);
+ */
 export async function listarOrdenado(
-  usuarioId: number,
+  usuarioId: string,
   ordenarPor: string,
   direcao: string,
+  pagina: number,
 ): Promise<Chamado[]> {
   const coluna = COLUNAS_ORDENAVEIS[ordenarPor as keyof typeof COLUNAS_ORDENAVEIS] ?? 'criado_em';
-  const dir = direcao === 'asc' ? 'ASC' : 'DESC';
+  const ascendente = direcao === 'asc';
+  const porPagina = 20;
+  const inicio = (Math.max(1, Math.min(500, Math.trunc(pagina) || 1)) - 1) * porPagina;
 
-  // Só os dois valores acima (ambos vindos de constantes deste arquivo) participam
-  // do texto. Todo dado continua indo por ${}.
-  // scan-sql:allow: coluna e dir saem de COLUNAS_ORDENAVEIS/constante deste arquivo
-  const query = `
-    SELECT id, titulo, status, usuario_id, criado_em
-    FROM chamados WHERE usuario_id = $1
-    ORDER BY ${coluna} ${dir} LIMIT 100
-  `;
-  return (await sql.query(query, [usuarioId])) as Chamado[];
+  const supabase = await criarClienteServidor();
+  const { data, error } = await supabase
+    .from('chamados')
+    .select(COLUNAS)
+    .eq('usuario_id', usuarioId)
+    .order(coluna, { ascending: ascendente })
+    .order('id', { ascending: ascendente }) // desempate: paginação estável
+    .range(inicio, inicio + porPagina - 1);
+  if (error) falhou('listarOrdenado', error);
+  return data as Chamado[];
+}
+
+/**
+ * Fechar com auditoria, tudo ou nada: a função SQL fechar_chamado
+ * (schema.sql.template) faz as duas escritas numa transação e confere o dono
+ * com auth.uid() lá dentro. O id vai como argumento nomeado, nunca no nome
+ * da função.
+ *
+ * @param id - Id do chamado a fechar.
+ * @throws Error genérico (ver `falhou`) quando não há sessão, quando o
+ *   chamado não existe ou é de outra pessoa (a função SQL não distingue os
+ *   dois, de propósito) ou quando o banco falha. Nada é gravado nesses casos.
+ */
+export async function fecharChamado(id: number): Promise<void> {
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.rpc('fechar_chamado', { p_chamado_id: id });
+  if (error) falhou('fecharChamado', error);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Via 2 em uso: relatório que cruza dados de todos os usuários.
+// Fora da RLS: QUEM CHAMA confere antes que a sessão é de admin
+// (app_metadata.papel === 'admin', lido de getClaims()).
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Conta os chamados de TODOS os usuários, por status. Fora da RLS.
+ *
+ * @returns Uma linha por status que tem pelo menos um chamado; status sem
+ *   chamado não aparece.
+ * @throws Error genérico (ver `falhou`) se a consulta falhar.
+ */
+export async function contarChamadosPorStatus(): Promise<{ status: Status; total: number }[]> {
+  try {
+    return await sql<{ status: Status; total: number }[]>`
+      SELECT status, count(*)::int AS total
+      FROM public.chamados
+      GROUP BY status
+      ORDER BY status
+    `;
+  } catch (erro) {
+    falhou('contarChamadosPorStatus', erro);
+  }
+}
+
+/**
+ * Passa todos os chamados de um usuário para outro e registra a troca em
+ * auditoria, numa transação: sql.begin() faz COMMIT ou ROLLBACK sozinho.
+ * Fora da RLS: quem chama confere antes que a sessão é de admin.
+ *
+ * @param de - Id (uuid) do dono atual.
+ * @param para - Id (uuid) do novo dono. Fica como autor da linha de auditoria.
+ * @throws Error genérico (ver `falhou`) se qualquer das duas escritas falhar.
+ *   Nesse caso nenhuma das duas fica gravada.
+ */
+export async function transferirChamados(de: string, para: string): Promise<void> {
+  try {
+    await sql.begin(async (tx) => {
+      await tx`UPDATE public.chamados SET usuario_id = ${para} WHERE usuario_id = ${de}`;
+      await tx`
+        INSERT INTO public.auditoria (usuario_id, acao, alvo)
+        VALUES (${para}, 'chamados.transferir', ${de})
+      `;
+    });
+  } catch (erro) {
+    falhou('transferirChamados', erro);
+  }
 }

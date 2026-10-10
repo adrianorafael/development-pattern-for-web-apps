@@ -13,17 +13,19 @@
 ## Índice
 
 1. [O que é](#o-que-é)
-2. [Requisitos](#requisitos)
-3. [Instalação](#instalação)
-4. [Configuração](#configuração)
-5. [Como usar](#como-usar)
-6. [Atualização](#atualização)
-7. [Backup e restauração](#backup-e-restauração)
-8. [Estrutura do projeto](#estrutura-do-projeto)
-9. [Desenvolvimento](#desenvolvimento)
-10. [Testes](#testes)
-11. [Segurança](#segurança)
-12. [Solução de problemas](#solução-de-problemas)
+2. [Tecnologias](#tecnologias)
+3. [Requisitos](#requisitos)
+4. [Subir do zero](#subir-do-zero)
+5. [Variáveis de ambiente](#variáveis-de-ambiente)
+6. [Como usar](#como-usar)
+7. [Deploy e atualização](#deploy-e-atualização)
+8. [Migrações, backup e rollback](#migrações-backup-e-rollback)
+9. [Estrutura do projeto](#estrutura-do-projeto)
+10. [Desenvolvimento](#desenvolvimento)
+11. [Testes](#testes)
+12. [Segurança](#segurança)
+13. [Documentação complementar](#documentação-complementar)
+14. [Solução de problemas](#solução-de-problemas)
 
 ---
 
@@ -35,79 +37,80 @@
 
 ---
 
+## Tecnologias
+
+| Camada | O que usa | Para quê |
+| --- | --- | --- |
+| Interface e servidor | Next.js (App Router) + React + TypeScript | Páginas, Server Actions e Route Handlers num projeto só |
+| Estilo | Tailwind CSS, com tokens do tema | Cores e espaçamentos definidos uma vez, usados por nome |
+| Banco, login e arquivos | Supabase: Postgres com RLS, Auth, Storage | Dados, usuários e anexos, com a regra de acesso no próprio banco |
+| Validação | Zod | Entrada de formulário e variáveis de ambiente (`lib/env.ts`) |
+| Hospedagem | Vercel | Production, Preview por ramo, Development local |
+| Testes | `<Vitest, Playwright>` e o roteiro do Claude Cowork | Unitário, integração, interface e QA manual guiado |
+| `<outra: e-mail, pagamento>` | `<pacote ou serviço>` | `<por que está aqui>` |
+
+Cada dependência nova entra nesta tabela (se a pessoa precisa saber que ela existe) e no
+CHANGELOG, com versão e motivo.
+
+---
+
 ## Requisitos
 
-### Trilha PHP + MySQL (Hostinger)
-
-| Item | Mínimo | Observação |
+| Item | Versão | Observação |
 | --- | --- | --- |
-| PHP | 8.1 | Verificado pelo instalador |
-| Extensões | `pdo_mysql`, `mbstring`, `json`, `openssl`, `fileinfo`, `zip` | `zip` é do painel de atualização |
-| MySQL / MariaDB | 5.7 / 10.4 | `utf8mb4` obrigatório |
-| Apache | com `mod_rewrite` | Front controller |
-| Escrita | `config/`, `storage/uploads/`, `storage/logs/`, `storage/backups/` | |
-| HTTPS | obrigatório | SSL gratuito no hPanel |
-
-### Trilha Next.js (Vercel)
-
-| Item | Mínimo |
-| --- | --- |
-| Node.js | 20 |
-| Banco | PostgreSQL (Neon/Supabase) ou MySQL gerenciado |
-| Conta | Vercel (plano gratuito serve) |
+| Node.js | 20.9 ou mais nova | Mínimo do `next@16.4.0` (campo `engines`); a Vercel usa a versão do projeto |
+| Next.js | 16 | App Router |
+| Tailwind CSS | 4 | Configuração em CSS, com `@theme` |
+| Banco, login e arquivos | Supabase (Postgres, Auth, Storage) | Pelo Marketplace da Vercel |
+| CLI do Supabase | `npx supabase` (pacote `supabase` no `devDependencies`) | Migrações, banco local e dump |
+| Docker | Atual | Só para o Supabase local (`npx supabase start`) |
+| CLI da Vercel | `npm i -g vercel` | Para `vercel link` e `vercel env pull` |
+| Conta | Vercel, com acesso ao projeto `<nome-do-projeto>` | |
 
 ---
 
-## Instalação
+## Subir do zero
 
-### PHP na Hostinger
-
-1. **Crie o banco**: hPanel → Bancos de dados → MySQL. Anote nome, usuário e senha.
-2. **Envie os arquivos** para `public_html/` (Git, FTP ou upload de ZIP).
-   Não envie: `.git/`, `.env`, `tests/`, `specs/`, `qa/`, `node_modules/`.
-3. **Confira as permissões:** `config/` e `storage/` graváveis (755).
-4. **Abra `https://seu-dominio.com.br/install/`** e siga os cinco passos:
-
-   | Passo | O que faz |
-   | --- | --- |
-   | 1 · Requisitos | Verifica PHP, extensões, permissões e HTTPS, com instrução por item |
-   | 2 · Banco | Testa a conexão na hora e traduz o erro do MySQL |
-   | 3 · Estrutura | Cria as tabelas, ou limpa e recria se a base já tiver dados |
-   | 4 · Administrador | Cria o primeiro usuário admin |
-   | 5 · Conclusão | Grava a configuração, registra o schema e tranca o instalador |
-
-5. **Apague a pasta `install/`** do servidor. O painel avisa enquanto ela existir.
-
-> O instalador cria as **tabelas** dentro de uma base que já existe. Ele não cria a base:
-> em hospedagem compartilhada o usuário não tem permissão de `CREATE DATABASE`.
-
-### Next.js na Vercel
+Oito comandos, nesta ordem, num clone limpo. Se algum passo extra for necessário, é defeito
+deste README (R9): registre e corrija.
 
 ```bash
-git clone git@github.com:<usuario>/<repo>.git && cd <repo>
-npm install
-cp .env.example .env.local     # preencha os valores
-npm run db:migrate
-npm run dev
+git clone git@github.com:SEU-USUARIO/SEU-REPOSITORIO.git && cd SEU-REPOSITORIO
+vercel link                     # liga a pasta ao projeto <nome-do-projeto> na Vercel
+vercel env pull .env.local      # baixa as variáveis do ambiente Development
+npm ci                          # instala exatamente o que está no package-lock.json
+npx supabase start              # Postgres, Auth e Storage locais (exige Docker)
+npx supabase db reset           # aplica supabase/migrations/ e supabase/seed.sql no banco LOCAL
+npm run db:seed                 # cria o administrador no Auth e os dados iniciais (idempotente)
+npm run dev                     # http://localhost:3000
 ```
 
-Publicação: importe o repositório na Vercel, defina as variáveis em
-**Settings → Environment Variables** (por ambiente) e faça deploy.
+- `vercel env pull` grava `.env.local`, que está no `.gitignore`. Nunca o versione (R1).
+- Se faltar uma variável, `lib/env.ts` interrompe a execução dizendo qual e onde
+  configurá-la. Não invente valor: cadastre-a no painel da Vercel e rode o `pull` de novo.
+- O banco de desenvolvimento é o Supabase local, ou um projeto de desenvolvimento separado,
+  nunca o de produção. `npx supabase db reset` só roda no banco local: nunca com `--linked`.
+- `npm run db:seed` pode rodar quantas vezes for preciso: não duplica nada. A senha do
+  administrador vem de variável de ambiente, nunca do código.
 
 ---
 
-## Configuração
+## Variáveis de ambiente
 
-| Chave | Onde | O que colocar |
+A lista completa, com placeholder e comentário, está em [`.env.example`](.env.example). O
+esquema que as valida está em `lib/env.ts`.
+
+| Chave | Ambientes na Vercel | O que colocar |
 | --- | --- | --- |
-| `DB_HOST` | `config/app.config.php` (gerado pelo instalador) | `localhost` na Hostinger |
-| `DB_NAME` / `DB_USER` / `DB_PASSWORD` | idem | hPanel → Bancos de dados → MySQL |
-| `APP_KEY` | idem | Gerado automaticamente pelo instalador |
-| `DATABASE_URL` | Painel da Vercel | String de conexão do provedor, com `sslmode=require` |
-| `AUTH_SECRET` | Painel da Vercel | `openssl rand -base64 32` |
+| `NEXT_PUBLIC_SUPABASE_URL` | Production, Preview, Development | Criada pela integração do Supabase; `https://SEU-PROJETO.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Production, Preview, Development | Criada pela integração; `sb_publishable_SUA-CHAVE`. Pública por definição: só alcança o que a RLS permite |
+| `SUPABASE_SECRET_KEY` | Production, Preview, Development | Criada pela integração; `sb_secret_SUA-CHAVE`. **Só no servidor**: ignora a RLS |
+| `POSTGRES_URL` | Production, Preview, Development | Criada pela integração; `postgres://SEU-USUARIO:SUA-SENHA@SEU-HOST/SEU-BANCO`. Conexão direta: não passa pela RLS |
+| `ADMIN_EMAIL`, `ADMIN_SENHA_INICIAL` | Onde o seed roda | Lidas por `npm run db:seed`; a senha vale só até o primeiro login |
+| `<CHAVE-NOVA>` | `<quais>` | `<de onde vem>` |
 
-> ⚠️ Nenhum desses valores fica no repositório (R1). `config/app.config.php` está no
-> `.gitignore` e, quando possível, fica fora do `public_html`.
+> ⚠️ Nenhum desses valores fica no repositório (R1). Tudo com prefixo `NEXT_PUBLIC_` vai
+> para o navegador: nunca use esse prefixo em senha, token ou string de conexão.
 
 ---
 
@@ -122,53 +125,54 @@ Publicação: importe o repositório na Vercel, defina as variáveis em
 | `/` | Início |
 | `/entrar` | Login |
 | `/cadastrar-novo-usuario` | Cadastro |
-| `/chamados` | Lista de chamados (aceita `?status=`, `?ordenar=`, `?pagina=`) |
+| `/chamados` | Lista de chamados (filtros opcionais `?status=`, `?ordenar=`, `?pagina=`) |
 | `/abrir-chamado` | Formulário de novo chamado |
-| `/chamados/{id}` | Detalhe |
+| `/chamados/[id]` | Detalhe |
 | `/administracao` | Painel administrativo |
-| `/administracao/atualizacoes` | Instalação de pacotes de atualização |
+| `/politica-de-privacidade` | Política de privacidade, pública, com link no rodapé |
 
-<Quando uma rota for renomeada, mantenha a antiga respondendo 301 e registre no CHANGELOG.>
-
----
-
-## Atualização
-
-Pelo **painel administrativo** (forma preferida: faz backup, valida e sabe voltar atrás):
-
-1. **Administração → Atualizações**.
-2. Envie o arquivo `<app>-<versão>.zip`.
-3. Revise a prévia: versão atual → nova, arquivos que mudam, migrações a executar.
-   Migrações destrutivas aparecem destacadas.
-4. Confirme. O sistema entra em manutenção, faz backup, aplica arquivos e migrações, e sai.
-5. Confira a nova versão no rodapé.
-
-Se algo falhar, o sistema restaura o backup automaticamente e informa o caminho dele.
-
-Na Vercel: `git push` no ramo → preview → QA → merge em `main`.
+<Quando uma rota for renomeada, mantenha a antiga respondendo 301 (em `next.config.ts`) e
+registre no CHANGELOG.>
 
 ---
 
-## Backup e restauração
+## Deploy e atualização
 
-**Antes de toda atualização** o painel gera:
+| Ambiente | Como chega lá | Banco |
+| --- | --- | --- |
+| Preview | `git push` em qualquer ramo: a Vercel publica uma URL própria | Branch de preview do Supabase (Branching), ou projeto separado; nunca o de produção |
+| Produção | Merge em `main`, ou `vercel promote <url-do-preview>` | Banco de produção |
 
-```
-storage/backups/<AAAA-MM-DD-HHMMSS>-v<versão>/
-├── banco.sql
-├── arquivos.zip
-└── manifesto-anterior.json
-```
+Ordem de um release com migração (R10, R14):
 
-Restaurar manualmente:
+1. Preview publicado, roteiro de QA executado nele (R11).
+2. Backup do dia do banco de produção conferido (painel do Supabase, Database > Backups) ou
+   gerado com `npx supabase db dump`.
+3. `npx supabase db push --dry-run`, depois `npx supabase db push`, com o projeto de
+   produção linkado. A migração é compatível com a versão no ar.
+4. Promoção do deploy para produção.
+5. Suíte de fumaça do roteiro de QA na URL de produção (só leitura).
 
-1. Ligar o modo manutenção (Administração → Manutenção).
-2. Restaurar `arquivos.zip` sobre a raiz do aplicativo.
-3. Importar `banco.sql` pelo phpMyAdmin.
-4. Conferir a última linha de `schema_migrations`.
-5. Desligar a manutenção e rodar a suíte de fumaça do roteiro de QA.
+---
 
-> Um backup nunca restaurado não é um backup. Teste a restauração ao menos uma vez.
+## Migrações, backup e rollback
+
+- Migrações em `supabase/migrations/<timestamp>_<nome>.sql`, criadas com
+  `npx supabase migration new <nome>`, aplicadas pelo Supabase CLI e registradas em
+  `supabase_migrations.schema_migrations`.
+- Toda migração funciona com a versão **anterior** do código: acrescentar antes, remover só
+  num release seguinte (expand → migrate → contract).
+- Voltar o código: `vercel rollback`, ou Instant Rollback no painel da Vercel. Ele **não**
+  volta o banco, e é por isso que a regra acima existe.
+- Backup: `<plano Pro: diário, últimos 7 dias, no painel em Database > Backups / plano Free:
+  sem backup automático; dump semanal com npx supabase db dump, guardado em <onde, fora do
+  repositório>>`.
+- Voltar o banco: restaurar o backup pelo painel (o projeto fica indisponível durante a
+  restauração) ou o dump. Escreva aqui o procedimento do seu projeto.
+- Restauração ensaiada em `<data>`, num projeto descartável, em `<tempo>` (CT-MIG-011).
+  Repita a cada trimestre.
+
+> Um backup nunca restaurado não é um backup.
 
 ---
 
@@ -188,12 +192,9 @@ Antes de qualquer mudança, leia `AGENTS.md`, ele traz as convenções e as arma
 encontradas aqui.
 
 ```bash
-# PHP
-find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
-composer audit
-
-# Next.js
 npx tsc --noEmit && npm run lint && npm test && npm run build
+vercel build             # reproduz o build da Vercel localmente
+npm audit --omit=dev
 
 # Sempre, antes de qualquer push
 bash skills/development-pattern-for-web-apps/assets/scripts/scan-secrets.sh
@@ -213,7 +214,10 @@ código.
 | Fumaça | 6 | Toda execução, primeiro |
 | Funcional | 34 | Antes de todo release |
 | Integração | 9 | Antes de todo release |
-| Segurança | 30 | Antes de todo release |
+| Bootstrap | 8 | Quando muda variável, seed ou o passo de subir do zero |
+| Migração | 7 | Antes de todo release com migração |
+| Segurança | 33 | Antes de todo release |
+| LGPD | 4 | Antes de todo release, se o app trata dado pessoal |
 | Interface | 12 | Antes de todo release |
 | Regressão | 7 | Antes de todo release, inteira |
 
@@ -224,18 +228,37 @@ Credenciais e seed: [`qa/dados-de-teste.md`](qa/dados-de-teste.md).
 
 ## Segurança
 
-Nível **N2** (área logada, dados dos próprios usuários): ver R7 do padrão.
+Nível **N2** (área logada, dados dos próprios usuários): ver R7 do padrão. O detalhe, com
+as proteções ativas e **o que foi configurado à mão fora do código** (URLs do Supabase Auth,
+chaves, teto de gasto, Deployment Protection, Dependabot, backup), está em
+[`docs/seguranca.md`](docs/seguranca.md). Em resumo:
 
-- Todas as consultas SQL são parametrizadas (prepared statements).
-- Senhas com `password_hash()`; nunca `md5`/`sha1`.
-- Token CSRF em toda ação que muda estado.
-- Autorização verificada por registro: o dono entra na cláusula `WHERE`.
-- Uploads validados por tipo real, com nome gerado, fora do webroot, sem execução.
-- Cabeçalhos de segurança configurados no `.htaccess` / `next.config.ts`.
-- Nenhuma credencial no repositório.
+- Login pelo Supabase Auth: o app não guarda nem faz hash de senha.
+- RLS ligada em toda tabela, com política por dono, **e** autorização conferida no
+  servidor. A secret key do Supabase só existe no servidor.
+- Consultas parametrizadas; uploads em bucket privado; cabeçalhos de segurança no
+  `next.config.ts`; nenhuma credencial no repositório.
 
-**Encontrou uma falha?** Abra uma issue privada ou escreva para `<contato>`. Não publique
-detalhes antes da correção.
+**Encontrou uma falha?** Escreva para `seguranca@seu-dominio.com.br` (detalhes em
+[`docs/seguranca.md`](docs/seguranca.md)). Não publique detalhes antes da correção.
+
+---
+
+## Documentação complementar
+
+Liste só o que existe neste repositório; apague a linha do que o projeto não tem.
+
+| Documento | O que tem |
+| --- | --- |
+| [`docs/arquitetura.md`](docs/arquitetura.md) | Visão geral, diagrama e onde cada parte vive no código |
+| [`docs/decisoes/`](docs/decisoes/) | As decisões que atravessam o projeto, uma por arquivo |
+| [`docs/seguranca.md`](docs/seguranca.md) | Autenticação, autorização, proteções, ações manuais fora do código, como reportar falha |
+| [`docs/banco-de-dados.md`](docs/banco-de-dados.md) | Tabelas, relacionamentos, quem lê e altera cada dado, migrações |
+| [`docs/api.md`](docs/api.md) | Route Handlers, webhooks e Server Actions que mudam estado |
+| [`specs/`](specs/) | Uma spec por funcionalidade: requisitos, critérios de aceite, casos de teste |
+| [`qa/roteiro-de-testes.md`](qa/roteiro-de-testes.md) | O roteiro de QA, para o Claude Cowork ou uma pessoa |
+| [`CHANGELOG.md`](CHANGELOG.md) | O que mudou em cada versão, inclusive dependências |
+| [`AGENTS.md`](AGENTS.md) | Convenções e armadilhas, para quem (pessoa ou agente) for mexer no código |
 
 ---
 
@@ -243,14 +266,14 @@ detalhes antes da correção.
 
 | Sintoma | Causa provável | O que fazer |
 | --- | --- | --- |
-| Página em branco | Erro de PHP com `display_errors` desligado | Ver `storage/logs/php-error.log` |
-| "Não foi possível conectar ao banco" | Credencial errada, ou base não criada | Conferir no hPanel → Bancos de dados |
-| Redireciona para `/install/` | `config/app.config.php` ausente | Refazer a instalação, ou restaurar a config |
-| "Este aplicativo já está instalado" | `config/instalado.lock` existe | Apagar o arquivo via FTP para reinstalar |
-| URLs amigáveis dão 404 | `.htaccess` não enviado, ou sem `mod_rewrite` | Reenviar o `.htaccess`; conferir o plano |
-| Upload falha em arquivo grande | `upload_max_filesize` do servidor | hPanel → Configuração PHP |
-| Acentos aparecem errados | Base não é `utf8mb4` | Converter a base e as colunas |
-| Site preso em manutenção | Atualização interrompida | Administração → Sair da manutenção, ou apagar `storage/manutencao.flag` |
+| Build falha com mensagem de variável ausente | Variável não cadastrada naquele ambiente da Vercel | Cadastrar no painel (Production, Preview ou Development) e refazer o deploy |
+| `npm run dev` falha ao iniciar, citando `lib/env.ts` | `.env.local` desatualizado | `vercel env pull .env.local` |
+| "relation does not exist" no log | Migração não aplicada naquele banco | `npx supabase migration list` para ver o que falta; `npx supabase db push` contra o projeto certo |
+| Preview mostra dados de produção | As variáveis do Supabase no Preview apontam para produção | Corrigir já: o preview precisa de branch ou projeto próprio (R10) |
+| Lista vazia para usuário logado, sem erro | RLS ligada sem política para aquela operação | Criar a política por dono na migração; nunca desligar a RLS |
+| URL de preview abre a tela de login da Vercel | Deployment Protection ligada | Entrar com conta do time, ou usar o bypass documentado em https://vercel.com/docs/deployment-protection, configurado no ambiente, nunca colado na conversa |
+| Depois de `vercel rollback`, erro de coluna inexistente | Migração incompatível com a versão anterior | Restaurar o banco pelo backup; rever a migração (R10) |
+| Upload some depois de um tempo | Arquivo gravado em disco da função | Usar o Supabase Storage; o disco da função é efêmero |
 
 ---
 

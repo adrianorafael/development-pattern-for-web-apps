@@ -1,0 +1,55 @@
+/**
+ * lib/supabase/browser.ts: o cliente do Supabase para Client Components.
+ *
+ * Parte de "Development Pattern for Web Apps": regras R1 e R7.
+ * Detalhes: references/segredos-e-configuracao.md
+ *
+ * REGRAS
+ *   1. Só duas variáveis chegam aqui, e as duas são PÚBLICAS de propósito:
+ *      NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.
+ *      A publishable key (sb_publishable_...) só alcança o que a RLS permite.
+ *      A secret key (sb_secret_...) NUNCA entra neste arquivo nem em nenhuma
+ *      variável NEXT_PUBLIC_: ela ignora a RLS. A própria Supabase recusa a secret
+ *      key vinda de navegador com 401 (supabase.com/docs/guides/api/api-keys),
+ *      mas nesse ponto ela já está no bundle, e vazada.
+ *   2. Este é o ÚNICO arquivo fora de lib/env.ts que lê `process.env` direto.
+ *      Motivo: lib/env.ts começa com `import 'server-only'` e não pode ir ao
+ *      navegador, e o Next só embute no bundle uma variável NEXT_PUBLIC_ escrita
+ *      por extenso (`process.env.NEXT_PUBLIC_X`), nunca lida de forma dinâmica.
+ *      lib/env.ts valida as mesmas duas no build (R9); aqui só confere presença.
+ *   3. Tudo que este cliente faz, qualquer visitante faz com o DevTools aberto.
+ *      A barreira é a RLS no banco e a verificação no servidor (R7), nunca o fato
+ *      de o botão não aparecer na tela.
+ *
+ * Conferido em @supabase/ssr@0.12.7 (createBrowserClient(supabaseUrl, supabaseKey,
+ * options?): dist/main/createBrowserClient.d.ts), 2026-10-10.
+ */
+
+import { createBrowserClient } from '@supabase/ssr';
+
+/**
+ * Cria o cliente do Supabase para usar num Client Component, com a chave
+ * publishable e a sessão que o navegador guarda em cookie.
+ *
+ * @returns O cliente do navegador. No navegador, o @supabase/ssr devolve sempre
+ *   a mesma instância, então chamar de novo é barato (@supabase/ssr@0.12.7,
+ *   dist/main/createBrowserClient.js: cachedBrowserClient; sessão em cookie).
+ * @throws Error se uma das duas variáveis NEXT_PUBLIC_ não chegou ao bundle
+ *   (faltava no ambiente quando o build rodou).
+ *
+ * @example
+ *   'use client';
+ *   const supabase = criarClienteNavegador();
+ *   const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+ */
+export function criarClienteNavegador() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const chavePublica = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !chavePublica) {
+    throw new Error(
+      'NEXT_PUBLIC_SUPABASE_URL ou NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY não definida. ' +
+      'Configure no painel da Vercel e rode `vercel env pull .env.local`.',
+    );
+  }
+  return createBrowserClient(url, chavePublica);
+}
