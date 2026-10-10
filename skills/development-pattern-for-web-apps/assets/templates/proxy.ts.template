@@ -1,0 +1,135 @@
+/**
+ * proxy.ts: renova a sessão do Supabase a cada requisição e manda quem não está
+ * logado das rotas do painel para /entrar.
+ *
+ * Parte de "Development Pattern for Web Apps": regras R7 e R15.
+ * Detalhes: references/linha-de-base-de-seguranca.md §5 e references/stack-nextjs-vercel.md
+ *
+ * ⚠️ ESTE ARQUIVO NÃO É A BARREIRA DE AUTORIZAÇÃO.
+ *   Ele é conveniência de roteamento: evita renderizar o painel para quem não tem
+ *   sessão e mantém o token renovado. A barreira está em dois lugares, e nos dois
+ *   sempre:
+ *     1. no servidor, dentro de cada Server Action, Route Handler e página
+ *        (`getClaims()` ou `getUser()`, e o dono na consulta);
+ *     2. no banco, pela RLS ligada em toda tabela (politicas-rls.sql.template).
+ *   Motivos: o `matcher` é uma lista de caminhos e uma rota nova fora dele fica
+ *   descoberta sem aviso; a Server Action é um POST que não depende da página;
+ *   e a CVE-2025-29927 mostrou um cabeçalho que fazia o middleware ser pulado
+ *   por inteiro.
+ *
+ * Por que `getClaims()` e nunca `getSession()`:
+ *   `getSession()` lê o cookie sem validar, e cookie é entrada do usuário
+ *   (@supabase/auth-js 2.117.3, GoTrueClient.d.ts l.1411). A doc do Supabase:
+ *   "Never trust `supabase.auth.getSession()` inside server code such as Proxy."
+ *   `getClaims()` confere a assinatura do JWT e, se o token venceu, renova a
+ *   sessão e chama `setAll` com os cookies novos.
+ *
+ * Conferido em 2026-10-10:
+ *   - next@16.4.0: a convenção `middleware` está depreciada e o nome novo é
+ *     `proxy` (dist/lib/constants.d.ts: PROXY_FILENAME = "proxy",
+ *     PROXY_LOCATION_REGEXP = "(?:src/)?proxy"). O arquivo exporta uma função
+ *     chamada `proxy` ou `default` (dist/build/analysis/get-page-static-info.js).
+ *     O tipo de `config.matcher` é `string | Array<string | { source, has?,
+ *     missing?, locale? }>` (dist/build/segment-config/middleware/middleware-config.d.ts).
+ *   - @supabase/ssr@0.12.7: createServerClient com cookies `getAll`/`setAll`;
+ *     `setAll(cookies, headers)` entrega também os cabeçalhos anti-cache que
+ *     precisam ir na resposta (dist/main/types.d.ts l.23 a 55).
+ *   - Padrão da doc oficial: supabase.com/docs/guides/auth/server-side/nextjs e o
+ *     exemplo do repositório supabase/supabase (examples/auth/nextjs/proxy.ts e
+ *     lib/supabase/proxy.ts): "Return the `supabaseResponse` object that `setAll`
+ *     last built." Uma resposta anterior não leva os cookies renovados, e o
+ *     usuário cai deslogado na requisição seguinte.
+ *
+ * Em Next 15 ou anterior este arquivo se chama middleware.ts e a função,
+ * `middleware`; lá, um proxy.ts nunca é chamado e a sessão nunca é renovada.
+ */
+
+import { NextResponse, type NextRequest } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { env } from '@/lib/env';
+
+/** Prefixos de rota que exigem sessão. Mesmos nomes de pasta do app (R15). */
+const ROTAS_DO_PAINEL = ['/painel', '/admin'];
+/** Para onde vai quem chega sem sessão a uma rota do painel. */
+const PAGINA_DE_ENTRADA = '/entrar';
+
+/**
+ * Diz se o caminho está debaixo de uma rota do painel. Compara segmento
+ * inteiro: `/painel` e `/painel/x` exigem sessão, `/painelzinho` não.
+ *
+ * @param caminho - O pathname da requisição, sem query string.
+ * @returns true quando a rota exige sessão.
+ */
+function exigeSessao(caminho: string): boolean {
+  return ROTAS_DO_PAINEL.some((r) => caminho === r || caminho.startsWith(`${r}/`));
+}
+
+/**
+ * Roda antes de cada rota do `matcher`: renova o token do Supabase e manda
+ * para PAGINA_DE_ENTRADA quem chega sem sessão a uma rota do painel.
+ *
+ * @param request - A requisição que o Next entrega ao proxy.
+ * @returns O redirecionamento para a página de entrada, ou a resposta montada
+ *   pelo `setAll` com os cookies renovados. Nunca uma resposta nova sem eles.
+ */
+export async function proxy(request: NextRequest) {
+  let respostaSupabase = NextResponse.next({ request });
+
+  // Um cliente novo por requisição: nunca em variável de módulo.
+  const supabase = createServerClient(
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesParaGravar, cabecalhos) {
+          // 1. Na requisição: os Server Components desta mesma requisição já
+          //    leem o token renovado.
+          for (const { name, value } of cookiesParaGravar) request.cookies.set(name, value);
+          // 2. Na resposta: o navegador guarda o token renovado.
+          respostaSupabase = NextResponse.next({ request });
+          for (const { name, value, options } of cookiesParaGravar) {
+            respostaSupabase.cookies.set(name, value, options);
+          }
+          // 3. Cache-Control: private, no-store (e afins): uma resposta com o
+          //    cookie de sessão de uma pessoa nunca pode ser servida a outra.
+          for (const [chave, valor] of Object.entries(cabecalhos)) {
+            respostaSupabase.headers.set(chave, valor);
+          }
+        },
+      },
+    },
+  );
+
+  // Nada entre createServerClient e getClaims(): a doc avisa que código aqui no
+  // meio causa usuários deslogados ao acaso.
+  const { data } = await supabase.auth.getClaims();
+  const logado = Boolean(data?.claims?.sub);
+
+  if (!logado && exigeSessao(request.nextUrl.pathname)) {
+    const destino = request.nextUrl.clone();
+    destino.pathname = PAGINA_DE_ENTRADA;
+    destino.search = '';
+    const redirecionamento = NextResponse.redirect(destino);
+    // Leve junto o que o setAll gravou (por exemplo, a limpeza de um cookie
+    // vencido); sem isso o navegador e o servidor ficam fora de sincronia.
+    for (const cookie of respostaSupabase.cookies.getAll()) redirecionamento.cookies.set(cookie);
+    return redirecionamento;
+  }
+
+  // ❌ return NextResponse.next();       // resposta nova, sem os cookies renovados
+  // ✅ a resposta que o setAll montou por último
+  return respostaSupabase;
+}
+
+/**
+ * Em quais caminhos o proxy roda: tudo, exceto arquivos estáticos e imagens.
+ * A sessão precisa ser renovada em toda página que lê dado do usuário, e uma
+ * rota nova entra sozinha; mesmo assim, a página e a action conferem a sessão
+ * por conta própria (aviso no topo).
+ */
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+};

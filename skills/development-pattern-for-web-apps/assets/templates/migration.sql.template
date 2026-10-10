@@ -1,75 +1,117 @@
 -- ─────────────────────────────────────────────────────────────
--- database/migrations/NNNN_descricao_curta.sql
--- Parte de "Development Pattern for Web Apps": regras R10 e R13.
+-- supabase/migrations/<timestamp>_<descricao_curta>.sql (Supabase CLI)
+-- Parte de "Development Pattern for Web Apps": regras R7, R10 e R13.
+-- Detalhes: references/migracoes-e-rollback.md
+--
+-- COMO CRIAR
+--   supabase migration new adiciona_comentarios
+--   → supabase/migrations/20261010143000_adiciona_comentarios.sql
+--   O prefixo é a data e hora em UTC (AAAAMMDDHHMMSS, supabase 2.120.0) e É a
+--   ordem de execução. Aplique local com `supabase db reset` e, no projeto
+--   linkado, com `supabase db push` (antes, `supabase db push --dry-run`).
 --
 -- REGRAS
---   1. Nome ordenável: 0007_adiciona_anexos.sql. A ordem do nome É a ordem
---      de execução.
---   2. Idempotente: rodar duas vezes não pode quebrar. O updater registra em
---      schema_migrations, mas uma falha no meio pode deixar o arquivo pela
---      metade, e ele será reexecutado.
---   3. Uma migração faz UMA coisa. Estrutura e dados em arquivos separados.
---   4. Qualquer DROP/DELETE/TRUNCATE aparece destacado na prévia do painel e
---      exige backup. Prefira o padrão de três releases (release-e-deploy.md §7).
---   5. Teste em base LIMPA e em base COM DADOS antes de empacotar.
+--   1. Arquivo já aplicado em produção nunca é editado: o CLI compara só o
+--      número da versão, não o conteúdo, então a edição é ignorada em silêncio
+--      no banco remoto e o schema deixa de bater com o repositório. A
+--      correção é uma migração nova.
+--   2. Compatível com a versão ANTERIOR do código (R10). O Instant Rollback da
+--      Vercel volta o código, não o banco: o código antigo precisa continuar
+--      funcionando sobre o schema novo. Por isso: expand → migrate → contract.
+--   3. Idempotente: IF NOT EXISTS / ON CONFLICT / WHERE que torne o UPDATE
+--      repetível, DROP POLICY IF EXISTS antes de CREATE POLICY.
+--   4. Uma migração faz UMA coisa. Estrutura e dados em arquivos separados
+--      quando o volume for grande.
+--   5. Tabela nova em public nasce com RLS LIGADA, grants explícitos e
+--      políticas NO MESMO ARQUIVO (P13). Sem isso, a tabela fica legível e
+--      gravável pela API REST com a chave publishable.
+--   6. DROP / DELETE / TRUNCATE / RENAME só na fase "contract", num release
+--      POSTERIOR ao que parou de usar o objeto, com backup ou dump recente
+--      (migracoes-e-rollback.md, seção 4). Migração destrutiva = versão MAJOR.
+--   7. Teste num banco LIMPO (`supabase db reset`) e num COM DADOS (branch de
+--      preview ou projeto descartável com dump restaurado) antes do merge.
 -- ─────────────────────────────────────────────────────────────
 
--- ── Criar tabela: já é idempotente ───────────────────────────
-CREATE TABLE IF NOT EXISTS `anexos` (
-  `id`              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `chamado_id`      BIGINT UNSIGNED NOT NULL,
-  `nome_original`   VARCHAR(255) NOT NULL,
-  `nome_armazenado` VARCHAR(64)  NOT NULL,
-  `mime`            VARCHAR(100) NOT NULL,
-  `tamanho`         INT UNSIGNED NOT NULL,
-  `criado_em`       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_anexos_armazenado` (`nome_armazenado`),
-  KEY `idx_anexos_chamado` (`chamado_id`),
-  CONSTRAINT `fk_anexos_chamado` FOREIGN KEY (`chamado_id`)
-    REFERENCES `chamados` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- ── Adicionar coluna (fase EXPAND): nullable ou com DEFAULT ───
+-- Código antigo não conhece a coluna e continua funcionando. A partir do
+-- Postgres 11, ADD COLUMN com DEFAULT constante não reescreve a tabela.
+alter table public.chamados add column if not exists prazo_em timestamptz;
 
--- ── Adicionar coluna: MySQL não tem ADD COLUMN IF NOT EXISTS ──
--- em todas as versões. Consulte information_schema antes.
-SET @existe := (
-  SELECT COUNT(*) FROM information_schema.COLUMNS
-  WHERE TABLE_SCHEMA = DATABASE()
-    AND TABLE_NAME   = 'chamados'
-    AND COLUMN_NAME  = 'prioridade'
-);
-SET @sql := IF(@existe = 0,
-  'ALTER TABLE `chamados` ADD COLUMN `prioridade` TINYINT UNSIGNED NOT NULL DEFAULT 3',
-  'DO 0'
-);
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+-- ── Índice em tabela PEQUENA: no mesmo arquivo, sem cerimônia ──
+create index if not exists idx_chamados_prazo on public.chamados (prazo_em);
 
--- ── Adicionar índice: mesmo padrão ───────────────────────────
-SET @existe := (
-  SELECT COUNT(*) FROM information_schema.STATISTICS
-  WHERE TABLE_SCHEMA = DATABASE()
-    AND TABLE_NAME   = 'chamados'
-    AND INDEX_NAME   = 'idx_chamados_prioridade'
+-- ── Índice em tabela GRANDE: CONCURRENTLY, em arquivo PRÓPRIO ──
+-- CREATE INDEX CONCURRENTLY não roda dentro de transação. O Supabase CLI
+-- 2.120.0 reconhece o comando e o executa fora do lote do arquivo
+-- (pkg/migration/file.go, isPipelineIncompatible), mas aí o que veio antes
+-- dele no arquivo já está gravado: não há desfazer automático. Por isso,
+-- sozinho num arquivo:
+--
+--   -- supabase/migrations/<timestamp>_indice_chamados_prazo.sql
+--   create index concurrently if not exists idx_chamados_prazo
+--     on public.chamados (prazo_em);
+--
+-- Se falhar no meio, o índice fica INVALID: DROP INDEX CONCURRENTLY e rode de novo.
+
+-- ── Tabela nova: RLS, grants e políticas juntos ──────────────
+create table if not exists public.comentarios (
+  id         bigint      generated always as identity primary key,
+  chamado_id bigint      not null references public.chamados (id) on delete cascade,
+  usuario_id uuid        not null default auth.uid()
+                         references public.perfis (id) on delete cascade,
+  texto      text        not null check (char_length(texto) between 1 and 2000),
+  criado_em  timestamptz not null default now()
 );
-SET @sql := IF(@existe = 0,
-  'CREATE INDEX `idx_chamados_prioridade` ON `chamados` (`prioridade`, `status`)',
-  'DO 0'
-);
-PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+alter table public.comentarios enable row level security;
+
+create index if not exists idx_comentarios_chamado on public.comentarios (chamado_id, criado_em);
+create index if not exists idx_comentarios_usuario on public.comentarios (usuario_id);
+
+revoke all on public.comentarios from anon, authenticated;
+grant select, insert, delete on public.comentarios to authenticated;
+grant all on public.comentarios to service_role;
+
+-- Só o dono do CHAMADO lê e comenta nele.
+drop policy if exists comentarios_select_dono_chamado on public.comentarios;
+create policy comentarios_select_dono_chamado on public.comentarios
+  for select to authenticated
+  using (exists (
+    select 1 from public.chamados c
+    where c.id = chamado_id and c.usuario_id = (select auth.uid())
+  ));
+
+drop policy if exists comentarios_insert_dono_chamado on public.comentarios;
+create policy comentarios_insert_dono_chamado on public.comentarios
+  for insert to authenticated
+  with check (
+    (select auth.uid()) = usuario_id
+    and exists (
+      select 1 from public.chamados c
+      where c.id = chamado_id and c.usuario_id = (select auth.uid())
+    )
+  );
+
+drop policy if exists comentarios_delete_autor on public.comentarios;
+create policy comentarios_delete_autor on public.comentarios
+  for delete to authenticated
+  using ((select auth.uid()) = usuario_id);
 
 -- ── Migração de DADOS: sempre com condição que a torne repetível ──
-UPDATE `chamados`
-   SET `prioridade` = 3
- WHERE `prioridade` IS NULL OR `prioridade` = 0;
+update public.chamados
+   set prazo_em = criado_em + interval '7 days'
+ where prazo_em is null
+   and status <> 'fechado';
 
 -- ── Novos valores de configuração ────────────────────────────
-INSERT IGNORE INTO `configuracoes` (`chave`, `valor`) VALUES
-  ('anexos_habilitados',   '1'),
-  ('anexos_tamanho_max_mb', '5');
+insert into public.configuracoes (chave, valor) values
+  ('comentarios_habilitados', 'true')
+on conflict (chave) do nothing;
 
 -- ─────────────────────────────────────────────────────────────
--- ⚠️ REMOÇÃO DE COLUNA, só na terceira fase do padrão de três
--- releases, e nunca no mesmo pacote que introduz a substituta.
+-- ⚠️ FASE CONTRACT: remoção de coluna, SÓ num release posterior ao que
+-- parou de ler e escrever nela, e nunca no mesmo arquivo que cria a
+-- substituta. Antes: backup do plano ou `supabase db dump` recente.
+-- Depois: versão MAJOR.
 --
--- ALTER TABLE `chamados` DROP COLUMN `campo_antigo`;
+-- alter table public.chamados drop column if exists campo_antigo;
 -- ─────────────────────────────────────────────────────────────

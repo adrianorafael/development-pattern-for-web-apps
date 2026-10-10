@@ -41,6 +41,9 @@ VERCEL_PROJECT_ID="SEU-PROJECT-ID"
 ```
 
 ```bash
+# Carrega sem ecoar: o valor não aparece no terminal, no log nem na conversa com o agente.
+# Nunca `cat .env`, `echo "$VERCEL_TOKEN"` nem `set -x` aqui (R1, "Segredo não passa pela
+# conversa" em segredos-e-configuracao.md). O CLI também lê VERCEL_TOKEN do ambiente.
 export VERCEL_TOKEN="$(grep -m1 '^VERCEL_TOKEN=' .env | cut -d= -f2- | tr -d '"')"
 vercel ls --token "$VERCEL_TOKEN"
 ```
@@ -61,8 +64,13 @@ curl -sS -H "Authorization: Bearer $VERCEL_TOKEN" \
 
 > ⚠️ **Os números de versão dos endpoints mudam** (`v6`, `v13`, `v3`…) e não foram
 > verificados nesta redação. Antes de usar, confirme em `vercel.com/docs/rest-api` e anote a
-> data no registro de evidências (R4). O mesmo vale para os subcomandos do CLI: rode
-> `vercel --help` e `vercel <comando> --help` **nesta sessão** antes de afirmar que existem.
+> data no registro de evidências (R4).
+
+Os subcomandos e opções do CLI citados nesta referência (`link`, `ls`, `pull --environment`,
+`build`, `build --prod`, `inspect --logs`, `logs`, `promote`, `rollback`, `redeploy`,
+`env pull`) foram conferidos no pacote: *verificado em vercel 63.1.2, 2026-10-10*
+(`dist/root-help-commands.mjs` e as definições de comando em `dist/chunks/`). O CLI muda
+rápido: na sua sessão, `vercel --version` e `vercel <comando> --help` antes de afirmar.
 
 ---
 
@@ -75,6 +83,10 @@ projeto, o mesmo runtime e a mesma sequência que o servidor usa.
 ```bash
 vercel pull --environment=preview   # traz a configuração e as variáveis daquele ambiente
 vercel build                        # reproduz o build exatamente como a Vercel faria
+
+# falha só em produção? o mesmo, com o ambiente de produção
+vercel pull --environment=production
+vercel build --prod
 ```
 
 `vercel pull` é o que resolve a categoria de falha mais comum: **a variável de ambiente que
@@ -110,7 +122,7 @@ investigue a diferença de ambiente antes de tocar no código.
 > O log agora aponta `<mensagem>`, diferente das anteriores.
 > Minha leitura é `<hipótese>`, mas não consigo reproduzir localmente, `vercel build`
 > passa limpo aqui. Isso sugere diferença de ambiente, não de código.
-> O que eu preciso de você: confirmar se `DATABASE_URL` existe no ambiente **Preview**
+> O que eu preciso de você: confirmar se `SUPABASE_SECRET_KEY` existe no ambiente **Preview**
 > (ela existe no Production), em Vercel → Settings → Environment Variables.
 
 Continuar além disso é queimar minutos de CI e poluir o histórico. Um agente que não sabe
@@ -132,7 +144,9 @@ O log da Vercel é longo; a linha que importa quase sempre está **no fim, antes
 | `Cannot find module 'X'` | Dependência em `devDependencies` mas necessária no build, ou ausente do `package.json` | Mover para `dependencies`, ou instalar e **commitar o lockfile** |
 | `npm ci` falha / `lockfile does not match` | Lockfile desatualizado ou não versionado | `npm install`, commitar `package-lock.json` |
 | Dois lockfiles no repositório | `package-lock.json` **e** `pnpm-lock.yaml` juntos | Apagar o que não se usa; o gerenciador é detectado pelo lockfile |
-| Erros de ESLint derrubando o build | Configuração que trata lint como erro de build | Corrigir os erros. **Nunca** `eslint.ignoreDuringBuilds` |
+| Erros de ESLint derrubando o build | No Next 16 o `next build` não roda lint; se o lint derruba o build, é porque o script `build` (ou o CI) chama `eslint .` antes | Corrigir os erros. **Nunca** desligar a regra ou tirar o lint do script para passar |
+| `The "middleware" file convention is deprecated. Please use "proxy" instead.` | Aviso do Next 16: o projeto ainda tem `middleware.ts` | Não derruba o build, mas é dívida: `npx @next/codemod@canary middleware-to-proxy .` (mensagem e codemod em `next@16.4.0`, `dist/build/index.js`) |
+| `` `eslint` configuration in next.config.ts is no longer supported `` | Aviso do Next 16 para a chave de Next 15 (`eslint.ignoreDuringBuilds`), que **não existe** no tipo `NextConfig` do 16 (`next@16.4.0`, `dist/server/config.js`) | Apagar a chave. Lint é o script `"lint": "eslint ."` |
 | `Error occurred prerendering page "/x"` | Server Component acessando banco, `fetch` ou variável de ambiente em tempo de build | Marcar a rota como dinâmica, ou mover o acesso para dentro do request |
 | `useSearchParams() should be wrapped in a suspense boundary` | Hook de cliente lido durante a pré-renderização | Envolver o componente em `<Suspense>` |
 | `Dynamic server usage: couldn't be rendered statically` | `cookies()`/`headers()` numa rota que o Next tentou tornar estática | `export const dynamic = 'force-dynamic'` na rota, se for mesmo dinâmica |
@@ -164,9 +178,10 @@ vercel ls --token "$VERCEL_TOKEN"
 vercel inspect <url-do-deploy> --logs --token "$VERCEL_TOKEN"
 ```
 
-> ⚠️ Ponto que confunde: em versões recentes do CLI, **`vercel logs` mostra log de execução
-> (runtime), não de build**. O log de build sai por `vercel inspect --logs` ou pelo painel.
-> Confirme com `vercel inspect --help` antes de concluir que "não há log".
+> ⚠️ Ponto que confunde: **`vercel logs` mostra log de requisição (runtime), não de build**
+> ("Display request logs for a project", vercel 63.1.2). O log de build sai por
+> `vercel inspect <url> --logs` ("Prints the build logs instead of the deployment summary")
+> ou pelo painel. Confirme com `vercel inspect --help` antes de concluir que "não há log".
 
 Guarde o log num arquivo e **cite no relatório o trecho exato** que fundamentou o
 diagnóstico, não parafraseie:
@@ -187,12 +202,24 @@ relevantes, sanitizadas.
 Ficar verde apagando o que reclama não é corrigir; é esconder.
 
 ```ts
-// ❌ next.config.ts: todas proibidas por esta regra
-export default {
+// ❌ next.config.ts: proibido por esta regra
+const config: NextConfig = {
   typescript: { ignoreBuildErrors: true },      // o erro de tipo continua lá, agora invisível
-  eslint:     { ignoreDuringBuilds: true },     // idem
 };
 ```
+
+```ts
+// ✅ next.config.ts: o erro de tipo derruba o build, como deve
+const config: NextConfig = {
+  typedRoutes: true,                            // e ainda pega href para rota inexistente
+};
+```
+
+`typescript.ignoreBuildErrors` existe no Next 16 (`next@16.4.0`,
+`dist/server/config-shared.d.ts`, interface `TypeScriptConfig`) e continua proibida.
+`eslint.ignoreDuringBuilds` era chave do Next 15; no 16 a chave `eslint` **nem existe** no
+tipo `NextConfig`, e o equivalente proibido é tirar `eslint .` do script ou do CI para o
+deploy passar.
 
 Também proibidos:
 
@@ -223,9 +250,12 @@ vercel promote <url-do-deploy>    # promove um deploy existente a produção
 vercel rollback <url-do-deploy>   # volta produção para um deploy anterior
 ```
 
-**O rollback do código não desfaz a migração do banco.** Se o deploy quebrado veio junto com
-uma migração destrutiva, o caminho de volta é o backup, não o `rollback`.
-→ [release-e-deploy.md § migrações destrutivas](release-e-deploy.md)
+**O rollback do código não desfaz a migração do banco.** O Instant Rollback volta o código
+para um deploy anterior; o schema continua onde a última migração o deixou. É por isso que
+toda migração é compatível com a versão anterior do código (R10): assim o `rollback` é
+sempre seguro. Se mesmo assim uma migração destrutiva passou, o caminho de volta é o backup
+ou o dump feito antes de migrar (o backup do Supabase ou o `supabase db dump`), não o `rollback`.
+→ [migracoes-e-rollback.md](migracoes-e-rollback.md) · [release-e-deploy.md](release-e-deploy.md)
 
 ---
 
@@ -267,21 +297,10 @@ Nunca "corrigi o build". Diga qual linha do log, qual causa, e o que provou a co
 - [ ] Falha de ambiente: variável e ambiente nomeados, e o agente **parou** ali
 - [ ] Falha reproduzida com `vercel build` antes de qualquer correção
 - [ ] Correção é a menor que resolve a causa raiz: nada de escopo carona
-- [ ] Nenhum `ignoreBuildErrors`, `ignoreDuringBuilds`, `@ts-ignore` ou teste apagado
+- [ ] Nenhum `ignoreBuildErrors`, lint tirado do script, `@ts-ignore` ou teste apagado
 - [ ] `tsc --noEmit`, lint, testes e os scanners limpos antes do push
 - [ ] **Um** push por volta do ciclo
 - [ ] Teto de três voltas respeitado; escalonamento com hipótese e pedido concreto
 - [ ] Trechos do log citados sanitizados, nunca colados inteiros (R1)
 - [ ] Produção só após o preview verde e a aprovação (R14)
 - [ ] Registro da correção em `qa/correcoes-de-build/` e caso `CT-REG-nnn` se cabível (R11)
-
----
-
-## 10. E na trilha PHP?
-
-A Hostinger não tem build nem CI/CD: o equivalente é o **painel de atualização** (R10), que
-valida o pacote antes de escrever, aplica migrações em ordem e faz rollback automático. O
-ciclo desta regra (log, reprodução, correção mínima, teto de tentativas) vale igual para
-diagnosticar uma atualização que falhou: o log está em `storage/logs/php-error.log` e no
-relatório que o próprio painel gera.
-→ [pacotes-de-atualizacao.md](pacotes-de-atualizacao.md)

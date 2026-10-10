@@ -1,7 +1,8 @@
 # Instruções para agentes de IA: este repositório
 
-Este repositório **é** a skill *Development Pattern for Web Apps*. Ele não contém código de
-aplicação: só Markdown, templates e quatro scripts de shell.
+Este repositório **é** a skill *Development Pattern for Web Apps*, dedicada a apps Next.js
+com Supabase publicados na Vercel. Ele não contém código de aplicação: só Markdown, templates e quatro
+scripts de shell.
 
 ## Antes de editar qualquer coisa aqui
 
@@ -30,14 +31,16 @@ As dezoito regras que ele define valem também para este repositório.
   ```
 
 - **R4: nada inventado, especialmente aqui.** A credibilidade desta skill depende de cada
-  afirmação ser verificável. Antes de mudar uma função, uma constante do PDO, uma classe do
-  Tailwind ou uma opção de configuração em qualquer referência, confirme na fonte e anote a
-  versão conferida:
+  afirmação ser verificável. Antes de mudar uma função, uma prop, uma classe do
+  Tailwind, uma chave do `next.config.ts` ou uma flag do CLI da Vercel em qualquer referência,
+  confirme na fonte e anote a versão conferida. Para ler o `.d.ts` sem instalar nada no
+  repositório, baixe o pacote numa pasta temporária:
 
   ```bash
-  php -v && php -m
-  php -r 'var_dump(function_exists("str_contains"));'
-  npm view next version && npm view tailwindcss version
+  node -v
+  npm view next version && npm view tailwindcss version && npm view vercel version
+  npm view @supabase/supabase-js version && npm view @supabase/ssr version && npm view supabase version
+  npm pack next@<versão> && tar xzf next-<versão>.tgz   # depois leia package/dist/**/*.d.ts
   ```
 
   Inventários são **fotografias, não contratos**. Mantenha a linha "verificado em <versão>,
@@ -82,7 +85,7 @@ skills/development-pattern-for-web-apps/
 ├── SKILL.md              # as 18 regras, o pipeline de 8 fases, o roteamento
 ├── references/           # 18 documentos, carregados sob demanda
 └── assets/
-    ├── templates/        # 20 arquivos prontos para copiar em um projeto
+    ├── templates/        # 26 arquivos prontos para copiar em um projeto
     └── scripts/          # scan-secrets.sh, scan-sql-injection.sh,
                           #   scan-linguagem.sh, scan-doc-sync.sh
 docs/                     # página do GitHub Pages: index.html + tailwind.css (compilado)
@@ -173,14 +176,15 @@ bash skills/development-pattern-for-web-apps/assets/scripts/scan-linguagem.sh
 bash -n skills/development-pattern-for-web-apps/assets/scripts/scan-secrets.sh
 bash -n skills/development-pattern-for-web-apps/assets/scripts/scan-sql-injection.sh
 bash -n skills/development-pattern-for-web-apps/assets/scripts/scan-linguagem.sh
-php  -l skills/development-pattern-for-web-apps/assets/templates/install-wizard.php.template
-php  -l skills/development-pattern-for-web-apps/assets/templates/updater.php.template
-php  -l skills/development-pattern-for-web-apps/assets/templates/Database.php.template
+bash -n skills/development-pattern-for-web-apps/assets/scripts/scan-doc-sync.sh
+bash -n skills/development-pattern-for-web-apps/assets/templates/pre-commit.template
+bash -n skills/development-pattern-for-web-apps/assets/templates/commit-msg.template
 
 # arquivos estruturados
 python3 -c "import yaml;yaml.safe_load(open('.github/workflows/pages.yml'))"
 python3 -c "import json;json.load(open('.claude-plugin/plugin.json'))"
-python3 -c "import json;json.load(open('skills/development-pattern-for-web-apps/assets/templates/update-manifest.json.template'))"
+python3 -c "import json;json.load(open('.claude-plugin/marketplace.json'))"
+python3 -c "import yaml;yaml.safe_load(open('skills/development-pattern-for-web-apps/assets/templates/dependabot.yml.template'))"
 
 # a página: recompilar o CSS e conferir os quatro casos
 npm run build:css
@@ -192,7 +196,7 @@ Conferência de consistência: estes números aparecem em vários lugares e desa
 ```bash
 grep -c '^| \*\*R' skills/development-pattern-for-web-apps/SKILL.md    # 18 regras
 ls skills/development-pattern-for-web-apps/references/*.md | wc -l      # 18 referências
-ls skills/development-pattern-for-web-apps/assets/templates/* | wc -l   # 20 templates
+ls skills/development-pattern-for-web-apps/assets/templates/* | wc -l   # 26 templates
 ls skills/development-pattern-for-web-apps/assets/scripts/*.sh | wc -l  # 4 scanners
 grep -rn "dezessete\|dezesseis\|quinze" README.md AGENTS.md docs/index.html skills/**/SKILL.md
 ```

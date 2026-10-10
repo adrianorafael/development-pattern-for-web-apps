@@ -1,115 +1,261 @@
 -- ─────────────────────────────────────────────────────────────
--- database/schema.sql: estrutura base, executada pelo Wizard (R9)
--- Parte de "Development Pattern for Web Apps".
+-- supabase/migrations/<timestamp>_schema_inicial.sql: estrutura base (Supabase)
+-- Parte de "Development Pattern for Web Apps": regras R5, R7, R9, R10 e R13.
+--
+-- COMO USAR
+--   supabase migration new schema_inicial
+--   (o CLI cria supabase/migrations/<AAAAMMDDHHMMSS>_schema_inicial.sql, em UTC)
+--   Cole este arquivo nele. Logo depois, a SEGUNDA migração:
+--   supabase migration new politicas_rls   ← politicas-rls.sql.template
+--   As duas sobem juntas: `supabase db reset` (local) e `supabase db push`
+--   (projeto linkado). O CLI registra cada arquivo aplicado em
+--   supabase_migrations.schema_migrations (R13). Mudança posterior NUNCA edita
+--   este arquivo: vira outra migração (migration.sql.template,
+--   references/migracoes-e-rollback.md).
 --
 -- REGRAS DESTE ARQUIVO
---   1. Idempotente: rodar duas vezes não pode quebrar nada.
---   2. utf8mb4 + InnoDB em todas as tabelas.
---   3. Índice em toda coluna usada em WHERE, JOIN ou ORDER BY.
+--   1. Idempotente: IF NOT EXISTS / OR REPLACE em tudo.
+--   2. RLS LIGADA na mesma instrução que cria a tabela. Sem política, a RLS
+--      nega tudo; as políticas vêm em politicas-rls.sql.template. Assim não
+--      existe um instante em que a tabela está aberta pela API (P13).
+--   3. Índice em toda coluna usada em WHERE, JOIN, ORDER BY ou em política RLS.
 --   4. Chave estrangeira declarada, não "garantida pela aplicação".
---   5. {{prefixo}} é substituído pelo Wizard (vazio quando não há prefixo).
+--   5. Datas em timestamptz, nunca timestamp sem fuso.
+--   6. Domínio fechado em text + CHECK, não em tipo ENUM.
+--   7. Usuário é auth.users (Supabase Auth): o app NÃO guarda senha, não tem
+--      tabela de usuários com senha_hash nem de tokens de recuperação. O que o
+--      app sabe do usuário fica em public.perfis, com o MESMO id (uuid).
+--   8. Papel (admin) NÃO é coluna editável pelo usuário: vem de app_metadata
+--      do Supabase Auth, que só o servidor altera (seed.ts.template).
+--   9. Função "security definer" sempre com `set search_path = ''`, nomes
+--      qualificados com o schema e checagem de auth.uid() dentro dela.
+--
+-- Conferido em postgres:17 (imagem oficial do Docker), 2026-10-10, com um
+-- schema auth mínimo de teste no lugar do Supabase real.
 -- ─────────────────────────────────────────────────────────────
 
-SET NAMES utf8mb4;
-SET time_zone = '+00:00';
-
--- ── Controle de versão do schema (R13) ───────────────────────
-CREATE TABLE IF NOT EXISTS `{{prefixo}}schema_migrations` (
-  `versao`      VARCHAR(50)  NOT NULL,
-  `aplicada_em` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `duracao_ms`  INT UNSIGNED NULL,
-  PRIMARY KEY (`versao`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- ── atualizado_em automático ─────────────────────────────────
+-- Postgres não tem "ON UPDATE CURRENT_TIMESTAMP": um gatilho faz o papel.
+create or replace function public.definir_atualizado_em() returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  new.atualizado_em := now();
+  return new;
+end;
+$$;
 
 -- ── Configurações chave/valor do aplicativo ──────────────────
-CREATE TABLE IF NOT EXISTS `{{prefixo}}configuracoes` (
-  `chave`         VARCHAR(100) NOT NULL,
-  `valor`         TEXT         NULL,
-  `atualizado_em` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`chave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+create table if not exists public.configuracoes (
+  chave         text        primary key check (char_length(chave) <= 100),
+  valor         text,
+  atualizado_em timestamptz not null default now()
+);
+alter table public.configuracoes enable row level security;
 
--- ── Usuários ─────────────────────────────────────────────────
--- senha_hash guarda o resultado de password_hash(); NUNCA a senha nem md5/sha1.
-CREATE TABLE IF NOT EXISTS `{{prefixo}}usuarios` (
-  `id`               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `nome`             VARCHAR(120) NOT NULL,
-  `email`            VARCHAR(190) NOT NULL,
-  `senha_hash`       VARCHAR(255) NOT NULL,
-  `papel`            ENUM('admin','usuario') NOT NULL DEFAULT 'usuario',
-  `ativo`            TINYINT(1)   NOT NULL DEFAULT 1,
-  `ultimo_acesso_em` DATETIME     NULL,
-  `criado_em`        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `atualizado_em`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_usuarios_email` (`email`),
-  KEY `idx_usuarios_papel_ativo` (`papel`, `ativo`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+create or replace trigger trg_configuracoes_atualizado_em
+  before update on public.configuracoes
+  for each row execute function public.definir_atualizado_em();
 
--- ── Recuperação de senha ─────────────────────────────────────
--- Guarda o HASH do token, nunca o token: um vazamento da tabela não permite
--- redefinir a senha de ninguém.
-CREATE TABLE IF NOT EXISTS `{{prefixo}}tokens_recuperacao` (
-  `id`         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `usuario_id` BIGINT UNSIGNED NOT NULL,
-  `token_hash` CHAR(64)     NOT NULL,
-  `expira_em`  DATETIME     NOT NULL,
-  `usado_em`   DATETIME     NULL,
-  `criado_em`  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_token_hash` (`token_hash`),
-  KEY `idx_token_usuario` (`usuario_id`, `expira_em`),
-  CONSTRAINT `fk_token_usuario` FOREIGN KEY (`usuario_id`)
-    REFERENCES `{{prefixo}}usuarios` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- ── Perfis: o que o app guarda sobre cada usuário do Auth ────
+-- Apagar o usuário no Auth (auth.admin.deleteUser) apaga o perfil e, em
+-- cascata, os chamados dele: é a exclusão de conta da LGPD alcançando o banco.
+create table if not exists public.perfis (
+  id            uuid        primary key references auth.users (id) on delete cascade,
+  nome          text        check (nome is null or char_length(nome) between 1 and 120),
+  -- Espelho de app_metadata.papel, para listar e exibir. A AUTORIZAÇÃO (RLS e
+  -- servidor) lê o papel do JWT, nunca desta coluna; e o usuário não consegue
+  -- alterá-la: politicas-rls.sql.template só libera UPDATE da coluna nome.
+  papel         text        not null default 'usuario'
+                            check (papel in ('admin', 'usuario')),
+  criado_em     timestamptz not null default now(),
+  atualizado_em timestamptz not null default now()
+);
+alter table public.perfis enable row level security;
 
--- ── Tentativas de login (rate limiting, R7) ──────────────────
-CREATE TABLE IF NOT EXISTS `{{prefixo}}tentativas_login` (
-  `id`        BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `email`     VARCHAR(190)  NOT NULL,
-  `ip`        VARBINARY(16) NOT NULL,
-  `sucesso`   TINYINT(1)    NOT NULL DEFAULT 0,
-  `criado_em` DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `idx_tentativas_email` (`email`, `criado_em`),
-  KEY `idx_tentativas_ip` (`ip`, `criado_em`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+create or replace trigger trg_perfis_atualizado_em
+  before update on public.perfis
+  for each row execute function public.definir_atualizado_em();
 
--- ── Auditoria (R7, R10) ──────────────────────────────────────
-CREATE TABLE IF NOT EXISTS `{{prefixo}}auditoria` (
-  `id`         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `usuario_id` BIGINT UNSIGNED NULL,
-  `acao`       VARCHAR(60)  NOT NULL,
-  `alvo`       VARCHAR(190) NULL,
-  `resultado`  VARCHAR(500) NULL,
-  `ip`         VARCHAR(45)  NULL,
-  `criado_em`  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `idx_auditoria_acao_data` (`acao`, `criado_em`),
-  KEY `idx_auditoria_usuario` (`usuario_id`, `criado_em`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Cria o perfil quando o Supabase Auth cria o usuário.
+-- security definer: roda com o dono da função para poder escrever em
+-- public.perfis no momento do cadastro. Por isso search_path vazio e nomes
+-- qualificados: ninguém consegue trocar o que "perfis" significa.
+-- raw_user_meta_data (user_metadata) é editável pelo próprio usuário: serve
+-- para nome de exibição, NUNCA para papel ou permissão. O papel vem de
+-- raw_app_meta_data (app_metadata), que só a chave secret altera.
+create or replace function public.criar_perfil_do_usuario() returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  insert into public.perfis (id, nome, papel)
+  values (
+    new.id,
+    nullif(left(trim(new.raw_user_meta_data ->> 'nome'), 120), ''),
+    case when new.raw_app_meta_data ->> 'papel' = 'admin' then 'admin' else 'usuario' end
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+revoke execute on function public.criar_perfil_do_usuario() from public, anon, authenticated;
+
+create or replace trigger trg_auth_users_criar_perfil
+  after insert on auth.users
+  for each row execute function public.criar_perfil_do_usuario();
+
+-- ── Auditoria (R7) ───────────────────────────────────────────
+-- Escrita só pelo servidor (função abaixo ou SQL direto), lida só por admin.
+create table if not exists public.auditoria (
+  id         bigint      generated always as identity primary key,
+  usuario_id uuid        references auth.users (id) on delete set null,
+  acao       text        not null check (char_length(acao) <= 60),
+  alvo       text,
+  resultado  text,
+  ip         inet,
+  criado_em  timestamptz not null default now()
+);
+alter table public.auditoria enable row level security;
+
+create index if not exists idx_auditoria_acao_data on public.auditoria (acao, criado_em);
+create index if not exists idx_auditoria_usuario   on public.auditoria (usuario_id, criado_em);
 
 -- ─────────────────────────────────────────────────────────────
--- TABELAS DO SEU DOMÍNIO: substitua o exemplo abaixo
+-- TABELAS DO SEU DOMÍNIO: substitua o exemplo abaixo.
+-- As colunas batem com o tipo Chamado de lib/db.ts (db.ts.template).
 -- ─────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS `{{prefixo}}chamados` (
-  `id`            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `titulo`        VARCHAR(200) NOT NULL,
-  `descricao`     TEXT         NULL,
-  `status`        ENUM('aberto','andamento','fechado') NOT NULL DEFAULT 'aberto',
-  `prioridade`    TINYINT UNSIGNED NOT NULL DEFAULT 3,
-  `usuario_id`    BIGINT UNSIGNED NOT NULL,
-  `criado_em`     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `atualizado_em` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `idx_chamados_usuario` (`usuario_id`, `criado_em`),
-  KEY `idx_chamados_status_data` (`status`, `criado_em`),
-  CONSTRAINT `fk_chamados_usuario` FOREIGN KEY (`usuario_id`)
-    REFERENCES `{{prefixo}}usuarios` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- usuario_id tem DEFAULT auth.uid(): o navegador não precisa (nem deve)
+-- mandar o dono; a política de INSERT confere que é o próprio usuário.
+-- Cascata: auth.users → perfis → chamados (→ anexos). Excluir a conta no
+-- Auth apaga tudo o que é do titular no banco (LGPD).
+create table if not exists public.chamados (
+  id            bigint      generated always as identity primary key,
+  titulo        text        not null check (char_length(titulo) between 1 and 200),
+  descricao     text,
+  status        text        not null default 'aberto'
+                            check (status in ('aberto', 'andamento', 'fechado')),
+  prioridade    smallint    not null default 3 check (prioridade between 1 and 5),
+  usuario_id    uuid        not null default auth.uid()
+                            references public.perfis (id) on delete cascade,
+  criado_em     timestamptz not null default now(),
+  atualizado_em timestamptz not null default now()
+);
+alter table public.chamados enable row level security;
 
--- ── Valores iniciais (INSERT IGNORE = idempotente) ───────────
-INSERT IGNORE INTO `{{prefixo}}configuracoes` (`chave`, `valor`) VALUES
-  ('versao_app',        '0.1.0'),
-  ('itens_por_pagina',  '20'),
-  ('manutencao',        '0');
+-- usuario_id em primeiro: é a coluna que as políticas RLS filtram.
+create index if not exists idx_chamados_usuario_data on public.chamados (usuario_id, criado_em);
+create index if not exists idx_chamados_status_data  on public.chamados (status, criado_em);
+
+create or replace trigger trg_chamados_atualizado_em
+  before update on public.chamados
+  for each row execute function public.definir_atualizado_em();
+
+-- ── Anexos: metadados; o arquivo fica no Supabase Storage ────
+-- Bucket PRIVADO "anexos" (politicas-rls.sql.template), caminho
+-- <usuario_id>/<chamado_id>/<uuid>.<ext>. Disco de função serverless é
+-- efêmero: arquivo nunca vai para o sistema de arquivos do deployment.
+-- Apagar o usuário apaga as linhas em cascata; os OBJETOS do Storage não
+-- somem com elas: a exclusão de conta apaga a pasta do usuário no bucket.
+create table if not exists public.anexos (
+  id            bigint      generated always as identity primary key,
+  chamado_id    bigint      not null references public.chamados (id) on delete cascade,
+  usuario_id    uuid        not null default auth.uid()
+                            references public.perfis (id) on delete cascade,
+  caminho       text        not null unique check (char_length(caminho) <= 500),
+  nome_original text        not null check (char_length(nome_original) <= 255),
+  mime          text        not null check (char_length(mime) <= 100),
+  tamanho       integer     not null check (tamanho > 0),
+  criado_em     timestamptz not null default now()
+);
+alter table public.anexos enable row level security;
+
+create index if not exists idx_anexos_usuario on public.anexos (usuario_id, criado_em);
+create index if not exists idx_anexos_chamado on public.anexos (chamado_id);
+
+-- ── Limite de taxa (R7) ──────────────────────────────────────
+-- Em serverless, memória do processo não serve para contar tentativas: cada
+-- invocação pode ser uma instância nova. Esta tabela (ou um Redis externo)
+-- serve. RLS LIGADA e SEM política: pela API REST ninguém lê nem escreve;
+-- só o servidor, pela conexão SQL direta (lib/limite.ts, `sql` de lib/db.ts).
+-- O login em si já tem limites do próprio Supabase Auth; esta tabela é para
+-- as SUAS rotas (formulário de contato, busca, upload).
+create table if not exists public.eventos_limite (
+  id        bigint      generated always as identity primary key,
+  chave     text        not null check (char_length(chave) <= 200),
+  criado_em timestamptz not null default now()
+);
+alter table public.eventos_limite enable row level security;
+
+create index if not exists idx_eventos_limite_chave_data on public.eventos_limite (chave, criado_em);
+
+-- ── Busca por título, chamada com supabase.rpc('buscar_chamados') ──
+-- security invoker (o padrão): roda como quem chama, então a RLS de
+-- public.chamados vale aqui dentro. O termo é PARÂMETRO, nunca texto do
+-- comando; \, % e _ digitados viram literais, não curingas.
+-- "returns table" com as colunas listadas, e não "setof public.chamados": uma
+-- coluna nova na tabela (fase expand) não quebra a função.
+create or replace function public.buscar_chamados(termo text)
+returns table (
+  id         bigint,
+  titulo     text,
+  status     text,
+  prioridade smallint,
+  usuario_id uuid,
+  criado_em  timestamptz
+)
+language sql
+stable
+set search_path = ''
+as $$
+  select c.id, c.titulo, c.status, c.prioridade, c.usuario_id, c.criado_em
+  from public.chamados as c
+  where c.titulo ilike
+        '%' || replace(replace(replace(termo, '\', '\\'), '%', '\%'), '_', '\_') || '%'
+        escape '\'
+  order by c.criado_em desc
+  limit 50;
+$$;
+
+-- ── Fechar chamado com auditoria, tudo ou nada ───────────────
+-- security definer porque o usuário comum NÃO pode inserir em auditoria
+-- diretamente. Em troca, a função confere o dono com auth.uid() ela mesma:
+-- definer ignora a RLS, então a autorização tem de estar aqui dentro.
+create or replace function public.fechar_chamado(p_chamado_id bigint)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_usuario uuid := auth.uid();
+begin
+  if v_usuario is null then
+    raise exception 'não autenticado' using errcode = '42501';
+  end if;
+
+  update public.chamados
+     set status = 'fechado'
+   where id = p_chamado_id
+     and usuario_id = v_usuario;
+
+  if not found then
+    -- Mesmo erro para "não existe" e "é de outro": não confirma ids alheios.
+    raise exception 'chamado não encontrado' using errcode = 'P0002';
+  end if;
+
+  insert into public.auditoria (usuario_id, acao, alvo)
+  values (v_usuario, 'chamado.fechar', p_chamado_id::text);
+end;
+$$;
+
+-- ── Valores iniciais (ON CONFLICT DO NOTHING = idempotente) ──
+-- O administrador NÃO é criado aqui: senha não entra em arquivo versionado.
+-- Quem cria é `npm run db:seed` (seed.ts.template), via auth.admin.createUser,
+-- com a senha vinda de ADMIN_SENHA_INICIAL e app_metadata { papel: 'admin' }.
+insert into public.configuracoes (chave, valor) values
+  ('itens_por_pagina', '20'),
+  ('manutencao',       'false')
+on conflict (chave) do nothing;

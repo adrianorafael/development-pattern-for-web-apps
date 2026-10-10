@@ -2,14 +2,12 @@
 # .gitignore: projeto Next.js + Tailwind (Vercel)
 # Parte de "Development Pattern for Web Apps": regra R1.
 # COPIE ISTO ANTES DO PRIMEIRO `git add`.
+# Confira depois: git check-ignore -v .env.local .vercel
 # ─────────────────────────────────────────────────────────────
 
-# Ambiente: valores reais NUNCA versionados
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Ambiente: valores reais NUNCA versionados.
+# .env* pega .env, .env.local, .env.preview.local, .env.production.local...
+.env*
 !.env.example
 
 # Dependências
@@ -26,21 +24,23 @@
 next-env.d.ts
 *.tsbuildinfo
 
-# Vercel: guarda o vínculo com o projeto e, conforme a versão do CLI, credenciais
-.vercel
+# Vercel: vínculo com o projeto (vercel link) e saída de `vercel build`
 .vercel/
 
-# Dados reais
+# Supabase CLI: estado local do `supabase link` e do `supabase start`.
+# O que se versiona é supabase/config.toml, supabase/migrations/ e supabase/seed.sql.
+supabase/.temp/
+supabase/.branches/
+
+# Dados reais: dump de banco é vazamento de dado pessoal.
+# `supabase db dump` gera um .sql: guarde FORA do repositório.
 *.sql
-!db/schema.sql
-!db/migrations/*.sql
+!supabase/migrations/*.sql
+!supabase/seed.sql
 *.sql.gz
+*.dump
 dumps/
 backups/
-
-# Uploads locais
-/public/uploads/*
-!/public/uploads/.gitkeep
 
 # Testes
 /coverage
@@ -57,6 +57,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Chaves e certificados
+*.pem
+*.key
+*.p12
+
 # Editores e sistema
 .idea/
 .vscode/*
@@ -64,4 +69,3 @@ yarn-error.log*
 !.vscode/extensions.json
 .DS_Store
 Thumbs.db
-*.pem

@@ -100,11 +100,11 @@ varrer_arquivo() {
   [ -f "$f" ] || return 0
   caminho_ignorado "$f" && return 0
   case "$f" in
-    */node_modules/*|*/vendor/*|*/.git/*|*/dist/*|*/.next/*) return 0 ;;
-    *.md|*.markdown|*.html|*.htm|*.php|*.phtml|*.js|*.jsx|*.ts|*.tsx|*.txt|*.template) ;;
+    */node_modules/*|*/.git/*|*/dist/*|*/.next/*|*/.vercel/*) return 0 ;;
+    *.md|*.mdx|*.markdown|*.html|*.htm|*.js|*.jsx|*.mjs|*.ts|*.tsx|*.json|*.txt|*.template) ;;
     *) return 0 ;;
   esac
-  case "$f" in *.md|*.markdown|*.md.template) ehmd=1 ;; esac
+  case "$f" in *.md|*.mdx|*.markdown|*.md.template) ehmd=1 ;; esac
 
   # ── Travessão e meia-risca ────────────────────────────────────────────────
   # grep -F casa a sequência UTF-8 inteira. Uma classe [—–] casaria BYTES isolados
@@ -158,7 +158,7 @@ elif git rev-parse --git-dir >/dev/null 2>&1; then
     < <(git ls-files --cached --others --exclude-standard)
 else
   while IFS= read -r f; do varrer_arquivo "$f"; done \
-    < <(find . -type f -not -path '*/.git/*' -not -path '*/node_modules/*' -not -path '*/vendor/*')
+    < <(find . -type f -not -path '*/.git/*' -not -path '*/node_modules/*' -not -path '*/.next/*')
 fi
 
 if [ "$ACHADOS" -eq 0 ]; then

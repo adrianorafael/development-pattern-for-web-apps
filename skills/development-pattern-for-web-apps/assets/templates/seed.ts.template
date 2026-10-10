@@ -1,0 +1,192 @@
+/**
+ * scripts/seed.ts: cria o administrador inicial no Supabase Auth, de forma idempotente.
+ *
+ * Parte de "Development Pattern for Web Apps": regra R9.
+ * Detalhes: references/bootstrap-do-ambiente.md
+ *
+ * EXECUÇÃO
+ *   Node 24 executa TypeScript direto, por remoção de tipos. No package.json:
+ *
+ *     "db:seed":          "node --env-file-if-exists=.env.local scripts/seed.ts",
+ *     "db:seed:exemplos": "node --env-file-if-exists=.env.local scripts/seed.ts --com-exemplos"
+ *
+ *   Contra o Supabase local (`supabase start`), as variáveis apontam para a URL e as
+ *   chaves que `supabase status` mostra; contra Preview e Production, para as que a
+ *   integração da Vercel criou (`vercel env pull`).
+ *
+ *   Este arquivo NÃO importa lib/env.ts nem lib/supabase/server.ts: os dois começam
+ *   com `import 'server-only'`, que lança erro fora do Next. Por isso ele valida as
+ *   próprias variáveis e cria o próprio cliente administrativo.
+ *
+ * O QUE ELE FAZ
+ *   1. Lê NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, ADMIN_EMAIL,
+ *      ADMIN_SENHA_INICIAL e ADMIN_NOME (opcional). Senha ausente ou com menos de
+ *      12 caracteres: recusa e sai com código 1. Não existe senha padrão. Nunca.
+ *   2. Procura o e-mail no Auth. Existe: não toca em nada (nem na senha de quem já
+ *      trocou a sua). Não existe: cria com auth.admin.createUser.
+ *   3. O papel vai em app_metadata ({ papel: 'admin' }), que só a secret key altera.
+ *      Nunca em user_metadata: o próprio usuário edita, e uma política de RLS que
+ *      confia nele é falha de segurança (supabase.com/docs/guides/database/postgres/row-level-security).
+ *   4. app_metadata.deve_trocar_senha = true: o primeiro login leva direto à troca de
+ *      senha, e a variável deixa de valer como credencial. A action de troca usa
+ *      criarClienteAdmin() para zerar a marca, porque o usuário não altera app_metadata.
+ *   5. Garante a linha em public.perfis (id, nome, papel) sem sobrescrever a existente.
+ *   6. Com --com-exemplos, acrescenta chamados SINTÉTICOS (Preview e local).
+ *      Recusa --com-exemplos quando VERCEL_ENV=production.
+ *
+ * COLUNAS USADAS (confira contra supabase/migrations/ e schema.sql)
+ *   perfis(id uuid → auth.users, nome, papel)
+ *   chamados(titulo, descricao, status, prioridade, usuario_id uuid)
+ *
+ * A secret key IGNORA a RLS: é por isso que o seed consegue escrever em qualquer
+ * tabela. Ele roda no terminal de quem desenvolve ou no CI, nunca no app.
+ *
+ * DEPENDÊNCIAS
+ *   @supabase/supabase-js@2.117.3 (auth.admin.createUser e listUsers:
+ *   auth-js dist/module/GoTrueAdminApi.d.ts; AdminUserAttributes com app_metadata,
+ *   user_metadata e email_confirm: lib/types.d.ts) e zod@4.6.5, conferidos em 2026-10-10.
+ */
+
+import { createClient } from '@supabase/supabase-js';
+import { z } from 'zod';
+
+// ── Variáveis ───────────────────────────────────────────────────────────────
+/**
+ * As variáveis que o seed lê. Mais estrito que lib/env.ts num ponto de
+ * propósito: aqui ADMIN_SENHA_INICIAL é obrigatória, porque sem ela não há
+ * administrador a criar.
+ */
+const Esquema = z.object({
+  NEXT_PUBLIC_SUPABASE_URL: z.url({ protocol: /^https?$/, error: 'precisa ser a URL do projeto Supabase' }),
+  // eyJ...: a service_role legada, que o stack local (`supabase status`) pode mostrar.
+  SUPABASE_SECRET_KEY: z.string().regex(/^(sb_secret_|eyJ)/, 'precisa ser a chave secret (sb_secret_...)'),
+  ADMIN_EMAIL: z.email('precisa ser um e-mail válido'),
+  ADMIN_SENHA_INICIAL: z.string().min(12, 'precisa ter pelo menos 12 caracteres'),
+  ADMIN_NOME: z.string().trim().min(1).max(120).default('Administrador'),
+  VERCEL_ENV: z.enum(['production', 'preview', 'development']).optional(),
+});
+
+const r = Esquema.safeParse(process.env);
+if (!r.success) {
+  console.error('❌ Seed recusado. Variáveis com problema:');
+  for (const problema of r.error.issues) {
+    const nome = String(problema.path[0]);
+    const vazio = process.env[nome] === undefined || process.env[nome] === '';
+    // Só o NOME da variável. O valor nunca é impresso.
+    console.error('   - ' + nome + ': ' + (vazio ? 'não definida' : problema.message));
+  }
+  console.error(
+    '\nDefina no painel da Vercel (por ambiente) e rode `vercel env pull .env.local`.' +
+    '\nNão existe senha padrão: sem ADMIN_SENHA_INICIAL, nenhum administrador é criado.',
+  );
+  process.exit(1);
+}
+const cfg = r.data;
+
+const comExemplos = process.argv.includes('--com-exemplos');
+if (comExemplos && cfg.VERCEL_ENV === 'production') {
+  console.error('❌ --com-exemplos recusado em produção: dado sintético não entra no banco real.');
+  process.exit(1);
+}
+
+// ── Cliente administrativo: secret key, sem sessão ──────────────────────────
+const supabase = createClient(cfg.NEXT_PUBLIC_SUPABASE_URL, cfg.SUPABASE_SECRET_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
+
+/**
+ * Procura um usuário do Auth pelo e-mail, página a página (a API admin não
+ * tem busca por e-mail).
+ *
+ * @param email - O e-mail JÁ em minúsculas: a comparação só converte o lado
+ *   do Auth.
+ * @returns O id (uuid) do usuário, ou null se nenhuma página o contém.
+ * @throws Error com a mensagem do Auth se alguma página falhar.
+ */
+async function buscarIdPorEmail(email: string): Promise<string | null> {
+  const porPagina = 1000;
+  for (let pagina = 1; ; pagina++) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page: pagina, perPage: porPagina });
+    if (error) throw new Error('listUsers falhou: ' + error.message);
+    const achado = data.users.find((u) => u.email?.toLowerCase() === email);
+    if (achado) return achado.id;
+    if (data.users.length < porPagina) return null;
+  }
+}
+
+// ── Execução ────────────────────────────────────────────────────────────────
+/**
+ * Cria o administrador se ele não existe, garante a linha dele em perfis e,
+ * com --com-exemplos, semeia os chamados sintéticos. Rodar duas vezes dá o
+ * mesmo resultado que rodar uma.
+ *
+ * @throws Error quando a criação no Auth, o upsert em perfis ou a semeadura
+ *   falham. A mensagem nunca leva a senha nem a secret key.
+ */
+async function principal(): Promise<void> {
+  const email = cfg.ADMIN_EMAIL.toLowerCase();
+  let id = await buscarIdPorEmail(email);
+
+  if (id) {
+    // Já existe: não toca na senha. Quem já trocou a sua não pode voltar à inicial.
+    console.log('ℹ️  Administrador já existe. Nada alterado.');
+  } else {
+    const { data, error } = await supabase.auth.admin.createUser({
+      email,
+      password: cfg.ADMIN_SENHA_INICIAL,
+      email_confirm: true,
+      user_metadata: { nome: cfg.ADMIN_NOME },
+      app_metadata: { papel: 'admin', deve_trocar_senha: true },
+    });
+    if (error || !data.user) {
+      // A mensagem do Auth não contém a senha; ainda assim, nada de imprimir `cfg`.
+      throw new Error('createUser falhou: ' + (error?.message ?? 'sem usuário na resposta'));
+    }
+    id = data.user.id;
+    console.log('✅ Administrador criado. No primeiro login, a troca de senha é obrigatória.');
+  }
+
+  // Perfil: cria se não existe; se existe (por gatilho ou seed anterior), não mexe.
+  const { error: erroPerfil } = await supabase
+    .from('perfis')
+    .upsert({ id, nome: cfg.ADMIN_NOME, papel: 'admin' }, { onConflict: 'id', ignoreDuplicates: true });
+  if (erroPerfil) throw new Error('perfis: ' + erroPerfil.message);
+
+  if (comExemplos) await semearExemplos(id);
+}
+
+/**
+ * Insere três chamados SINTÉTICOS para o administrador, só se ele ainda não
+ * tem nenhum: rodar de novo não duplica.
+ *
+ * @param usuarioId - Id (uuid) do administrador, dono dos chamados de exemplo.
+ * @throws Error com a mensagem do banco se a contagem ou o insert falharem.
+ */
+async function semearExemplos(usuarioId: string): Promise<void> {
+  const { count, error } = await supabase
+    .from('chamados')
+    .select('*', { count: 'exact', head: true })
+    .eq('usuario_id', usuarioId);
+  if (error) throw new Error('chamados: ' + error.message);
+  if ((count ?? 0) > 0) {
+    console.log('ℹ️  Chamados de exemplo já existem. Nada alterado.');
+    return;
+  }
+
+  const exemplos = [
+    { titulo: 'Exemplo: impressora não liga', status: 'aberto', prioridade: 3 },
+    { titulo: 'Exemplo: trocar senha do Wi-Fi', status: 'andamento', prioridade: 2 },
+    { titulo: 'Exemplo: instalar leitor de PDF', status: 'fechado', prioridade: 1 },
+  ].map((c) => ({ ...c, descricao: 'Chamado sintético criado pelo seed.', usuario_id: usuarioId }));
+
+  // Métodos tipados do cliente: cada valor vai como parâmetro, nunca concatenado (R5).
+  const { error: erroInsert } = await supabase.from('chamados').insert(exemplos);
+  if (erroInsert) throw new Error('chamados: ' + erroInsert.message);
+  console.log('✅ ' + exemplos.length + ' chamados sintéticos criados.');
+}
+
+principal().catch((erro: unknown) => {
+  // Só a mensagem. A secret key e a senha nunca são impressas.
+  console.error('❌ Seed falhou:', erro instanceof Error ? erro.message : erro);
+  process.exit(1);
+});

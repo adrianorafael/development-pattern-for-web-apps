@@ -1,0 +1,243 @@
+-- ─────────────────────────────────────────────────────────────
+-- supabase/migrations/<timestamp>_politicas_rls.sql: quem lê e escreve o quê
+-- Parte de "Development Pattern for Web Apps": regras R1, R5 e R7, piso P13.
+-- Detalhes: references/sql-e-acesso-a-dados.md, seção "Row Level Security".
+--
+-- COMO USAR
+--   supabase migration new politicas_rls     (logo depois de schema_inicial)
+--   Cole este arquivo nele e aplique as duas juntas.
+--
+-- POR QUE ESTE ARQUIVO EXISTE
+--   A chave publishable (sb_publishable_...) vai para o navegador de propósito.
+--   Com ela, qualquer pessoa chama a API REST do Supabase direto, sem passar
+--   pelo seu app. O que impede a leitura da tabela inteira é a RLS, e só ela:
+--   "A table in an exposed schema without RLS is readable and writable by any
+--   role with a grant on it."
+--   (supabase.com/docs/guides/database/postgres/row-level-security, 2026-10-10)
+--
+-- AS DUAS CAMADAS, NUNCA SÓ UMA (R7)
+--   RLS aqui + verificação no servidor (Server Action, Route Handler).
+--   O servidor erra e a RLS segura; a RLS tem uma política frouxa e o
+--   servidor segura.
+--
+-- REGRAS
+--   1. Toda tabela de public tem RLS ligada (o schema já liga; repetimos aqui).
+--   2. Toda política nomeia o papel com "to authenticated". O papel anon
+--      (sem login) não recebe nada, nem grant, nem política.
+--   3. auth.uid() sempre dentro de (select ...): o Postgres avalia uma vez por
+--      consulta, não uma vez por linha (mesma página da documentação).
+--   4. UPDATE tem "using" (quais linhas podem ser alteradas) E "with check"
+--      (como a linha pode ficar). Sem o with check, o dono troca o usuario_id
+--      e "doa" a linha para outro.
+--   5. Admin vem de app_metadata.papel (só o servidor altera), NUNCA de
+--      user_metadata (o próprio usuário edita). A documentação chama política
+--      baseada em user_metadata de falha de segurança.
+--   6. Políticas não têm "IF NOT EXISTS": drop policy if exists antes de cada
+--      create torna o arquivo reexecutável.
+--   7. A chave secret (papel service_role, BYPASSRLS) ignora tudo isto. Ela
+--      fica só no servidor, para tarefas administrativas (seed, exclusão de
+--      conta). Conexão SQL direta (POSTGRES_URL) também ignora: a
+--      autorização tem de estar na própria consulta.
+-- ─────────────────────────────────────────────────────────────
+
+-- ── 1. RLS ligada em toda tabela ─────────────────────────────
+alter table public.configuracoes enable row level security;
+alter table public.perfis        enable row level security;
+alter table public.auditoria     enable row level security;
+alter table public.chamados      enable row level security;
+alter table public.anexos        enable row level security;
+alter table public.eventos_limite enable row level security;
+
+-- ── 2. Privilégios explícitos ────────────────────────────────
+-- Projetos existentes do Supabase dão SELECT, INSERT, UPDATE e DELETE em
+-- tabela nova de public para anon, authenticated e service_role
+-- (supabase.com/docs/guides/api/securing-your-api). Não dependa disso, nem
+-- para mais nem para menos: diga aqui o que cada papel pode.
+revoke all on public.configuracoes, public.perfis, public.auditoria, public.chamados,
+              public.anexos, public.eventos_limite
+  from anon, authenticated;
+
+grant select                          on public.configuracoes to authenticated;
+grant select, update (nome)           on public.perfis        to authenticated;
+grant select                          on public.auditoria     to authenticated;
+grant select, insert, update, delete  on public.chamados      to authenticated;
+grant select, insert, delete          on public.anexos        to authenticated;
+-- eventos_limite: nenhum grant para anon nem authenticated (seção 7).
+
+grant all on public.configuracoes, public.perfis, public.auditoria, public.chamados,
+              public.anexos, public.eventos_limite
+  to service_role;
+
+-- Funções: por padrão qualquer papel executa qualquer função
+-- (supabase.com/docs/guides/database/functions). Feche e abra uma a uma.
+revoke execute on function public.buscar_chamados(text)  from public, anon;
+revoke execute on function public.fechar_chamado(bigint) from public, anon;
+grant  execute on function public.buscar_chamados(text)  to authenticated;
+grant  execute on function public.fechar_chamado(bigint) to authenticated;
+
+-- Tabela ou função nova criada DEPOIS desta migração nasce sem acesso para
+-- anon e authenticated: quem cria concede, na mesma migração, o que precisa.
+alter default privileges for role postgres in schema public
+  revoke select, insert, update, delete on tables from anon, authenticated;
+alter default privileges for role postgres in schema public
+  revoke execute on functions from public, anon, authenticated;
+
+-- ── 3. perfis: cada um vê e edita só o próprio ───────────────
+-- INSERT: nenhum. Quem cria o perfil é o gatilho de auth.users.
+-- DELETE: nenhum. Exclusão de conta é auth.admin.deleteUser no servidor,
+-- que apaga o perfil em cascata.
+-- UPDATE: o grant acima libera só a coluna nome.
+drop policy if exists perfis_select_proprio on public.perfis;
+create policy perfis_select_proprio on public.perfis
+  for select to authenticated
+  using ((select auth.uid()) = id);
+
+drop policy if exists perfis_update_proprio on public.perfis;
+create policy perfis_update_proprio on public.perfis
+  for update to authenticated
+  using ((select auth.uid()) = id)
+  with check ((select auth.uid()) = id);
+
+drop policy if exists perfis_select_admin on public.perfis;
+create policy perfis_select_admin on public.perfis
+  for select to authenticated
+  using (((select auth.jwt()) -> 'app_metadata' ->> 'papel') = 'admin');
+
+-- ── 4. chamados: dono lê, cria, altera e apaga os seus ───────
+drop policy if exists chamados_select_dono on public.chamados;
+create policy chamados_select_dono on public.chamados
+  for select to authenticated
+  using ((select auth.uid()) = usuario_id);
+
+drop policy if exists chamados_insert_dono on public.chamados;
+create policy chamados_insert_dono on public.chamados
+  for insert to authenticated
+  with check ((select auth.uid()) = usuario_id);
+
+drop policy if exists chamados_update_dono on public.chamados;
+create policy chamados_update_dono on public.chamados
+  for update to authenticated
+  using ((select auth.uid()) = usuario_id)
+  with check ((select auth.uid()) = usuario_id);
+
+drop policy if exists chamados_delete_dono on public.chamados;
+create policy chamados_delete_dono on public.chamados
+  for delete to authenticated
+  using ((select auth.uid()) = usuario_id);
+
+-- Admin lê todos (só leitura: alterar chamado alheio passa pelo servidor,
+-- com auditoria).
+drop policy if exists chamados_select_admin on public.chamados;
+create policy chamados_select_admin on public.chamados
+  for select to authenticated
+  using (((select auth.jwt()) -> 'app_metadata' ->> 'papel') = 'admin');
+
+-- ── 5. configuracoes: logado lê; só o servidor escreve ───────
+drop policy if exists configuracoes_select_logado on public.configuracoes;
+create policy configuracoes_select_logado on public.configuracoes
+  for select to authenticated
+  using (true);
+
+-- ── 6. auditoria: só admin lê; ninguém escreve pela API ──────
+-- A escrita vem de public.fechar_chamado (security definer) ou do servidor.
+drop policy if exists auditoria_select_admin on public.auditoria;
+create policy auditoria_select_admin on public.auditoria
+  for select to authenticated
+  using (((select auth.jwt()) -> 'app_metadata' ->> 'papel') = 'admin');
+
+-- ── 7. anexos: dono vê, registra e apaga os seus ─────────────
+-- No INSERT, além de ser o dono, o chamado tem de ser dele e o caminho tem de
+-- começar pela pasta dele: ninguém registra anexo em chamado alheio nem
+-- aponta para o arquivo de outra pessoa.
+drop policy if exists anexos_select_dono on public.anexos;
+create policy anexos_select_dono on public.anexos
+  for select to authenticated
+  using ((select auth.uid()) = usuario_id);
+
+drop policy if exists anexos_insert_dono on public.anexos;
+create policy anexos_insert_dono on public.anexos
+  for insert to authenticated
+  with check (
+    (select auth.uid()) = usuario_id
+    and split_part(caminho, '/', 1) = (select auth.uid())::text
+    and exists (
+      select 1 from public.chamados c
+      where c.id = chamado_id and c.usuario_id = (select auth.uid())
+    )
+  );
+
+drop policy if exists anexos_delete_dono on public.anexos;
+create policy anexos_delete_dono on public.anexos
+  for delete to authenticated
+  using ((select auth.uid()) = usuario_id);
+
+-- ── 8. eventos_limite: RLS ligada e NENHUMA política ──────────
+-- De propósito. Sem política, a RLS nega tudo a anon e authenticated; quem
+-- escreve é o servidor pela conexão SQL direta (papel dono, fora da RLS).
+
+-- ─────────────────────────────────────────────────────────────
+-- 9. STORAGE: bucket PRIVADO e uma pasta por usuário
+--
+-- Caminho do arquivo: <id do usuário>/<qualquer coisa>, por exemplo
+--   7b0c.../chamado-42/3f9e....pdf
+-- Sem política, o Storage não aceita upload nenhum; bucket público dispensa
+-- política de LEITURA, por isso arquivo privado nunca vai em bucket público
+-- (supabase.com/docs/guides/storage/security/access-control).
+--
+-- file_size_limit (em bytes) e allowed_mime_types são colunas de
+-- storage.buckets (migrações 0013 e 0014 do repositório supabase/storage).
+-- O limite do bucket é a segunda barreira: o servidor confere tamanho e
+-- bytes mágicos antes de gerar a URL de upload (entrada-e-saida-seguras.md).
+-- ─────────────────────────────────────────────────────────────
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('anexos', 'anexos', false, 5242880,
+        array['image/png', 'image/jpeg', 'application/pdf'])
+on conflict (id) do update
+  set public             = false,
+      file_size_limit    = excluded.file_size_limit,
+      allowed_mime_types = excluded.allowed_mime_types;
+
+-- (storage.foldername(name))[1] é a primeira pasta do caminho.
+-- auth.jwt() ->> 'sub' é o id do usuário em texto.
+drop policy if exists storage_anexos_select_dono on storage.objects;
+create policy storage_anexos_select_dono on storage.objects
+  for select to authenticated
+  using (bucket_id = 'anexos'
+         and (storage.foldername(name))[1] = (select auth.jwt() ->> 'sub'));
+
+drop policy if exists storage_anexos_insert_dono on storage.objects;
+create policy storage_anexos_insert_dono on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'anexos'
+              and (storage.foldername(name))[1] = (select auth.jwt() ->> 'sub'));
+
+-- Upsert (sobrescrever) exige SELECT e UPDATE além do INSERT (mesma página).
+drop policy if exists storage_anexos_update_dono on storage.objects;
+create policy storage_anexos_update_dono on storage.objects
+  for update to authenticated
+  using (bucket_id = 'anexos'
+         and (storage.foldername(name))[1] = (select auth.jwt() ->> 'sub'))
+  with check (bucket_id = 'anexos'
+              and (storage.foldername(name))[1] = (select auth.jwt() ->> 'sub'));
+
+drop policy if exists storage_anexos_delete_dono on storage.objects;
+create policy storage_anexos_delete_dono on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'anexos'
+         and (storage.foldername(name))[1] = (select auth.jwt() ->> 'sub'));
+
+-- ─────────────────────────────────────────────────────────────
+-- COMO PROVAR QUE FUNCIONA (roteiro de testes, CT-SEC-031 e CT-SEC-032)
+--
+--   Sem login, só com a chave publishable, em CADA tabela:
+--     curl "https://SEU-PROJETO.supabase.co/rest/v1/chamados?select=id" \
+--       -H "apikey: SUA-CHAVE-PUBLISHABLE"
+--     Esperado: [] (nenhuma linha) ou erro de permissão. Nunca dados.
+--
+--   Logado como A, tentando ler e alterar a linha de B:
+--     curl "https://SEU-PROJETO.supabase.co/rest/v1/chamados?id=eq.ID-DE-B" \
+--       -H "apikey: SUA-CHAVE-PUBLISHABLE" \
+--       -H "Authorization: Bearer TOKEN-DO-USUARIO-A"
+--     Esperado: []. Com -X PATCH -d '{"titulo":"x"}' e o cabeçalho
+--     "Prefer: return=representation": [] (nenhuma linha afetada).
+-- ─────────────────────────────────────────────────────────────
