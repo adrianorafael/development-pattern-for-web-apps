@@ -9,7 +9,7 @@
 | **Spec** | `0001-agente-de-padrao-para-apps-web` |
 | **Status** | 🔵 implementada |
 | **Data** | 2026-09-05 · revisada em 2026-10-10 |
-| **Versão alvo** | 2.0.0 (escopo reduzido a Next.js com Supabase na Vercel; R9 e R10 redefinidas) |
+| **Versão alvo** | 2.1.0 (plugins do stack no bootstrap; a 2.0.0 reduziu o escopo a Next.js com Supabase na Vercel e redefiniu R9 e R10) |
 | **Natureza** | conteúdo (Markdown, templates, shell), não é uma aplicação |
 
 ---
@@ -57,6 +57,7 @@ mesmas exigências de segurança, ambiente, migração, deploy e teste.
 | RF-019 | Abre toda sessão com as seis perguntas de bootstrap, num único lote: repositório, projeto Vercel e banco, dados e usuários (incluindo "há API paga?"), identidade do app, quem testa, acesso à Vercel. |
 | RF-020 | Cobre os 42 itens da lista de segurança para vibecoding sem regra nova: cada item tem um lugar nomeado (regra, referência, seção, template, piso `P1` a `P14` ou caso de teste), entre eles RLS em toda tabela, Storage privado, Supabase Auth, conferência de pacote antes de instalar, lockfile e `npm ci`, Dependabot, ambiente isolado do agente, prompt injection, OWASP Top 10 a partir de N2, revisor humano a partir de N3, LGPD (campo, finalidade, retenção, exclusão e exportação), teto de gasto, backup com restauração ensaiada e varredura de estranho rota por rota. |
 | RF-021 | Trata documentação como parte da entrega (R13): sempre que o agente produz ou altera código, ele documenta para quem nunca viu o projeto, explicando o porquê, na profundidade do porte; comenta decisão não óbvia, regra de negócio, contorno de bug e trecho de segurança; escreve TSDoc nas exportações públicas; registra dependência com motivo; mantém `.env.example`, README e, quando aplicáveis, `docs/arquitetura.md`, `docs/decisoes/`, `docs/seguranca.md`, `docs/banco-de-dados.md` e `docs/api.md`; roda a verificação obrigatória com busca global pelo nome do que mudou; e encerra com o relatório de documentação. |
+| RF-022 | No bootstrap de um projeto novo, instala ou atualiza os plugins do Claude Code `vercel/vercel-plugin`, `supabase-community/supabase-plugin`, `ChromeDevTools/chrome-devtools-mcp` e `pbakaus/impeccable`, sempre a partir do repositório original no GitHub, nunca de cópia, espelho ou marketplace intermediário. |
 
 ## 4. Requisitos não funcionais
 
@@ -203,6 +204,7 @@ RF-018
 | CT-023 | RF-021 | `scan-doc-sync.sh` acusa, num repositório descartável, `TODO` sem descrição, exportação de `lib/` sem TSDoc, `process.env` ausente do `.env.example`, pacote novo sem registro no CHANGELOG, e `route.ts`, migração ou `proxy.ts` mudados sem o documento de `docs/` correspondente; e sai limpo quando a documentação acompanha |
 | CT-024 | RF-021 | Os templates `.ts` da skill passam em `tsc --strict --noEmit` e toda exportação deles tem TSDoc |
 | CT-025 | RF-021 | `documentacao-do-projeto.md` cobre as doze práticas (princípios, README, variáveis, comentários, TSDoc, dependências, API, banco, arquitetura e decisões, segurança, CHANGELOG e commits, verificação obrigatória, relatório de entrega), cada uma numa seção nomeada |
+| CT-026 | RF-022 | A Fase 0 do `SKILL.md` lista os quatro repositórios com link para o GitHub original, e `claude plugin marketplace list` num projeto iniciado pela skill mostra `vercel` com fonte `vercel/vercel-plugin`, não `claude-plugins-official` |
 
 ## 10. Evidências
 

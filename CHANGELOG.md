@@ -14,6 +14,19 @@ a fonte da verdade, do mesmo jeito que o `package.json` é para um app.
 
 ## [Não publicado]
 
+## [2.1.0] - 2026-10-10
+
+### Adicionado
+
+- **Plugins do stack no bootstrap.** Ao iniciar um projeto, a Fase 0 instala ou atualiza
+  quatro plugins do Claude Code, sempre do repositório original no GitHub e seguindo o
+  README de cada um: [vercel/vercel-plugin](https://github.com/vercel/vercel-plugin),
+  [supabase-community/supabase-plugin](https://github.com/supabase-community/supabase-plugin),
+  [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp)
+  e [pbakaus/impeccable](https://github.com/pbakaus/impeccable). O `SKILL.md` avisa que o
+  `npx plugins add vercel/vercel-plugin` instala, no Claude Code, a partir do marketplace
+  oficial da Anthropic, e indica o caminho pelo repositório da Vercel.
+
 ## [2.0.0] - 2026-10-10
 
 A skill passa a ser dedicada **só a apps Next.js com Supabase, publicados na Vercel**, e

@@ -1,6 +1,6 @@
 {
   "name": "development-pattern-for-web-apps",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Guarda-corpo para construir apps web pessoais em Next.js + Tailwind + Supabase na Vercel com um agente de IA. SQL e filtros sempre parametrizados, RLS em toda tabela, login pelo Supabase Auth, Storage privado, segredos fora do repositório e do chat, repositório privado por padrão, pacotes conferidos antes de instalar, agente em pasta isolada, ambiente que sobe do zero, migrações compatíveis com o Instant Rollback, backup com restauração ensaiada, LGPD no piso técnico, documentação como parte da entrega (README, docs de arquitetura, decisões, segurança, banco e API, TSDoc e verificação obrigatória depois de cada mudança), e um roteiro de testes em Markdown para o Claude Cowork executar QA e regressão no preview.",
   "author": {
     "name": "adrianorafael",

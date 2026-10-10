@@ -164,6 +164,11 @@ pessoal (LGPD), pagamento, upload, API paga? Nome, slug e versão inicial? Quem 
 você, o Cowork, ou os dois? Posso me conectar à sua conta da Vercel para diagnosticar build
 quebrado? Toda decisão posterior se refere a essas respostas, em vez de repetir a pergunta.
 Antes do primeiro commit, o agente confirma que trabalha numa pasta isolada do projeto,
+instala ou atualiza os plugins
+[vercel/vercel-plugin](https://github.com/vercel/vercel-plugin),
+[supabase-community/supabase-plugin](https://github.com/supabase-community/supabase-plugin),
+[ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) e
+[pbakaus/impeccable](https://github.com/pbakaus/impeccable), sempre do repositório original,
 arma o `.gitignore`, oferece os hooks e liga o Dependabot.
 
 **3. A documentação é lida, não lembrada.** nextjs.org para as APIs que serão usadas, a
@@ -239,7 +244,8 @@ as armadilhas que você já encontrou, em vez de começar do zero.
 
 ```
 0 BOOTSTRAP   repo? projeto e banco? dados? identidade? QA? acesso à Vercel?
-              → pasta isolada, .gitignore armado, repo privado, hooks instalados, varredura limpa
+              → pasta isolada, 4 plugins do repositório original, .gitignore armado,
+                repo privado, hooks instalados, varredura limpa
 
 1 PESQUISA    documentação oficial do stack, lida ao vivo
               → registro de evidências: afirmação → URL/arquivo → verificado
@@ -1009,8 +1015,9 @@ uma regra renumerada, uma referência removida, um contrato de template alterado
   do mesmo jeito que o `package.json` é para um app.
 - Toda publicação é registrada em [CHANGELOG.md](CHANGELOG.md).
 
-**Versão atual: 2.0.0.** A 2.0.0 dedica a skill a apps Next.js com Supabase na Vercel, passa a
-cobrir as 42 boas práticas de segurança para vibecoding e redefine R9 e R10; o que saiu e o
-que entrou está no [CHANGELOG.md](CHANGELOG.md).
+**Versão atual: 2.1.0.** A 2.1.0 faz o bootstrap instalar os plugins da Vercel, da Supabase,
+do Chrome DevTools e do Impeccable, sempre do repositório original. A 2.0.0 dedicou a skill
+a apps Next.js com Supabase na Vercel, passou a cobrir as 42 boas práticas de segurança para
+vibecoding e redefiniu R9 e R10; o detalhe está no [CHANGELOG.md](CHANGELOG.md).
 
 Correções e adições são bem-vindas: abra uma issue ou um pull request.

@@ -120,6 +120,17 @@ Ainda na mesma fase, **antes do primeiro commit**:
 
 - Confirmar que o agente trabalha numa pasta isolada do projeto, nunca na pasta pessoal
   inteira (R12, [agentes-e-ferramentas-de-ia.md](references/agentes-e-ferramentas-de-ia.md)).
+- **Instalar os quatro plugins do stack**, sempre puxando do repositório original no
+  GitHub, para chegar na versão mais recente, e seguindo o README de cada um:
+  [vercel/vercel-plugin](https://github.com/vercel/vercel-plugin),
+  [supabase-community/supabase-plugin](https://github.com/supabase-community/supabase-plugin),
+  [ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp)
+  e [pbakaus/impeccable](https://github.com/pbakaus/impeccable). Se algum já estiver
+  instalado, atualize. Nunca de cópia, espelho ou marketplace intermediário. Atenção à
+  Vercel: no Claude Code, o `npx plugins add vercel/vercel-plugin` do README dela instala do
+  marketplace oficial da Anthropic; para puxar do repositório original, use
+  `claude plugin marketplace add vercel/vercel-plugin` e `claude plugin install vercel-plugin@vercel`
+  (conferido em 2026-10-10, Claude Code 2.1.296).
 - Armar o `.gitignore` e criar o par `.env.local` / `.env.example`, com `lib/env.ts` validando (R9).
 - Rodar a primeira varredura: `scan-secrets.sh`.
 - Oferecer a instalação dos hooks `pre-commit` e `commit-msg` em `.git/hooks/` (R1, R18) e
@@ -135,7 +146,8 @@ Ainda na mesma fase, **antes do primeiro commit**:
 
 ```
 0 BOOTSTRAP   repo? projeto e banco? dados? identidade? QA? acesso à Vercel?
-              → pasta isolada, .gitignore armado, repo privado, hooks instalados, varredura limpa
+              → pasta isolada, 4 plugins do repositório original, .gitignore armado,
+                repo privado, hooks instalados, varredura limpa
 
 1 PESQUISA    documentação oficial do stack, lida ao vivo
               → registro de evidências: afirmação → URL/arquivo → verificado
